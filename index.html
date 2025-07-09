@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -114,6 +114,14 @@
       font-weight: bold;
       margin: 15px 0;
     }
+    #debugInfo {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f0f0f0;
+      border-radius: 5px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -121,7 +129,7 @@
     <p>系統載入中，請稍候...</p>
   </div>
   
-   <div id="registerContainer" class="container">
+  <div id="registerContainer" class="container">
     <h2>員工註冊</h2>
     <div class="form-group">
       <label for="name">姓名</label>
@@ -133,9 +141,8 @@
     </div>
     <button id="registerBtn">註冊</button>
     <div id="registerMessage"></div>
-    <div id="debugInfo" style="display: none; margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 5px;"></div>
+    <div id="debugInfo"></div>
   </div>
-  
   
   <div id="mainContainer" class="container">
     <div class="tab">
@@ -164,9 +171,9 @@
 
   <script>
     // 配置
-     const config = {
+    const config = {
       backendUrl: 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec',
-      debugMode: location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+      debugMode: true // 開發時設為true，上線後可設為false
     };
     
     // 全局變量
@@ -176,25 +183,32 @@
     let userName = '';
     let employeeId = '';
     
-    // 初始化 LIFF
-   // 初始化LIFF
+    // 初始化LIFF
     async function initializeLiff() {
       try {
+        // 顯示載入狀態
+        document.getElementById('loading').textContent = '正在初始化LINE LIFF...';
+        
         await liff.init({ liffId: '2007700262-da76ZbYE' });
         
         if (!liff.isLoggedIn()) {
+          document.getElementById('loading').textContent = '正在登入LINE...';
           liff.login();
           return;
         }
         
+        // 獲取用戶資料
+        document.getElementById('loading').textContent = '正在獲取用戶資料...';
         const profile = await liff.getProfile();
         userId = profile.userId;
         
-        // 檢查註冊狀態 - 使用更可靠的方式
-        await checkRegistration();
+        // 檢查註冊狀態
+        document.getElementById('loading').textContent = '正在檢查註冊狀態...';
+        const registered = await checkRegistration();
         
+        // 初始化UI
         document.getElementById('loading').style.display = 'none';
-        if (isRegistered) {
+        if (registered) {
           showMainApp();
         } else {
           document.getElementById('registerContainer').style.display = 'block';
@@ -207,58 +221,130 @@
         setupEventListeners();
         
       } catch (error) {
-        console.error('LIFF初始化失敗:', error);
-        showFatalError('系統初始化失敗，請重新載入或稍後再試');
+        console.error('初始化失敗:', error);
+        showFatalError('系統初始化失敗: ' + error.message);
       }
     }
     
-     // 檢查註冊狀態
+    // 檢查註冊狀態
     async function checkRegistration() {
       try {
-        const response = await fetchWithTimeout(`${config.backendUrl}?action=getEmployee&lineId=${userId}`, {
-          timeout: 5000
-        });
+        const url = `${config.backendUrl}?action=getEmployee&lineId=${userId}&timestamp=${Date.now()}`;
+        logDebug('檢查註冊狀態:', url);
+        
+        const response = await fetch(url);
+        logDebug('回應狀態:', response.status);
         
         if (!response.ok) {
           throw new Error(`HTTP錯誤: ${response.status}`);
         }
         
         const data = await response.json();
+        logDebug('註冊檢查結果:', data);
         
-        if (data.exists) {
+        if (data.data?.exists) {
           isRegistered = true;
-          userName = data.name;
-          employeeId = data.employeeId;
+          userName = data.data.name;
+          employeeId = data.data.employeeId;
           return true;
         }
         return false;
         
       } catch (error) {
-        console.warn('檢查註冊狀態失敗:', error);
+        console.warn('檢查註冊失敗:', error);
+        logDebug('檢查註冊錯誤:', error);
         return false;
       }
     }
-        // 帶超時的fetch
-    async function fetchWithTimeout(resource, options = {}) {
-      const { timeout = 8000 } = options;
+    
+    // 註冊功能
+    async function register() {
+      const name = document.getElementById('name').value.trim();
+      const empId = document.getElementById('employeeId').value.trim();
       
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout);
+      // 驗證輸入
+      if (!name || !empId) {
+        showMessage('registerMessage', '請填寫所有欄位', 'error');
+        return;
+      }
       
-      const response = await fetch(resource, {
-        ...options,
-        signal: controller.signal
-      });
-      
-      clearTimeout(id);
-      return response;
+      try {
+        // 顯示載入狀態
+        showMessage('registerMessage', '註冊中，請稍候...', 'info');
+        
+        // 準備請求數據
+        const params = new URLSearchParams();
+        params.append('action', 'register');
+        params.append('lineId', userId);
+        params.append('name', name);
+        params.append('employeeId', empId);
+        
+        logDebug('發送註冊請求:', params.toString());
+        
+        // 發送請求
+        const response = await fetch(config.backendUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: params
+        });
+        
+        logDebug('註冊回應狀態:', response.status);
+        
+        // 檢查回應
+        if (!response.ok) {
+          const errorText = await response.text();
+          logDebug('註冊失敗:', errorText);
+          throw new Error(`請求失敗: ${response.status}`);
+        }
+        
+        // 解析回應
+        const data = await response.json();
+        logDebug('註冊結果:', data);
+        
+        // 處理回應
+        if (data.status === 'success') {
+          // 更新全局狀態
+          isRegistered = true;
+          userName = data.data.name;
+          employeeId = data.data.employeeId;
+          
+          // 顯示成功訊息
+          showMessage('registerMessage', '註冊成功！正在跳轉...', 'success');
+          
+          // 立即跳轉
+          showMainApp();
+          
+        } else {
+          throw new Error(data.message || '註冊失敗');
+        }
+        
+      } catch (error) {
+        console.error('註冊錯誤:', error);
+        logDebug('註冊錯誤詳情:', error);
+        
+        // 處理錯誤訊息
+        let errorMsg = '註冊失敗';
+        if (error.message.includes('Failed to fetch')) {
+          errorMsg = '無法連接伺服器，請檢查網路連線';
+        } else if (error.message.includes('HTTP錯誤')) {
+          errorMsg = `伺服器錯誤: ${error.message}`;
+        } else {
+          errorMsg = error.message;
+        }
+        
+        // 顯示錯誤
+        showMessage('registerMessage', errorMsg, 'error');
+      }
     }
+    
     // 顯示主應用
     function showMainApp() {
       document.getElementById('registerContainer').style.display = 'none';
       document.getElementById('mainContainer').style.display = 'block';
       
-      // 設置當前時間問候語
+      // 設置問候語
       const hour = new Date().getHours();
       let greeting = '';
       if (hour < 12) greeting = '早安';
@@ -277,21 +363,29 @@
               latitude: position.coords.latitude,
               longitude: position.coords.longitude
             };
+            
             document.getElementById('locationStatus').className = 'success';
             document.getElementById('locationStatus').innerHTML = 
               '定位成功！您現在可以打卡<br><small>此系統僅限台北101大樓附近使用</small>';
+            
             document.getElementById('checkInBtn').disabled = false;
             document.getElementById('checkOutBtn').disabled = false;
           },
           error => {
             console.error('獲取位置失敗:', error);
+            
             document.getElementById('locationStatus').className = 'error';
             document.getElementById('locationStatus').textContent = 
-              '定位失敗: ' + getErrorMessage(error);
+              '定位失敗: ' + getLocationErrorMessage(error);
+            
             document.getElementById('checkInBtn').disabled = true;
             document.getElementById('checkOutBtn').disabled = true;
           },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          { 
+            enableHighAccuracy: true, 
+            timeout: 10000, 
+            maximumAge: 0 
+          }
         );
       } else {
         document.getElementById('locationStatus').className = 'error';
@@ -301,7 +395,7 @@
     }
     
     // 獲取定位錯誤訊息
-    function getErrorMessage(error) {
+    function getLocationErrorMessage(error) {
       switch(error.code) {
         case error.PERMISSION_DENIED:
           return "您拒絕了定位請求，請允許定位權限";
@@ -316,7 +410,120 @@
       }
     }
     
-    // 註冊事件監聽器
+    // 打卡功能
+    async function recordAttendance(type) {
+      if (!currentLocation) {
+        showMessage('attendanceMessage', '無法獲取位置信息', 'error');
+        return;
+      }
+      
+      try {
+        showMessage('attendanceMessage', `${type === 'in' ? '上班' : '下班'}打卡中...`, 'info');
+        
+        const params = new URLSearchParams();
+        params.append('action', type === 'in' ? 'checkIn' : 'checkOut');
+        params.append('lineId', userId);
+        params.append('latitude', currentLocation.latitude);
+        params.append('longitude', currentLocation.longitude);
+        
+        logDebug('發送打卡請求:', params.toString());
+        
+        const response = await fetch(config.backendUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: params
+        });
+        
+        logDebug('打卡回應狀態:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`請求失敗: ${response.status} - ${errorText}`);
+        }
+        
+        const data = await response.json();
+        logDebug('打卡結果:', data);
+        
+        if (data.status === 'success') {
+          const action = type === 'in' ? '上班' : '下班';
+          const message = `
+            <strong>${action}打卡成功！</strong>
+            <p>時間: ${data.data.time}</p>
+            <p>距離台北101: ${data.data.distance}公尺</p>
+            <p>位置: ${data.data.address}</p>
+          `;
+          showMessage('attendanceMessage', message, 'success');
+        } else {
+          throw new Error(data.message || '打卡失敗');
+        }
+        
+      } catch (error) {
+        console.error('打卡錯誤:', error);
+        logDebug('打卡錯誤詳情:', error);
+        
+        let errorMsg = '打卡失敗';
+        if (error.message.includes('Failed to fetch')) {
+          errorMsg = '無法連接伺服器，請檢查網路';
+        } else {
+          errorMsg = error.message;
+        }
+        
+        showMessage('attendanceMessage', errorMsg, 'error');
+      }
+    }
+    
+    // 查詢打卡記錄
+    async function queryRecords(date) {
+      try {
+        document.getElementById('recordsList').innerHTML = '<p>查詢中...</p>';
+        
+        const url = `${config.backendUrl}?action=getAttendance&lineId=${userId}&date=${date}`;
+        logDebug('查詢記錄請求:', url);
+        
+        const response = await fetch(url);
+        logDebug('查詢回應狀態:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP錯誤: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        logDebug('查詢結果:', data);
+        
+        const recordsList = document.getElementById('recordsList');
+        recordsList.innerHTML = '';
+        
+        if (data.data?.records?.length > 0) {
+          // 按時間排序
+          const sortedRecords = data.data.records.sort((a, b) => a.time.localeCompare(b.time));
+          
+          sortedRecords.forEach(record => {
+            const recordDiv = document.createElement('div');
+            recordDiv.className = 'record';
+            recordDiv.innerHTML = `
+              <p><strong>日期:</strong> ${record.date}</p>
+              <p><strong>時間:</strong> ${record.time}</p>
+              <p><strong>類型:</strong> ${record.type === 'in' ? '上班打卡' : '下班打卡'}</p>
+              <p><strong>位置:</strong> ${record.address}</p>
+            `;
+            recordsList.appendChild(recordDiv);
+          });
+        } else {
+          recordsList.innerHTML = '<div class="info">沒有找到記錄</div>';
+        }
+        
+      } catch (error) {
+        console.error('查詢記錄失敗:', error);
+        logDebug('查詢錯誤:', error);
+        
+        document.getElementById('recordsList').innerHTML = 
+          '<div class="error">查詢記錄失敗，請稍後再試</div>';
+      }
+    }
+    
+    // 初始化事件監聽器
     function setupEventListeners() {
       // 註冊按鈕
       document.getElementById('registerBtn').addEventListener('click', register);
@@ -338,9 +545,11 @@
         document.getElementById('recordsContent').style.display = 'block';
         document.getElementById('attendanceTab').classList.remove('active');
         document.getElementById('recordsTab').classList.add('active');
+        
         // 設置默認日期為今天
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('recordDate').value = today;
+        
         // 查詢記錄
         queryRecords(today);
       });
@@ -352,203 +561,47 @@
       });
     }
     
-    // 員工註冊
-// 更新註冊函數
-    async function register() {
-      const name = document.getElementById('name').value.trim();
-      const empId = document.getElementById('employeeId').value.trim();
-      
-      if (!name || !empId) {
-        showMessage('registerMessage', '請填寫所有欄位', 'error');
-        return;
-      }
-      
-      try {
-        showMessage('registerMessage', '註冊中，請稍候...', 'info');
-        
-        const params = new URLSearchParams({
-          action: 'register',
-          lineId: userId,
-          name: name,
-          employeeId: empId
-        });
-        
-        const response = await fetchWithTimeout(config.backendUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: params,
-          timeout: 10000
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`請求失敗: ${response.status} - ${errorText}`);
-        }
-        
-        const data = await response.json();
-        
-        if (config.debugMode) {
-          document.getElementById('debugInfo').style.display = 'block';
-          document.getElementById('debugInfo').innerHTML = `
-            <h4>Debug資訊</h4>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
-          `;
-        }
-        
-        if (data.status === 'success') {
-          // 更新全局狀態
-          isRegistered = true;
-          userName = data.data.name;
-          employeeId = data.data.employeeId;
-          
-          // 顯示成功訊息
-          showMessage('registerMessage', '註冊成功！正在跳轉...', 'success');
-          
-          // 延遲後跳轉
-          setTimeout(() => {
-            document.getElementById('registerContainer').style.display = 'none';
-            showMainApp();
-          }, 1000);
-          
-        } else {
-          throw new Error(data.message || '註冊失敗');
-        }
-        
-      } catch (error) {
-        console.error('註冊錯誤:', error);
-        
-        let errorMsg = '註冊失敗';
-        if (error.name === 'AbortError') {
-          errorMsg = '請求超時，請檢查網路連線';
-        } else if (error.message.includes('Failed to fetch')) {
-          errorMsg = '網路連接失敗，請檢查網路設定';
-        } else {
-          errorMsg = error.message;
-        }
-        
-        showMessage('registerMessage', errorMsg, 'error');
-        
-        if (config.debugMode) {
-          document.getElementById('debugInfo').style.display = 'block';
-          document.getElementById('debugInfo').innerHTML = `
-            <h4>錯誤詳情</h4>
-            <pre>${error.stack || error.message}</pre>
-          `;
-        }
-      }
-    }
-    
-    // 打卡
-    async function recordAttendance(type) {
-      if (!currentLocation) {
-        showMessage('attendanceMessage', '無法獲取位置信息', 'error');
-        return;
-      }
-      
-      try {
-        const params = new URLSearchParams({
-          action: type === 'in' ? 'checkIn' : 'checkOut',
-          lineId: userId,
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude
-        });
-        
-        showMessage('attendanceMessage', '打卡中，請稍候...', 'info');
-        
-        const response = await fetch(config.backendUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: params
-        });
-        
-        if (!response.ok) {
-          throw new Error('打卡請求失敗');
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          const action = type === 'in' ? '上班' : '下班';
-          const message = `
-            <strong>${action}打卡成功！</strong>
-            <p>時間: ${data.time}</p>
-            <p>距離台北101: ${data.distance}公尺</p>
-            <p>位置: ${data.address}</p>
-          `;
-          showMessage('attendanceMessage', message, 'success');
-        } else {
-          showMessage('attendanceMessage', data.error || '打卡失敗', 'error');
-        }
-      } catch (error) {
-        console.error('打卡錯誤:', error);
-        showMessage('attendanceMessage', '打卡失敗: ' + error.message, 'error');
-      }
-    }
-    
-    // 查詢打卡記錄
-    async function queryRecords(date) {
-      try {
-        document.getElementById('recordsList').innerHTML = '<p>查詢中...</p>';
-        
-        const response = await fetch(`${config.backendUrl}?action=getAttendance&lineId=${userId}&date=${date}`);
-        
-        if (!response.ok) {
-          throw new Error('查詢請求失敗');
-        }
-        
-        const data = await response.json();
-        
-        const recordsList = document.getElementById('recordsList');
-        recordsList.innerHTML = '';
-        
-        if (data.records && data.records.length > 0) {
-          // 按時間排序
-          const sortedRecords = data.records.sort((a, b) => {
-            return a.time.localeCompare(b.time);
-          });
-          
-          sortedRecords.forEach(record => {
-            const recordDiv = document.createElement('div');
-            recordDiv.className = 'record';
-            recordDiv.innerHTML = `
-              <p><strong>日期:</strong> ${record.date}</p>
-              <p><strong>時間:</strong> ${record.time}</p>
-              <p><strong>類型:</strong> ${record.type === 'in' ? '上班打卡' : '下班打卡'}</p>
-              <p><strong>位置:</strong> ${record.address}</p>
-            `;
-            recordsList.appendChild(recordDiv);
-          });
-        } else {
-          recordsList.innerHTML = '<div class="info">沒有找到記錄</div>';
-        }
-      } catch (error) {
-        console.error('查詢記錄失敗:', error);
-        document.getElementById('recordsList').innerHTML = 
-          '<div class="error">查詢記錄失敗，請稍後再試</div>';
-      }
-    }
-       // 顯示致命錯誤
-    function showFatalError(message) {
-      document.getElementById('loading').innerHTML = `
-        <div class="error">
-          <h3>系統錯誤</h3>
-          <p>${message}</p>
-          <button onclick="window.location.reload()">重新載入</button>
-        </div>
-      `;
-    }
-    // 顯示消息
+    // 顯示訊息
     function showMessage(elementId, message, type) {
       const element = document.getElementById(elementId);
       element.innerHTML = message;
       element.className = type;
     }
     
-      // 初始化應用
+    // 顯示致命錯誤
+    function showFatalError(message) {
+      document.getElementById('loading').innerHTML = `
+        <div class="error">
+          <h3>系統錯誤</h3>
+          <p>${message}</p>
+          <button onclick="window.location.reload()" style="padding: 10px; margin-top: 10px;">
+            重新載入
+          </button>
+        </div>
+      `;
+    }
+    
+    // 記錄調試信息
+    function logDebug(...args) {
+      if (config.debugMode) {
+        console.log(...args);
+        
+        const debugInfo = document.getElementById('debugInfo');
+        if (debugInfo) {
+          debugInfo.style.display = 'block';
+          debugInfo.innerHTML += `
+            <div style="margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+              <small>${new Date().toLocaleTimeString()}</small>
+              <pre style="margin: 5px 0; white-space: pre-wrap;">${args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+              ).join(' ')}</pre>
+            </div>
+          `;
+        }
+      }
+    }
+    
+    // 初始化應用
     document.addEventListener('DOMContentLoaded', () => {
       initializeLiff();
     });
