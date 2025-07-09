@@ -360,40 +360,142 @@
       initializationAttempts: 0
     };
 
-    // 主初始化函數
-    async function initializeApp() {
-      try {
-        // 增加嘗試次數計數
-        appState.initializationAttempts++;
-        
-        // 顯示加載狀態
-        showLoading(true);
-        
-        // 1. 初始化LIFF SDK
-        await initializeLiffSDK();
-        
-        // 2. 檢查網路連接
-        await checkNetworkConnection();
-        
-        // 3. 檢查後端服務
-        await checkBackendService();
-        
-        // 4. 獲取用戶資料
-        await fetchUserProfile();
-        
-        // 5. 檢查註冊狀態
-        await checkRegistrationStatus();
-        
-        // 初始化成功
-        showAppInterface();
-        
-      } catch (error) {
-        handleInitializationError(error);
-      } finally {
-        showLoading(false);
+async function initializeApp() {
+  try {
+    // 顯示加載狀態
+    showLoading(true);
+    
+    // 1. 初始化LIFF SDK（增加超時處理）
+    await initializeLiffWithTimeout();
+    
+    // 2. 檢查網路連接
+    await checkNetworkConnection();
+    
+    // 3. 檢查後端服務
+    await checkBackendService();
+    
+    // 4. 獲取用戶資料
+    const profile = await getProfileWithRetry();
+    window.userId = profile.userId;
+    
+    // 5. 檢查註冊狀態
+    const userStatus = await checkUserRegistration();
+    window.isRegistered = userStatus.exists;
+    window.userData = userStatus.data;
+    
+    // 初始化成功
+    showAppInterface();
+    
+  } catch (error) {
+    handleInitializationError(error);
+  } finally {
+    showLoading(false);
+  }
+}
+// 帶超時的LIFF初始化
+async function initializeLiffWithTimeout() {
+  const LIFF_INIT_TIMEOUT = 10000; // 10秒超時
+  
+  try {
+    await Promise.race([
+      liff.init({
+        liffId: 'YOUR_LIFF_ID',
+        withLoginOnExternalBrowser: true
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('LIFF初始化超時')), LIFF_INIT_TIMEOUT)
+      )
+    ]);
+    
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      throw new Error('需要登入LINE帳號');
+    }
+    
+  } catch (error) {
+    console.error('LIFF初始化失敗:', error);
+    throw new Error('LINE服務初始化失敗: ' + error.message);
+  }
+}
+
+// 帶重試的用戶資料獲取
+async function getProfileWithRetry(maxRetries = 3) {
+  let lastError;
+  
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await liff.getProfile();
+    } catch (error) {
+      lastError = error;
+      if (i < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 1000));
       }
     }
+  }
+  
+  throw lastError || new Error('無法獲取用戶資料');
+}
+// 檢查用戶註冊狀態
+async function checkUserRegistration() {
+  try {
+    const response = await fetchWithRetry(
+      `${config.backendUrl}?action=getEmployee&lineId=${window.userId}`,
+      { cache: 'no-store' }
+    );
+    
+    if (!response.ok) {
+      throw new Error('後端服務回應異常');
+    }
+    
+    return await response.json();
+    
+  } catch (error) {
+    console.error('檢查註冊狀態失敗:', error);
+    throw new Error('無法驗證用戶註冊狀態');
+  }
+}
 
+// 顯示應用界面
+function showAppInterface() {
+  document.getElementById('loading').style.display = 'none';
+  
+  if (window.isRegistered) {
+    document.getElementById('mainContainer').style.display = 'block';
+    document.getElementById('greeting').textContent = 
+      `您好，${window.userData?.name || '同仁'}！`;
+    initializeGeolocation();
+  } else {
+    document.getElementById('registerContainer').style.display = 'block';
+  }
+}
+// 初始化地理位置
+function initializeGeolocation() {
+  if (!navigator.geolocation) {
+    showMessage('locationStatus', '您的瀏覽器不支持定位功能', 'error');
+    return;
+  }
+  
+  showMessage('locationStatus', '正在取得定位權限...', 'info');
+  
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      window.currentLocation = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude
+      };
+      showMessage('locationStatus', '定位成功！', 'success');
+      enableCheckInButtons();
+    },
+    error => {
+      handleGeolocationError(error);
+    },
+    { 
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0 
+    }
+  );
+}
     // 1. 初始化LIFF SDK
     async function initializeLiffSDK() {
       try {
