@@ -209,28 +209,49 @@
     }
     
     // 檢查是否已註冊
-    async function checkRegistration() {
-      try {
-        const response = await fetch(`${config.backendUrl}?action=getEmployee&lineId=${userId}`);
-        
-        if (!response.ok) {
-          throw new Error('網路請求失敗');
-        }
-        
-        const data = await response.json();
-        
-        if (data.exists) {
-          isRegistered = true;
-          userName = data.name;
-          employeeId = data.employeeId;
-          return true;
-        }
-        return false;
-      } catch (error) {
-        console.error('檢查註冊失敗:', error);
-        return false;
-      }
+async function checkRegistration() {
+  try {
+    // 添加隨機參數避免緩存
+    const timestamp = new Date().getTime();
+    const url = `${config.backendUrl}?action=getEmployee&lineId=${userId}&timestamp=${timestamp}`;
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
     }
+    
+    const data = await response.json();
+    
+    // 檢查返回數據是否有效
+    if (!data || typeof data !== 'object') {
+      throw new Error('無效的響應格式');
+    }
+    
+    if (data.exists) {
+      isRegistered = true;
+      userName = data.name;
+      employeeId = data.employeeId;
+      return true;
+    }
+    return false;
+    
+  } catch (error) {
+    console.error('檢查註冊狀態錯誤:', error);
+    
+    // 顯示用戶友好的錯誤訊息
+    showMessage('loading', `
+      <div class="error">
+        <p>無法檢查註冊狀態</p>
+        <p><small>${error.message}</small></p>
+        <button onclick="location.reload()">重新載入</button>
+      </div>
+    `, 'error');
+    
+    return false;
+  }
+}
+
     
     // 顯示主應用
     function showMainApp() {
@@ -331,53 +352,74 @@
       });
     }
     
-    // 員工註冊
-    async function register() {
-      const name = document.getElementById('name').value.trim();
-      const empId = document.getElementById('employeeId').value.trim();
-      
-      if (!name || !empId) {
-        showMessage('registerMessage', '請填寫所有欄位', 'error');
-        return;
-      }
-      
-      try {
-        const params = new URLSearchParams({
-          action: 'register',
-          lineId: userId,
-          name: name,
-          employeeId: empId
-        });
-        
-        showMessage('registerMessage', '註冊中，請稍候...', 'info');
-        
-        const response = await fetch(config.backendUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: params
-        });
-        
-        if (!response.ok) {
-          throw new Error('註冊請求失敗');
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          isRegistered = true;
-          userName = data.name;
-          employeeId = data.employeeId;
-          showMainApp();
-        } else {
-          showMessage('registerMessage', data.error || '註冊失敗', 'error');
-        }
-      } catch (error) {
-        console.error('註冊錯誤:', error);
-        showMessage('registerMessage', '註冊失敗: ' + error.message, 'error');
-      }
+// 註冊函數 - 修正版
+async function register() {
+  const name = document.getElementById('name').value.trim();
+  const empId = document.getElementById('employeeId').value.trim();
+  
+  if (!name || !empId) {
+    showMessage('registerMessage', '請填寫所有欄位', 'error');
+    return;
+  }
+  
+  try {
+    showMessage('registerMessage', '註冊中，請稍候...', 'info');
+    
+    const params = new URLSearchParams({
+      action: 'register',
+      lineId: userId,
+      name: name,
+      employeeId: empId,
+      timestamp: new Date().getTime() // 避免緩存
+    });
+    
+    const response = await fetch(config.backendUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`註冊失敗: ${response.status} - ${errorText}`);
     }
+    
+    const data = await response.json();
+    
+    // 檢查返回數據是否有效
+    if (!data || typeof data !== 'object') {
+      throw new Error('無效的伺服器響應');
+    }
+    
+    if (data.success) {
+      isRegistered = true;
+      userName = data.registeredData.name;
+      employeeId = data.registeredData.employeeId;
+      showMainApp();
+    } else {
+      // 顯示伺服器返回的詳細錯誤
+      const errorMsg = data.error || '註冊失敗';
+      const details = data.details ? `<br><small>${data.details}</small>` : '';
+      showMessage('registerMessage', `${errorMsg}${details}`, 'error');
+    }
+    
+  } catch (error) {
+    console.error('註冊錯誤:', error);
+    
+    let errorMsg = error.message;
+    if (error instanceof TypeError) {
+      errorMsg = '網路錯誤，請檢查您的連線';
+    }
+    
+    showMessage('registerMessage', `
+      <strong>註冊失敗</strong>
+      <p>${errorMsg}</p>
+      <button onclick="register()">重試</button>
+    `, 'error');
+  }
+}
     
     // 打卡
     async function recordAttendance(type) {
