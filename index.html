@@ -332,52 +332,88 @@
     }
     
     // 員工註冊
-    async function register() {
-      const name = document.getElementById('name').value.trim();
-      const empId = document.getElementById('employeeId').value.trim();
-      
-      if (!name || !empId) {
-        showMessage('registerMessage', '請填寫所有欄位', 'error');
-        return;
-      }
-      
-      try {
-        const params = new URLSearchParams({
-          action: 'register',
-          lineId: userId,
-          name: name,
-          employeeId: empId
-        });
-        
-        showMessage('registerMessage', '註冊中，請稍候...', 'info');
-        
-        const response = await fetch(config.backendUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: params
-        });
-        
-        if (!response.ok) {
-          throw new Error('註冊請求失敗');
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          isRegistered = true;
-          userName = data.name;
-          employeeId = data.employeeId;
-          showMainApp();
-        } else {
-          showMessage('registerMessage', data.error || '註冊失敗', 'error');
-        }
-      } catch (error) {
-        console.error('註冊錯誤:', error);
-        showMessage('registerMessage', '註冊失敗: ' + error.message, 'error');
-      }
+// 更新註冊函數
+async function register() {
+  const name = document.getElementById('name').value.trim();
+  const empId = document.getElementById('employeeId').value.trim();
+  
+  if (!name || !empId) {
+    showMessage('registerMessage', '請填寫所有欄位', 'error');
+    return;
+  }
+  
+  try {
+    showMessage('registerMessage', '註冊中，請稍候...', 'info');
+    
+    const params = new URLSearchParams({
+      action: 'register',
+      lineId: userId,
+      name: name,
+      employeeId: empId
+    });
+    
+    // 添加請求超時處理
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch(config.backendUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params,
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || `HTTP錯誤: ${response.status}`);
     }
+    
+    const data = await response.json();
+    
+    if (data.status === 'success') {
+      // 註冊成功後更新全局變量
+      isRegistered = true;
+      userName = data.data.name;
+      employeeId = data.data.employeeId;
+      
+      // 顯示成功訊息
+      showMessage('registerMessage', '註冊成功！正在跳轉...', 'success');
+      
+      // 延遲1秒後跳轉
+      setTimeout(() => {
+        showMainApp();
+      }, 1000);
+      
+    } else {
+      throw new Error(data.message || '註冊失敗');
+    }
+    
+  } catch (error) {
+    console.error('註冊錯誤:', error);
+    
+    // 更友好的錯誤訊息
+    let errorMsg = '註冊失敗';
+    if (error.name === 'AbortError') {
+      errorMsg = '請求超時，請檢查網路連線';
+    } else if (error.message.includes('HTTP錯誤')) {
+      errorMsg = `伺服器錯誤: ${error.message}`;
+    } else {
+      errorMsg = error.message;
+    }
+    
+    showMessage('registerMessage', errorMsg, 'error');
+    
+    // 開發模式下顯示詳細錯誤
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      console.log('詳細錯誤:', error);
+      showMessage('registerMessage', `${errorMsg}<br><small>${error.stack || ''}</small>`, 'error');
+    }
+  }
+}
     
     // 打卡
     async function recordAttendance(type) {
