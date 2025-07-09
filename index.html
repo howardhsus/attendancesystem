@@ -121,7 +121,7 @@
     <p>系統載入中，請稍候...</p>
   </div>
   
-  <div id="registerContainer" class="container">
+   <div id="registerContainer" class="container">
     <h2>員工註冊</h2>
     <div class="form-group">
       <label for="name">姓名</label>
@@ -133,7 +133,9 @@
     </div>
     <button id="registerBtn">註冊</button>
     <div id="registerMessage"></div>
+    <div id="debugInfo" style="display: none; margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 5px;"></div>
   </div>
+  
   
   <div id="mainContainer" class="container">
     <div class="tab">
@@ -162,8 +164,9 @@
 
   <script>
     // 配置
-    const config = {
-      backendUrl: 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec'
+     const config = {
+      backendUrl: 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec',
+      debugMode: location.hostname === 'localhost' || location.hostname === '127.0.0.1'
     };
     
     // 全局變量
@@ -174,6 +177,7 @@
     let employeeId = '';
     
     // 初始化 LIFF
+   // 初始化LIFF
     async function initializeLiff() {
       try {
         await liff.init({ liffId: '2007700262-da76ZbYE' });
@@ -186,7 +190,7 @@
         const profile = await liff.getProfile();
         userId = profile.userId;
         
-        // 檢查是否已註冊
+        // 檢查註冊狀態 - 使用更可靠的方式
         await checkRegistration();
         
         document.getElementById('loading').style.display = 'none';
@@ -201,20 +205,22 @@
         
         // 初始化事件監聽器
         setupEventListeners();
+        
       } catch (error) {
         console.error('LIFF初始化失敗:', error);
-        document.getElementById('loading').innerHTML = 
-          '<div class="error">系統初始化失敗，請重新載入或稍後再試</div>';
+        showFatalError('系統初始化失敗，請重新載入或稍後再試');
       }
     }
     
-    // 檢查是否已註冊
+     // 檢查註冊狀態
     async function checkRegistration() {
       try {
-        const response = await fetch(`${config.backendUrl}?action=getEmployee&lineId=${userId}`);
+        const response = await fetchWithTimeout(`${config.backendUrl}?action=getEmployee&lineId=${userId}`, {
+          timeout: 5000
+        });
         
         if (!response.ok) {
-          throw new Error('網路請求失敗');
+          throw new Error(`HTTP錯誤: ${response.status}`);
         }
         
         const data = await response.json();
@@ -226,12 +232,27 @@
           return true;
         }
         return false;
+        
       } catch (error) {
-        console.error('檢查註冊失敗:', error);
+        console.warn('檢查註冊狀態失敗:', error);
         return false;
       }
     }
-    
+        // 帶超時的fetch
+    async function fetchWithTimeout(resource, options = {}) {
+      const { timeout = 8000 } = options;
+      
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      
+      const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal
+      });
+      
+      clearTimeout(id);
+      return response;
+    }
     // 顯示主應用
     function showMainApp() {
       document.getElementById('registerContainer').style.display = 'none';
@@ -333,87 +354,91 @@
     
     // 員工註冊
 // 更新註冊函數
-async function register() {
-  const name = document.getElementById('name').value.trim();
-  const empId = document.getElementById('employeeId').value.trim();
-  
-  if (!name || !empId) {
-    showMessage('registerMessage', '請填寫所有欄位', 'error');
-    return;
-  }
-  
-  try {
-    showMessage('registerMessage', '註冊中，請稍候...', 'info');
-    
-    const params = new URLSearchParams({
-      action: 'register',
-      lineId: userId,
-      name: name,
-      employeeId: empId
-    });
-    
-    // 添加請求超時處理
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
-    const response = await fetch(config.backendUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: params,
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `HTTP錯誤: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (data.status === 'success') {
-      // 註冊成功後更新全局變量
-      isRegistered = true;
-      userName = data.data.name;
-      employeeId = data.data.employeeId;
+    async function register() {
+      const name = document.getElementById('name').value.trim();
+      const empId = document.getElementById('employeeId').value.trim();
       
-      // 顯示成功訊息
-      showMessage('registerMessage', '註冊成功！正在跳轉...', 'success');
+      if (!name || !empId) {
+        showMessage('registerMessage', '請填寫所有欄位', 'error');
+        return;
+      }
       
-      // 延遲1秒後跳轉
-      setTimeout(() => {
-        showMainApp();
-      }, 1000);
-      
-    } else {
-      throw new Error(data.message || '註冊失敗');
+      try {
+        showMessage('registerMessage', '註冊中，請稍候...', 'info');
+        
+        const params = new URLSearchParams({
+          action: 'register',
+          lineId: userId,
+          name: name,
+          employeeId: empId
+        });
+        
+        const response = await fetchWithTimeout(config.backendUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: params,
+          timeout: 10000
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`請求失敗: ${response.status} - ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (config.debugMode) {
+          document.getElementById('debugInfo').style.display = 'block';
+          document.getElementById('debugInfo').innerHTML = `
+            <h4>Debug資訊</h4>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        }
+        
+        if (data.status === 'success') {
+          // 更新全局狀態
+          isRegistered = true;
+          userName = data.data.name;
+          employeeId = data.data.employeeId;
+          
+          // 顯示成功訊息
+          showMessage('registerMessage', '註冊成功！正在跳轉...', 'success');
+          
+          // 延遲後跳轉
+          setTimeout(() => {
+            document.getElementById('registerContainer').style.display = 'none';
+            showMainApp();
+          }, 1000);
+          
+        } else {
+          throw new Error(data.message || '註冊失敗');
+        }
+        
+      } catch (error) {
+        console.error('註冊錯誤:', error);
+        
+        let errorMsg = '註冊失敗';
+        if (error.name === 'AbortError') {
+          errorMsg = '請求超時，請檢查網路連線';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMsg = '網路連接失敗，請檢查網路設定';
+        } else {
+          errorMsg = error.message;
+        }
+        
+        showMessage('registerMessage', errorMsg, 'error');
+        
+        if (config.debugMode) {
+          document.getElementById('debugInfo').style.display = 'block';
+          document.getElementById('debugInfo').innerHTML = `
+            <h4>錯誤詳情</h4>
+            <pre>${error.stack || error.message}</pre>
+          `;
+        }
+      }
     }
-    
-  } catch (error) {
-    console.error('註冊錯誤:', error);
-    
-    // 更友好的錯誤訊息
-    let errorMsg = '註冊失敗';
-    if (error.name === 'AbortError') {
-      errorMsg = '請求超時，請檢查網路連線';
-    } else if (error.message.includes('HTTP錯誤')) {
-      errorMsg = `伺服器錯誤: ${error.message}`;
-    } else {
-      errorMsg = error.message;
-    }
-    
-    showMessage('registerMessage', errorMsg, 'error');
-    
-    // 開發模式下顯示詳細錯誤
-    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-      console.log('詳細錯誤:', error);
-      showMessage('registerMessage', `${errorMsg}<br><small>${error.stack || ''}</small>`, 'error');
-    }
-  }
-}
     
     // 打卡
     async function recordAttendance(type) {
@@ -506,7 +531,16 @@ async function register() {
           '<div class="error">查詢記錄失敗，請稍後再試</div>';
       }
     }
-    
+       // 顯示致命錯誤
+    function showFatalError(message) {
+      document.getElementById('loading').innerHTML = `
+        <div class="error">
+          <h3>系統錯誤</h3>
+          <p>${message}</p>
+          <button onclick="window.location.reload()">重新載入</button>
+        </div>
+      `;
+    }
     // 顯示消息
     function showMessage(elementId, message, type) {
       const element = document.getElementById(elementId);
@@ -514,7 +548,7 @@ async function register() {
       element.className = type;
     }
     
-    // 初始化應用
+      // 初始化應用
     document.addEventListener('DOMContentLoaded', () => {
       initializeLiff();
     });
