@@ -4,576 +4,397 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>台北101大樓打卡系統</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #06C755;
-            --secondary-color: #00B900;
-            --error-color: #FF3333;
-            --success-color: #00C853;
-            --warning-color: #FF9100;
-            --text-color: #333333;
-            --light-gray: #F5F5F5;
-            --border-color: #E0E0E0;
-            --white: #FFFFFF;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
         body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: var(--light-gray);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .container {
-            max-width: 100%;
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
             padding: 20px;
+            background-color: #f5f5f5;
         }
-        
-        .card {
-            background-color: var(--white);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            padding: 24px;
-            margin-bottom: 20px;
+        .container {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
-        h1, h2, h3 {
-            color: var(--primary-color);
-            margin-bottom: 16px;
-        }
-        
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
+        #loading {
             text-align: center;
-            margin-bottom: 24px;
+            padding: 20px;
+            font-size: 18px;
         }
-        
-        h2 {
-            font-size: 20px;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-        
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border 0.3s;
-        }
-        
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        select:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-        
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        button:hover {
-            background-color: var(--secondary-color);
-        }
-        
-        button:disabled {
-            background-color: #CCCCCC;
-            cursor: not-allowed;
-        }
-        
-        .btn-secondary {
-            background-color: #757575;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #616161;
-        }
-        
-        .result {
-            padding: 16px;
-            border-radius: 8px;
-            margin: 16px 0;
-            font-size: 15px;
-        }
-        
-        .success {
-            background-color: rgba(0, 200, 83, 0.1);
-            color: var(--success-color);
-            border-left: 4px solid var(--success-color);
-        }
-        
-        .error {
-            background-color: rgba(255, 51, 51, 0.1);
-            color: var(--error-color);
-            border-left: 4px solid var(--error-color);
-        }
-        
-        .warning {
-            background-color: rgba(255, 145, 0, 0.1);
-            color: var(--warning-color);
-            border-left: 4px solid var(--warning-color);
-        }
-        
-        .info {
-            background-color: rgba(3, 169, 244, 0.1);
-            color: #03A9F4;
-            border-left: 4px solid #03A9F4;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--white);
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .location-info {
-            margin-top: 16px;
-            padding: 16px;
-            background-color: rgba(3, 169, 244, 0.1);
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .location-info strong {
-            color: #03A9F4;
-        }
-        
-        .user-info {
-            background-color: rgba(6, 199, 85, 0.1);
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-        }
-        
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
         .tab {
-            padding: 12px 20px;
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .tab button {
+            flex: 1;
+            padding: 12px;
+            background: #ddd;
+            border: none;
             cursor: pointer;
-            font-weight: 500;
-            color: #757575;
-            border-bottom: 3px solid transparent;
+            font-size: 16px;
             transition: all 0.3s;
         }
-        
-        .tab.active {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
+        .tab button.active {
+            background: #06c755;
+            color: white;
+            font-weight: bold;
         }
-        
-        .tab-content {
-            display: none;
+        .form-group {
+            margin-bottom: 15px;
         }
-        
-        .tab-content.active {
+        label {
             display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
-        
-        .attendance-record {
+        input, button {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-        }
-        
-        .attendance-record th,
-        .attendance-record td {
             padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
+            box-sizing: border-box;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
         }
-        
-        .attendance-record th {
-            background-color: var(--light-gray);
-            font-weight: 500;
+        button {
+            background: #06c755;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
         }
-        
-        .distance-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
         }
-        
-        .distance-valid {
-            background-color: rgba(0, 200, 83, 0.1);
-            color: var(--success-color);
+        .record {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background: white;
         }
-        
-        .distance-invalid {
-            background-color: rgba(255, 51, 51, 0.1);
-            color: var(--error-color);
+        .record p {
+            margin: 5px 0;
         }
-        
-        .hidden {
-            display: none;
+        .error {
+            color: #e74c3c;
+            background: #fdecea;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
         }
-        
-        .logo {
-            text-align: center;
+        .success {
+            color: #2ecc71;
+            background: #e8f8f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #3498db;
+            background: #ebf5fb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #06c755;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        #locationStatus {
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .user-info {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
             margin-bottom: 20px;
         }
-        
-        .logo img {
-            height: 60px;
-        }
-        
-        @media (min-width: 768px) {
-            .container {
-                max-width: 500px;
-                margin: 0 auto;
-                padding: 40px 20px;
-            }
+        .distance-info {
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: #e3f2fd;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">
-            <img src="https://www.taipei-101.com.tw/Upload/WebImg/logo.png" alt="台北101 Logo">
+    <div id="loading">
+        <p>系統初始化中...</p>
+    </div>
+
+    <!-- 註冊畫面 (新員工) -->
+    <div id="registerContainer" class="container">
+        <h2>新員工註冊</h2>
+        <div class="user-info">
+            <p>歡迎使用台北101打卡系統</p>
+            <p>LINE ID: <span id="lineUserId"></span></p>
         </div>
-        
-        <h1>台北101大樓打卡系統</h1>
-        
-        <div id="userInfo" class="user-info">
-            <div id="loadingUser" class="loading"></div>
-            <span>載入用戶資訊中...</span>
+        <div class="form-group">
+            <label for="registerName">您的姓名</label>
+            <input type="text" id="registerName" placeholder="請輸入您的姓名">
         </div>
-        
-        <div id="registerSection" class="card hidden">
-            <h2>新員工註冊</h2>
-            <div class="form-group">
-                <label for="registerName">姓名</label>
-                <input type="text" id="registerName" placeholder="請輸入您的姓名">
-            </div>
-            <div class="form-group">
-                <label for="registerEmpId">員工編號 (6位數字)</label>
-                <input type="text" id="registerEmpId" placeholder="123456" maxlength="6">
-            </div>
-            <div class="form-group">
-                <label for="registerDept">部門</label>
-                <select id="registerDept">
-                    <option value="">請選擇部門</option>
-                    <option value="管理部">管理部</option>
-                    <option value="財務部">財務部</option>
-                    <option value="業務部">業務部</option>
-                    <option value="行銷部">行銷部</option>
-                    <option value="資訊部">資訊部</option>
-                    <option value="客服部">客服部</option>
-                </select>
-            </div>
-            <button id="registerBtn">註冊</button>
-            <div id="registerResult" class="result"></div>
+        <div class="form-group">
+            <label for="registerEmpId">員工編號 (6位數字)</label>
+            <input type="text" id="registerEmpId" placeholder="請輸入6位數字員工編號" maxlength="6">
         </div>
-        
-        <div id="mainSection" class="hidden">
-            <div class="tabs">
-                <div class="tab active" data-tab="checkIn">打卡</div>
-                <div class="tab" data-tab="records">出勤記錄</div>
+        <button id="registerBtn">註冊</button>
+        <div id="registerResult"></div>
+    </div>
+
+    <!-- 打卡畫面 (已註冊員工) -->
+    <div id="mainContainer" class="container">
+        <div class="tab">
+            <button id="checkInTab" class="active">上班打卡</button>
+            <button id="checkOutTab">下班打卡</button>
+            <button id="recordsTab">打卡記錄</button>
+        </div>
+
+        <div id="checkInSection">
+            <h2>上班打卡</h2>
+            <div class="user-info">
+                <p>員工: <span id="userName"></span></p>
+                <p>編號: <span id="empId"></span></p>
             </div>
-            
-            <div id="checkInTab" class="tab-content active">
-                <div class="card">
-                    <h3 id="checkInTitle">上班打卡</h3>
-                    <div class="form-group">
-                        <label>員工姓名</label>
-                        <input type="text" id="displayName" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>員工編號</label>
-                        <input type="text" id="displayEmpId" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>部門</label>
-                        <input type="text" id="displayDept" readonly>
-                    </div>
-                    
-                    <div id="locationInfo" class="location-info">
-                        <p>請點擊下方按鈕獲取位置資訊</p>
-                    </div>
-                    
-                    <button id="getLocationBtn">獲取位置</button>
-                    <button id="checkInBtn" class="hidden" disabled>上班打卡</button>
-                    <button id="checkOutBtn" class="hidden" disabled>下班打卡</button>
-                    <div id="checkInResult" class="result"></div>
-                </div>
+            <div id="locationStatus">正在獲取位置資訊...</div>
+            <div id="distanceInfo" class="distance-info"></div>
+            <button id="checkInBtn">上班打卡</button>
+            <div id="checkInResult"></div>
+        </div>
+
+        <div id="checkOutSection" style="display: none;">
+            <h2>下班打卡</h2>
+            <div class="user-info">
+                <p>員工: <span id="userNameOut"></span></p>
+                <p>編號: <span id="empIdOut"></span></p>
             </div>
-            
-            <div id="recordsTab" class="tab-content">
-                <div class="card">
-                    <h3>今日出勤記錄</h3>
-                    <div id="todayRecords">
-                        <p>載入中...</p>
-                    </div>
-                    
-                    <h3 style="margin-top: 24px;">歷史記錄查詢</h3>
-                    <div class="form-group">
-                        <label for="recordDate">選擇日期</label>
-                        <input type="date" id="recordDate">
-                    </div>
-                    <button id="queryRecordsBtn" class="btn-secondary">查詢</button>
-                    <div id="historyRecords">
-                        <p>請選擇日期查詢</p>
-                    </div>
-                </div>
-            </div>
+            <div id="locationStatusOut">正在獲取位置資訊...</div>
+            <div id="distanceInfoOut" class="distance-info"></div>
+            <button id="checkOutBtn">下班打卡</button>
+            <div id="checkOutResult"></div>
+        </div>
+
+        <div id="recordsSection" style="display: none;">
+            <h2>今日打卡記錄</h2>
+            <div id="todayRecords"></div>
+            <button id="refreshRecordsBtn">刷新記錄</button>
         </div>
     </div>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // DOM元素
-        const userInfoDiv = document.getElementById('userInfo');
-        const registerSection = document.getElementById('registerSection');
-        const mainSection = document.getElementById('mainSection');
-        const registerBtn = document.getElementById('registerBtn');
-        const getLocationBtn = document.getElementById('getLocationBtn');
-        const checkInBtn = document.getElementById('checkInBtn');
-        const checkOutBtn = document.getElementById('checkOutBtn');
-        const queryRecordsBtn = document.getElementById('queryRecordsBtn');
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        // 用戶資料
+        // 全局變量
+        let scriptUrl = 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec'; // 替換為您的Google Apps Script部署URL
         let userId = '';
         let displayName = '';
-        let userProfile = null;
         let isRegistered = false;
-        let scriptUrl = 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec'; // 替換為你的Google Apps Script部署URL
-        
-        // 初始化應用
-        document.addEventListener('DOMContentLoaded', async () => {
-            await initializeLiff();
-            setupEventListeners();
-        });
-        
+        let userData = {};
+        let currentTab = 'checkIn';
+
+        // DOM元素
+        const loadingDiv = document.getElementById('loading');
+        const registerContainer = document.getElementById('registerContainer');
+        const mainContainer = document.getElementById('mainContainer');
+        const lineUserIdSpan = document.getElementById('lineUserId');
+        const registerNameInput = document.getElementById('registerName');
+        const registerEmpIdInput = document.getElementById('registerEmpId');
+        const registerBtn = document.getElementById('registerBtn');
+        const registerResultDiv = document.getElementById('registerResult');
+        const userNameSpan = document.getElementById('userName');
+        const empIdSpan = document.getElementById('empId');
+        const userNameOutSpan = document.getElementById('userNameOut');
+        const empIdOutSpan = document.getElementById('empIdOut');
+        const locationStatusDiv = document.getElementById('locationStatus');
+        const locationStatusOutDiv = document.getElementById('locationStatusOut');
+        const distanceInfoDiv = document.getElementById('distanceInfo');
+        const distanceInfoOutDiv = document.getElementById('distanceInfoOut');
+        const checkInBtn = document.getElementById('checkInBtn');
+        const checkOutBtn = document.getElementById('checkOutBtn');
+        const checkInResultDiv = document.getElementById('checkInResult');
+        const checkOutResultDiv = document.getElementById('checkOutResult');
+        const todayRecordsDiv = document.getElementById('todayRecords');
+        const refreshRecordsBtn = document.getElementById('refreshRecordsBtn');
+        const checkInTab = document.getElementById('checkInTab');
+        const checkOutTab = document.getElementById('checkOutTab');
+        const recordsTab = document.getElementById('recordsTab');
+        const checkInSection = document.getElementById('checkInSection');
+        const checkOutSection = document.getElementById('checkOutSection');
+        const recordsSection = document.getElementById('recordsSection');
+
         // 初始化LIFF
         async function initializeLiff() {
             try {
-                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為你的LIFF ID
+                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為您的LIFF ID
                 
                 if (!liff.isLoggedIn()) {
                     liff.login();
                     return;
                 }
                 
-                // 獲取用戶資料
-                userProfile = await liff.getProfile();
-                userId = userProfile.userId;
-                displayName = userProfile.displayName;
+                const profile = await liff.getProfile();
+                userId = profile.userId;
+                displayName = profile.displayName;
                 
                 // 檢查用戶是否已註冊
                 await checkUserRegistration();
                 
             } catch (error) {
                 console.error('初始化失敗:', error);
-                showResult(userInfoDiv, `初始化失敗: ${error.message}`, 'error');
+                showError(loadingDiv, `系統初始化失敗: ${error.message}`);
             }
         }
-        
+
         // 檢查用戶是否已註冊
         async function checkUserRegistration() {
             try {
-                showLoading(userInfoDiv, '檢查用戶註冊狀態...');
+                showLoading(loadingDiv, '檢查用戶註冊狀態...');
                 
-                const response = await fetch(`${scriptUrl}?action=checkRegistration&userId=${userId}`);
+                const response = await fetch(`${scriptUrl}?action=checkRegistration&lineUserId=${userId}`);
                 
                 if (!response.ok) {
-                    throw new Error('無法檢查註冊狀態');
+                    throw new Error('無法檢查用戶註冊狀態');
                 }
                 
                 const data = await response.json();
                 
-                if (data.isRegistered) {
+                if (data.registered) {
                     // 已註冊用戶
                     isRegistered = true;
-                    userInfoDiv.innerHTML = `
-                        <strong>員工資訊</strong><br>
-                        姓名: ${data.name}<br>
-                        員工編號: ${data.empId}<br>
-                        部門: ${data.department}<br>
-                        LINE: ${displayName}
-                    `;
-                    
-                    // 顯示打卡畫面
-                    document.getElementById('displayName').value = data.name;
-                    document.getElementById('displayEmpId').value = data.empId;
-                    document.getElementById('displayDept').value = data.department;
-                    
-                    // 檢查今日打卡狀態
-                    await checkTodayAttendance(data.empId);
-                    
-                    mainSection.classList.remove('hidden');
+                    userData = data.userData;
+                    showMainInterface();
                 } else {
-                    // 未註冊用戶
-                    userInfoDiv.innerHTML = `
-                        <strong>新用戶</strong><br>
-                        LINE: ${displayName}<br>
-                        <span style="color: var(--error-color);">請先完成註冊</span>
-                    `;
-                    registerSection.classList.remove('hidden');
+                    // 新用戶
+                    isRegistered = false;
+                    showRegisterInterface();
                 }
+                
             } catch (error) {
                 console.error('檢查註冊失敗:', error);
-                showResult(userInfoDiv, `檢查註冊失敗: ${error.message}`, 'error');
+                showError(loadingDiv, `檢查註冊失敗: ${error.message}`);
             }
         }
-        
-        // 檢查今日打卡狀態
-        async function checkTodayAttendance(empId) {
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                const response = await fetch(`${scriptUrl}?action=checkTodayAttendance&empId=${empId}&date=${today}`);
-                
-                if (!response.ok) {
-                    throw new Error('無法檢查打卡狀態');
-                }
-                
-                const data = await response.json();
-                
-                if (data.hasCheckedIn && !data.hasCheckedOut) {
-                    // 已打上班卡，未打下班卡
-                    document.getElementById('checkInTitle').textContent = '下班打卡';
-                    checkOutBtn.classList.remove('hidden');
-                } else if (data.hasCheckedIn && data.hasCheckedOut) {
-                    // 今日已完成打卡
-                    document.getElementById('checkInTitle').textContent = '今日已完成打卡';
-                    showResult(document.getElementById('checkInResult'), '您今日已完成上班和下班打卡', 'success');
-                } else {
-                    // 未打上班卡
-                    checkInBtn.classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error('檢查打卡狀態失敗:', error);
-            }
+
+        // 顯示註冊界面
+        function showRegisterInterface() {
+            loadingDiv.style.display = 'none';
+            registerContainer.style.display = 'block';
+            lineUserIdSpan.textContent = userId;
+            registerNameInput.value = displayName;
         }
-        
-        // 獲取位置資訊
-        async function getLocation() {
+
+        // 顯示主界面
+        function showMainInterface() {
+            loadingDiv.style.display = 'none';
+            mainContainer.style.display = 'block';
+            
+            // 更新用戶資訊
+            userNameSpan.textContent = userData.name;
+            empIdSpan.textContent = userData.empId;
+            userNameOutSpan.textContent = userData.name;
+            empIdOutSpan.textContent = userData.empId;
+            
+            // 初始化位置監聽
+            updateLocation();
+            
+            // 載入今日記錄
+            loadTodayRecords();
+        }
+
+        // 更新位置資訊
+        async function updateLocation() {
             try {
-                showLoading(getLocationBtn, '定位中...');
-                showResult(document.getElementById('checkInResult'), '', 'info');
-                
                 if (!navigator.geolocation) {
                     throw new Error('您的瀏覽器不支持地理位置功能');
                 }
                 
-                const position = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    });
-                });
-                
+                const position = await getLocation();
                 const { latitude, longitude, accuracy } = position.coords;
-                const taipei101Lat = 25.0330;
-                const taipei101Lng = 121.5654;
-                const distance = calculateDistance(latitude, longitude, taipei101Lat, taipei101Lng);
                 
-                // 顯示位置資訊
-                const locationInfo = document.getElementById('locationInfo');
-                locationInfo.innerHTML = `
-                    <strong>位置資訊</strong><br>
-                    緯度: ${latitude.toFixed(6)}<br>
-                    經度: ${longitude.toFixed(6)}<br>
-                    精確度: ±${accuracy.toFixed(1)} 公尺<br>
-                    距離台北101: <span class="distance-badge ${distance <= 500 ? 'distance-valid' : 'distance-invalid'}">
-                        ${distance.toFixed(0)} 公尺
-                    </span>
-                    ${distance <= 500 ? '' : '<p style="color: var(--error-color); margin-top: 8px;">您不在台北101大樓範圍內</p>'}
-                `;
+                // 計算與台北101的距離 (緯度: 25.0330, 經度: 121.5654)
+                const distance = calculateDistance(
+                    latitude, 
+                    longitude, 
+                    25.0330, 
+                    121.5654
+                );
                 
-                // 啟用打卡按鈕
-                if (distance <= 500) {
-                    checkInBtn.disabled = false;
-                    checkOutBtn.disabled = false;
-                    showResult(document.getElementById('checkInResult'), '位置驗證成功，可以打卡', 'success');
+                const locationText = `緯度: ${latitude.toFixed(6)}, 經度: ${longitude.toFixed(6)} (精確度: ±${accuracy.toFixed(1)} 公尺)`;
+                const distanceText = distance <= 300 ? 
+                    `您目前在台北101大樓內 (距離: ${distance.toFixed(0)} 公尺)` :
+                    `您不在台北101大樓內 (距離: ${distance.toFixed(0)} 公尺)`;
+                
+                const locationElement = currentTab === 'checkIn' ? locationStatusDiv : locationStatusOutDiv;
+                const distanceElement = currentTab === 'checkIn' ? distanceInfoDiv : distanceInfoOutDiv;
+                
+                locationElement.innerHTML = locationText;
+                distanceElement.innerHTML = distanceText;
+                
+                if (distance > 300) {
+                    distanceElement.style.backgroundColor = '#ffebee';
+                    distanceElement.style.color = '#c62828';
                 } else {
-                    checkInBtn.disabled = true;
-                    checkOutBtn.disabled = true;
-                    showResult(document.getElementById('checkInResult'), '您不在台北101大樓範圍內，無法打卡', 'error');
+                    distanceElement.style.backgroundColor = '#e8f5e9';
+                    distanceElement.style.color = '#2e7d32';
                 }
-                
-                getLocationBtn.textContent = '重新獲取位置';
                 
                 return { latitude, longitude, distance };
+                
             } catch (error) {
                 console.error('獲取位置失敗:', error);
-                let errorMessage = '獲取位置失敗: ';
+                const locationElement = currentTab === 'checkIn' ? locationStatusDiv : locationStatusOutDiv;
+                locationElement.innerHTML = `位置獲取失敗: ${error.message}`;
+                locationElement.style.color = '#c62828';
                 
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage += '您拒絕了位置請求';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage += '位置資訊不可用';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage += '獲取位置超時';
-                        break;
-                    default:
-                        errorMessage += error.message;
-                }
-                
-                showResult(document.getElementById('checkInResult'), errorMessage, 'error');
-                getLocationBtn.textContent = '獲取位置';
+                const distanceElement = currentTab === 'checkIn' ? distanceInfoDiv : distanceInfoOutDiv;
+                distanceElement.innerHTML = '無法計算距離';
+                distanceElement.style.backgroundColor = '#ffebee';
+                distanceElement.style.color = '#c62828';
                 
                 throw error;
             }
         }
-        
+
+        // 獲取位置
+        function getLocation() {
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(
+                    resolve,
+                    error => {
+                        let errorMessage = '獲取位置失敗: ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += '用戶拒絕了位置請求';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += '位置資訊不可用';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += '獲取位置超時';
+                                break;
+                            default:
+                                errorMessage += '未知錯誤';
+                        }
+                        reject(new Error(errorMessage));
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            });
+        }
+
         // 計算兩個座標之間的距離 (單位: 公尺)
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3; // 地球半徑 (公尺)
@@ -581,28 +402,27 @@
             const φ2 = lat2 * Math.PI/180;
             const Δφ = (lat2-lat1) * Math.PI/180;
             const Δλ = (lon2-lon1) * Math.PI/180;
-        
+
             const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
                       Math.cos(φ1) * Math.cos(φ2) *
                       Math.sin(Δλ/2) * Math.sin(Δλ/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        
+
             return R * c;
         }
-        
+
         // 註冊新員工
-        async function registerUser() {
-            const name = document.getElementById('registerName').value.trim();
-            const empId = document.getElementById('registerEmpId').value.trim();
-            const dept = document.getElementById('registerDept').value;
+        registerBtn.addEventListener('click', async () => {
+            const name = registerNameInput.value.trim();
+            const empId = registerEmpIdInput.value.trim();
             
-            if (!name || !empId || !dept) {
-                showResult(document.getElementById('registerResult'), '請填寫所有欄位', 'error');
+            if (!name || !empId) {
+                showError(registerResultDiv, '請填寫所有欄位');
                 return;
             }
             
             if (empId.length !== 6 || !/^\d+$/.test(empId)) {
-                showResult(document.getElementById('registerResult'), '員工編號必須是6位數字', 'error');
+                showError(registerResultDiv, '員工編號必須是6位數字');
                 return;
             }
             
@@ -611,11 +431,9 @@
                 
                 const formData = new URLSearchParams();
                 formData.append('action', 'register');
-                formData.append('userId', userId);
                 formData.append('name', name);
                 formData.append('empId', empId);
-                formData.append('department', dept);
-                formData.append('lineName', displayName);
+                formData.append('lineUserId', userId);
                 
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
@@ -633,41 +451,54 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showResult(document.getElementById('registerResult'), '註冊成功！', 'success');
+                    showSuccess(registerResultDiv, '註冊成功！正在進入系統...');
                     setTimeout(() => {
-                        registerSection.classList.add('hidden');
-                        mainSection.classList.remove('hidden');
-                        location.reload();
+                        isRegistered = true;
+                        userData = { name, empId };
+                        showMainInterface();
+                        registerContainer.style.display = 'none';
                     }, 1500);
                 } else {
                     throw new Error(data.message || '註冊失敗');
                 }
+                
             } catch (error) {
                 console.error('註冊失敗:', error);
-                showResult(document.getElementById('registerResult'), `註冊失敗: ${error.message}`, 'error');
-                registerBtn.textContent = '註冊';
+                showError(registerResultDiv, `註冊失敗: ${error.message}`);
+                registerBtn.innerHTML = '註冊';
             }
-        }
-        
-        // 打卡功能
-        async function checkInOut(isCheckIn) {
+        });
+
+        // 上班打卡
+        checkInBtn.addEventListener('click', async () => {
+            await handleCheckInOut('checkIn');
+        });
+
+        // 下班打卡
+        checkOutBtn.addEventListener('click', async () => {
+            await handleCheckInOut('checkOut');
+        });
+
+        // 處理打卡
+        async function handleCheckInOut(type) {
+            const resultDiv = type === 'checkIn' ? checkInResultDiv : checkOutResultDiv;
+            const button = type === 'checkIn' ? checkInBtn : checkOutBtn;
+            
             try {
-                const location = await getLocation();
+                showLoading(button, '處理中...');
                 
-                if (location.distance > 500) {
-                    showResult(document.getElementById('checkInResult'), '您不在台北101大樓範圍內，無法打卡', 'error');
-                    return;
+                // 獲取位置
+                const location = await updateLocation();
+                
+                // 檢查是否在台北101範圍內 (300公尺內)
+                if (location.distance > 300) {
+                    throw new Error('您不在台北101大樓內，無法打卡');
                 }
                 
-                const empId = document.getElementById('displayEmpId').value;
-                const type = isCheckIn ? 'in' : 'out';
-                
-                showLoading(isCheckIn ? checkInBtn : checkOutBtn, '打卡中...');
-                
+                // 發送打卡請求
                 const formData = new URLSearchParams();
-                formData.append('action', 'checkInOut');
-                formData.append('empId', empId);
-                formData.append('type', type);
+                formData.append('action', type === 'checkIn' ? 'checkIn' : 'checkOut');
+                formData.append('lineUserId', userId);
                 formData.append('latitude', location.latitude);
                 formData.append('longitude', location.longitude);
                 
@@ -687,21 +518,10 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    const message = isCheckIn ? '上班打卡成功！' : '下班打卡成功！';
-                    showResult(document.getElementById('checkInResult'), message, 'success');
+                    showSuccess(resultDiv, `${type === 'checkIn' ? '上班' : '下班'}打卡成功！`);
                     
-                    // 更新UI
-                    if (isCheckIn) {
-                        checkInBtn.classList.add('hidden');
-                        checkOutBtn.classList.remove('hidden');
-                        document.getElementById('checkInTitle').textContent = '下班打卡';
-                    } else {
-                        checkOutBtn.classList.add('hidden');
-                        document.getElementById('checkInTitle').textContent = '今日已完成打卡';
-                    }
-                    
-                    // 刷新打卡記錄
-                    await loadTodayRecords(empId);
+                    // 刷新記錄
+                    loadTodayRecords();
                     
                     // 發送LINE通知
                     if (liff.isInClient()) {
@@ -709,7 +529,7 @@
                             await liff.sendMessages([
                                 {
                                     type: 'text',
-                                    text: `✅ ${isCheckIn ? '上班' : '下班'}打卡成功\n姓名: ${data.name}\n時間: ${new Date().toLocaleString('zh-TW')}\n位置: 台北101大樓`
+                                    text: `✅ ${type === 'checkIn' ? '上班' : '下班'}打卡成功\n姓名: ${userData.name}\n員工編號: ${userData.empId}\n時間: ${new Date().toLocaleString('zh-TW')}\n位置: 台北101大樓`
                                 }
                             ]);
                         } catch (err) {
@@ -719,23 +539,21 @@
                 } else {
                     throw new Error(data.message || '打卡失敗');
                 }
+                
             } catch (error) {
                 console.error('打卡失敗:', error);
-                showResult(document.getElementById('checkInResult'), `打卡失敗: ${error.message}`, 'error');
+                showError(resultDiv, `打卡失敗: ${error.message}`);
             } finally {
-                if (isCheckIn) {
-                    checkInBtn.textContent = '上班打卡';
-                } else {
-                    checkOutBtn.textContent = '下班打卡';
-                }
+                button.innerHTML = type === 'checkIn' ? '上班打卡' : '下班打卡';
             }
         }
-        
+
         // 載入今日打卡記錄
-        async function loadTodayRecords(empId) {
+        async function loadTodayRecords() {
             try {
-                const today = new Date().toISOString().split('T')[0];
-                const response = await fetch(`${scriptUrl}?action=getRecords&empId=${empId}&date=${today}`);
+                todayRecordsDiv.innerHTML = '<p>載入中...</p>';
+                
+                const response = await fetch(`${scriptUrl}?action=getTodayRecords&lineUserId=${userId}`);
                 
                 if (!response.ok) {
                     throw new Error('無法獲取打卡記錄');
@@ -743,168 +561,93 @@
                 
                 const data = await response.json();
                 
-                if (data.records && data.records.length > 0) {
-                    let html = `
-                        <table class="attendance-record">
-                            <thead>
-                                <tr>
-                                    <th>類型</th>
-                                    <th>日期</th>
-                                    <th>時間</th>
-                                    <th>位置</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-                    
-                    data.records.forEach(record => {
-                        html += `
-                            <tr>
-                                <td>${record.type === 'in' ? '上班' : '下班'}</td>
-                                <td>${record.date}</td>
-                                <td>${record.time}</td>
-                                <td>
-                                    <span class="distance-badge ${record.distance <= 500 ? 'distance-valid' : 'distance-invalid'}">
-                                        ${record.distance}m
-                                    </span>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    
-                    html += `</tbody></table>`;
-                    document.getElementById('todayRecords').innerHTML = html;
+                if (data.success) {
+                    if (data.records.length === 0) {
+                        todayRecordsDiv.innerHTML = '<p>今日尚無打卡記錄</p>';
+                    } else {
+                        let html = '';
+                        data.records.forEach(record => {
+                            html += `
+                                <div class="record">
+                                    <p><strong>類型:</strong> ${record.type === 'checkIn' ? '上班' : '下班'}</p>
+                                    <p><strong>日期:</strong> ${record.date}</p>
+                                    <p><strong>時間:</strong> ${record.time}</p>
+                                    <p><strong>位置:</strong> ${record.address || '台北101大樓'}</p>
+                                </div>
+                            `;
+                        });
+                        todayRecordsDiv.innerHTML = html;
+                    }
                 } else {
-                    document.getElementById('todayRecords').innerHTML = '<p>今日尚無打卡記錄</p>';
+                    throw new Error(data.message || '獲取記錄失敗');
                 }
+                
             } catch (error) {
                 console.error('載入記錄失敗:', error);
-                document.getElementById('todayRecords').innerHTML = '<p>無法載入打卡記錄</p>';
+                todayRecordsDiv.innerHTML = `<div class="error">載入記錄失敗: ${error.message}</div>`;
             }
         }
-        
-        // 查詢歷史記錄
-        async function queryHistoryRecords() {
-            const empId = document.getElementById('displayEmpId').value;
-            const date = document.getElementById('recordDate').value;
+
+        // 刷新記錄
+        refreshRecordsBtn.addEventListener('click', loadTodayRecords);
+
+        // 切換標籤頁
+        checkInTab.addEventListener('click', () => switchTab('checkIn'));
+        checkOutTab.addEventListener('click', () => switchTab('checkOut'));
+        recordsTab.addEventListener('click', () => switchTab('records'));
+
+        function switchTab(tab) {
+            currentTab = tab;
             
-            if (!date) {
-                showResult(document.getElementById('historyRecords'), '請選擇日期', 'error');
-                return;
-            }
+            // 更新標籤按鈕樣式
+            checkInTab.classList.remove('active');
+            checkOutTab.classList.remove('active');
+            recordsTab.classList.remove('active');
             
-            try {
-                showLoading(queryRecordsBtn, '查詢中...');
-                
-                const response = await fetch(`${scriptUrl}?action=getRecords&empId=${empId}&date=${date}`);
-                
-                if (!response.ok) {
-                    throw new Error('無法獲取打卡記錄');
-                }
-                
-                const data = await response.json();
-                
-                if (data.records && data.records.length > 0) {
-                    let html = `
-                        <table class="attendance-record">
-                            <thead>
-                                <tr>
-                                    <th>類型</th>
-                                    <th>日期</th>
-                                    <th>時間</th>
-                                    <th>位置</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-                    
-                    data.records.forEach(record => {
-                        html += `
-                            <tr>
-                                <td>${record.type === 'in' ? '上班' : '下班'}</td>
-                                <td>${record.date}</td>
-                                <td>${record.time}</td>
-                                <td>
-                                    <span class="distance-badge ${record.distance <= 500 ? 'distance-valid' : 'distance-invalid'}">
-                                        ${record.distance}m
-                                    </span>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    
-                    html += `</tbody></table>`;
-                    document.getElementById('historyRecords').innerHTML = html;
-                } else {
-                    document.getElementById('historyRecords').innerHTML = `<p>${date} 無打卡記錄</p>`;
-                }
-            } catch (error) {
-                console.error('查詢失敗:', error);
-                document.getElementById('historyRecords').innerHTML = '<p>無法載入打卡記錄</p>';
-            } finally {
-                queryRecordsBtn.textContent = '查詢';
+            // 隱藏所有內容區
+            checkInSection.style.display = 'none';
+            checkOutSection.style.display = 'none';
+            recordsSection.style.display = 'none';
+            
+            // 顯示選中的內容區
+            if (tab === 'checkIn') {
+                checkInTab.classList.add('active');
+                checkInSection.style.display = 'block';
+                updateLocation();
+            } else if (tab === 'checkOut') {
+                checkOutTab.classList.add('active');
+                checkOutSection.style.display = 'block';
+                updateLocation();
+            } else {
+                recordsTab.classList.add('active');
+                recordsSection.style.display = 'block';
+                loadTodayRecords();
             }
         }
-        
-        // 設置事件監聽器
-        function setupEventListeners() {
-            // 註冊按鈕
-            registerBtn.addEventListener('click', registerUser);
-            
-            // 獲取位置按鈕
-            getLocationBtn.addEventListener('click', getLocation);
-            
-            // 打卡按鈕
-            checkInBtn.addEventListener('click', () => checkInOut(true));
-            checkOutBtn.addEventListener('click', () => checkInOut(false));
-            
-            // 查詢記錄按鈕
-            queryRecordsBtn.addEventListener('click', queryHistoryRecords);
-            
-            // 標籤切換
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tabContents.forEach(c => c.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    document.getElementById(`${tab.dataset.tab}Tab`).classList.add('active');
-                    
-                    // 如果切換到記錄頁面，載入今日記錄
-                    if (tab.dataset.tab === 'records' && isRegistered) {
-                        const empId = document.getElementById('displayEmpId').value;
-                        loadTodayRecords(empId);
-                    }
-                });
-            });
-            
-            // 設置默認日期為今天
-            document.getElementById('recordDate').valueAsDate = new Date();
-        }
-        
+
         // 顯示加載狀態
         function showLoading(element, message) {
-            if (typeof element === 'string') {
-                element = document.getElementById(element);
+            if (element.tagName === 'BUTTON') {
+                element.innerHTML = `<span class="loading"></span> ${message}`;
+            } else {
+                element.innerHTML = `<div class="info"><span class="loading"></span> ${message}</div>`;
             }
-            
-            const loadingEl = document.createElement('span');
-            loadingEl.className = 'loading';
-            
-            element.innerHTML = '';
-            element.appendChild(loadingEl);
-            element.appendChild(document.createTextNode(message));
         }
-        
-        // 顯示結果
-        function showResult(element, message, type) {
-            if (typeof element === 'string') {
-                element = document.getElementById(element);
-            }
-            
-            element.innerHTML = message;
-            element.className = `result ${type}`;
+
+        // 顯示成功訊息
+        function showSuccess(element, message) {
+            element.innerHTML = `<div class="success">${message}</div>`;
         }
+
+        // 顯示錯誤訊息
+        function showError(element, message) {
+            element.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // 初始化應用
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeLiff();
+        });
     </script>
 </body>
 </html>
