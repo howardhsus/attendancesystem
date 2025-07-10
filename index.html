@@ -200,75 +200,112 @@
         const recordsSection = document.getElementById('recordsSection');
 
         // 初始化LIFF
-        async function initializeLiff() {
+// 在 initializeLiff 函數中添加更詳細的錯誤處理
+async function initializeLiff() {
+    try {
+        await liff.init({ liffId: '2007700262-da76ZbYE' });
+        
+        if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+        }
+        
+        const profile = await liff.getProfile();
+        userId = profile.userId;
+        displayName = profile.displayName;
+        
+        userNameSpan.textContent = displayName;
+        lineUserIdSpan.textContent = userId;
+        
+        // 添加重試機制
+        let retries = 3;
+        while (retries > 0) {
             try {
-                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為您的LIFF ID
-                
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
-                
-                const profile = await liff.getProfile();
-                userId = profile.userId;
-                displayName = profile.displayName;
-                
-                // 顯示用戶資訊
-                userNameSpan.textContent = displayName;
-                lineUserIdSpan.textContent = userId;
-                
-                // 自動註冊或檢查用戶狀態
                 await registerOrCheckUser();
-                
-                // 顯示主界面
-                loadingDiv.style.display = 'none';
-                mainContainer.style.display = 'block';
-                
-                // 初始化位置監聽
-                updateLocation();
-                
-                // 載入今日記錄
-                loadTodayRecords();
-                
+                break;
             } catch (error) {
-                console.error('初始化失敗:', error);
-                showError(loadingDiv, `系統初始化失敗: ${error.message}`);
+                retries--;
+                if (retries === 0) throw error;
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒後重試
             }
         }
+        
+        loadingDiv.style.display = 'none';
+        mainContainer.style.display = 'block';
+        updateLocation();
+        loadTodayRecords();
+        
+    } catch (error) {
+        console.error('完整錯誤日誌:', {
+            timestamp: new Date(),
+            userId,
+            error: error.stack || error.message,
+            LIFFStatus: liff ? liff.isLoggedIn() : 'LIFF未初始化'
+        });
+        
+        showError(loadingDiv, `系統初始化失敗，請稍後再試。錯誤代碼: ${error.message}`);
+        
+        // 提供重試按鈕
+        loadingDiv.innerHTML = `
+            <div class="error">
+                <p>系統初始化失敗: ${error.message}</p>
+                <button onclick="window.location.reload()" style="padding: 10px; margin-top: 10px;">重新載入</button>
+                <p>若問題持續，請聯繫管理員</p>
+            </div>
+        `;
+    }
+}
 
         // 註冊或檢查用戶
-        async function registerOrCheckUser() {
-            try {
-                showLoading(loadingDiv, '檢查用戶狀態...');
-                
-                const formData = new URLSearchParams();
-                formData.append('action', 'registerOrCheck');
-                formData.append('lineUserId', userId);
-                formData.append('name', displayName);
-                
-                const response = await fetch(scriptUrl, {
+// 修改 initializeLiff 函數中的 registerOrCheckUser 部分
+async function registerOrCheckUser() {
+    try {
+        showLoading(loadingDiv, '檢查用戶狀態...');
+        
+        const formData = new URLSearchParams();
+        formData.append('action', 'registerOrCheck');
+        formData.append('lineUserId', userId);
+        formData.append('name', displayName);
+        
+        // 改用 try-catch 包裝 fetch 並添加錯誤細節
+        let response;
+        try {
+            response = await fetch(scriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData
+            });
+            
+            if (!response.ok) {
+                // 嘗試獲取後端返回的錯誤訊息
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP錯誤! 狀態碼: ${response.status}`);
+            }
+            
+            return await response.json();
+            
+        } catch (fetchError) {
+            console.error('Fetch錯誤詳情:', {
+                error: fetchError,
+                request: {
+                    url: scriptUrl,
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    throw new Error('無法檢查用戶狀態');
+                    body: formData.toString()
                 }
-                
-                const data = await response.json();
-                
-                if (!data.success) {
-                    throw new Error(data.message || '用戶狀態檢查失敗');
-                }
-                
-            } catch (error) {
-                console.error('用戶狀態檢查失敗:', error);
-                throw error;
-            }
+            });
+            throw new Error(`網絡請求失敗: ${fetchError.message}`);
         }
+        
+    } catch (error) {
+        console.error('用戶狀態檢查失敗:', error);
+        throw error; // 重新拋出錯誤以便外層處理
+    }
+}
 
         // 更新位置資訊
         async function updateLocation() {
