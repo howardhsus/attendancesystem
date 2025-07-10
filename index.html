@@ -133,7 +133,7 @@
         <p>系統初始化中...</p>
     </div>
 
-    <!-- 主畫面 -->
+    <!-- 主畫面 (打卡) -->
     <div id="mainContainer" class="container">
         <div class="user-info">
             <p>員工: <span id="userName"></span></p>
@@ -217,11 +217,18 @@
                 userNameSpan.textContent = displayName;
                 lineUserIdSpan.textContent = userId;
                 
-                // 自動註冊用戶
-                await registerUser();
+                // 自動註冊或檢查用戶狀態
+                await registerOrCheckUser();
                 
                 // 顯示主界面
-                showMainInterface();
+                loadingDiv.style.display = 'none';
+                mainContainer.style.display = 'block';
+                
+                // 初始化位置監聽
+                updateLocation();
+                
+                // 載入今日記錄
+                loadTodayRecords();
                 
             } catch (error) {
                 console.error('初始化失敗:', error);
@@ -229,15 +236,15 @@
             }
         }
 
-        // 自動註冊用戶
-        async function registerUser() {
+        // 註冊或檢查用戶
+        async function registerOrCheckUser() {
             try {
-                showLoading(loadingDiv, '註冊用戶資訊...');
+                showLoading(loadingDiv, '檢查用戶狀態...');
                 
                 const formData = new URLSearchParams();
-                formData.append('action', 'register');
-                formData.append('name', displayName);
+                formData.append('action', 'registerOrCheck');
                 formData.append('lineUserId', userId);
+                formData.append('name', displayName);
                 
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
@@ -248,32 +255,19 @@
                 });
                 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || '註冊失敗');
+                    throw new Error('無法檢查用戶狀態');
                 }
                 
                 const data = await response.json();
                 
                 if (!data.success) {
-                    throw new Error(data.message || '註冊失敗');
+                    throw new Error(data.message || '用戶狀態檢查失敗');
                 }
                 
             } catch (error) {
-                console.error('註冊失敗:', error);
+                console.error('用戶狀態檢查失敗:', error);
                 throw error;
             }
-        }
-
-        // 顯示主界面
-        function showMainInterface() {
-            loadingDiv.style.display = 'none';
-            mainContainer.style.display = 'block';
-            
-            // 初始化位置監聽
-            updateLocation();
-            
-            // 載入今日記錄
-            loadTodayRecords();
         }
 
         // 更新位置資訊
