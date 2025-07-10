@@ -126,20 +126,6 @@
             border-radius: 5px;
             background: #e3f2fd;
         }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(0,0,0,.3);
-            border-radius: 50%;
-            border-top-color: #06c755;
-            animation: spin 1s ease-in-out infinite;
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -147,27 +133,13 @@
         <p>系統初始化中...</p>
     </div>
 
-    <!-- 註冊畫面 (新員工) -->
-    <div id="registerContainer" class="container">
-        <h2>新員工註冊</h2>
+    <!-- 主畫面 -->
+    <div id="mainContainer" class="container">
         <div class="user-info">
-            <p>歡迎使用台北101打卡系統</p>
+            <p>員工: <span id="userName"></span></p>
             <p>LINE ID: <span id="lineUserId"></span></p>
         </div>
-        <div class="form-group">
-            <label for="registerName">您的姓名</label>
-            <input type="text" id="registerName" placeholder="請輸入您的姓名">
-        </div>
-        <div class="form-group">
-            <label for="registerEmpId">員工編號 (6位數字)</label>
-            <input type="text" id="registerEmpId" placeholder="請輸入6位數字員工編號" maxlength="6">
-        </div>
-        <button id="registerBtn">註冊</button>
-        <div id="registerResult"></div>
-    </div>
 
-    <!-- 打卡畫面 (已註冊員工) -->
-    <div id="mainContainer" class="container">
         <div class="tab">
             <button id="checkInTab" class="active">上班打卡</button>
             <button id="checkOutTab">下班打卡</button>
@@ -176,10 +148,6 @@
 
         <div id="checkInSection">
             <h2>上班打卡</h2>
-            <div class="user-info">
-                <p>員工: <span id="userName"></span></p>
-                <p>編號: <span id="empId"></span></p>
-            </div>
             <div id="locationStatus">正在獲取位置資訊...</div>
             <div id="distanceInfo" class="distance-info"></div>
             <button id="checkInBtn">上班打卡</button>
@@ -188,10 +156,6 @@
 
         <div id="checkOutSection" style="display: none;">
             <h2>下班打卡</h2>
-            <div class="user-info">
-                <p>員工: <span id="userNameOut"></span></p>
-                <p>編號: <span id="empIdOut"></span></p>
-            </div>
             <div id="locationStatusOut">正在獲取位置資訊...</div>
             <div id="distanceInfoOut" class="distance-info"></div>
             <button id="checkOutBtn">下班打卡</button>
@@ -208,27 +172,16 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
         // 全局變量
-        let scriptUrl = 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec'; // 替換為您的Google Apps Script部署URL
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec'; // 替換為您的Google Apps Script部署URL
         let userId = '';
         let displayName = '';
-        let isRegistered = false;
-        let userData = {};
         let currentTab = 'checkIn';
-        let jsonpCallbackId = 0;
 
         // DOM元素
         const loadingDiv = document.getElementById('loading');
-        const registerContainer = document.getElementById('registerContainer');
         const mainContainer = document.getElementById('mainContainer');
-        const lineUserIdSpan = document.getElementById('lineUserId');
-        const registerNameInput = document.getElementById('registerName');
-        const registerEmpIdInput = document.getElementById('registerEmpId');
-        const registerBtn = document.getElementById('registerBtn');
-        const registerResultDiv = document.getElementById('registerResult');
         const userNameSpan = document.getElementById('userName');
-        const empIdSpan = document.getElementById('empId');
-        const userNameOutSpan = document.getElementById('userNameOut');
-        const empIdOutSpan = document.getElementById('empIdOut');
+        const lineUserIdSpan = document.getElementById('lineUserId');
         const locationStatusDiv = document.getElementById('locationStatus');
         const locationStatusOutDiv = document.getElementById('locationStatusOut');
         const distanceInfoDiv = document.getElementById('distanceInfo');
@@ -260,108 +213,55 @@
                 userId = profile.userId;
                 displayName = profile.displayName;
                 
-                // 檢查用戶是否已註冊 (使用JSONP繞過CORS)
-                await checkUserRegistration();
+                // 顯示用戶資訊
+                userNameSpan.textContent = displayName;
+                lineUserIdSpan.textContent = userId;
+                
+                // 自動註冊用戶
+                await registerUser();
+                
+                // 顯示主界面
+                showMainInterface();
                 
             } catch (error) {
                 console.error('初始化失敗:', error);
                 showError(loadingDiv, `系統初始化失敗: ${error.message}`);
             }
         }
-// 改進的請求函數
-async function safeFetch(url, options = {}) {
-  try {
-    // 嘗試直接fetch
-    let response = await fetch(url, options);
-    
-    // 如果失敗，嘗試JSONP方式
-    if (!response.ok) {
-      return await jsonpRequest(url.replace('action=', 'action=jsonp_'));
-    }
-    
-    return await response.json();
-  } catch (error) {
-    // 兩種方式都失敗時回退到JSONP
-    return await jsonpRequest(url.replace('action=', 'action=jsonp_'));
-  }
-}
-        // JSONP請求函數
-        function jsonpRequest(url, callbackParam, callback) {
-            return new Promise((resolve, reject) => {
-                const callbackName = `jsonpCallback_${jsonpCallbackId++}_${Date.now()}`;
-                
-                // 創建全局回調函數
-                window[callbackName] = function(data) {
-                    delete window[callbackName];
-                    document.body.removeChild(script);
-                    
-                    if (data.success) {
-                        resolve(data);
-                    } else {
-                        reject(new Error(data.error || '請求失敗'));
-                    }
-                };
-                
-                // 創建script標籤
-                const script = document.createElement('script');
-                script.src = `${url}${url.includes('?') ? '&' : '?'}${callbackParam}=${callbackName}`;
-                script.onerror = () => {
-                    delete window[callbackName];
-                    reject(new Error('JSONP請求失敗'));
-                };
-                
-                document.body.appendChild(script);
-            });
-        }
 
-// 檢查註冊狀態函數
-async function checkUserRegistration() {
-  try {
-    showLoading(loadingDiv, '檢查用戶註冊狀態...');
-    
-    // 先嘗試正規fetch
-    const response = await safeFetch(
-      `${scriptUrl}?action=checkRegistration&lineUserId=${userId}`
-    );
-    
-    if (response.registered) {
-      isRegistered = true;
-      userData = response.userData;
-      showMainInterface();
-    } else {
-      isRegistered = false;
-      showRegisterInterface();
-    }
-  } catch (error) {
-    console.error('檢查註冊失敗:', error);
-    showError(loadingDiv, `檢查註冊失敗: ${error.message}`);
-    
-    // 終極回退方案：使用代理服務
-    await tryFallbackProxy();
-  }
-}
-// 終極回退方案
-async function tryFallbackProxy() {
-  try {
-    const proxyUrl = `https://cors-anywhere.herokuapp.com/${scriptUrl}?action=checkRegistration&lineUserId=${userId}`;
-    const response = await fetch(proxyUrl, {
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    });
-    
-    const data = await response.json();
-    // 處理數據...
-  } catch (proxyError) {
-    showError(loadingDiv, '系統暫時不可用，請稍後再試');
-  }
-}
-        // 顯示註冊界面
-        function showRegisterInterface() {
-            loadingDiv.style.display = 'none';
-            registerContainer.style.display = 'block';
-            lineUserIdSpan.textContent = userId;
-            registerNameInput.value = displayName;
+        // 自動註冊用戶
+        async function registerUser() {
+            try {
+                showLoading(loadingDiv, '註冊用戶資訊...');
+                
+                const formData = new URLSearchParams();
+                formData.append('action', 'register');
+                formData.append('name', displayName);
+                formData.append('lineUserId', userId);
+                
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '註冊失敗');
+                }
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message || '註冊失敗');
+                }
+                
+            } catch (error) {
+                console.error('註冊失敗:', error);
+                throw error;
+            }
         }
 
         // 顯示主界面
@@ -369,16 +269,10 @@ async function tryFallbackProxy() {
             loadingDiv.style.display = 'none';
             mainContainer.style.display = 'block';
             
-            // 更新用戶資訊
-            userNameSpan.textContent = userData.name;
-            empIdSpan.textContent = userData.empId;
-            userNameOutSpan.textContent = userData.name;
-            empIdOutSpan.textContent = userData.empId;
-            
             // 初始化位置監聽
             updateLocation();
             
-            // 載入今日記錄 (使用JSONP)
+            // 載入今日記錄
             loadTodayRecords();
         }
 
@@ -483,69 +377,17 @@ async function tryFallbackProxy() {
             return R * c;
         }
 
-registerBtn.addEventListener('click', async () => {
-  const name = registerNameInput.value.trim();
-  const empId = registerEmpIdInput.value.trim();
-  
-  if (!name || !empId) {
-    showError(registerResultDiv, '請填寫所有欄位');
-    return;
-  }
-
-  if (empId.length !== 6 || !/^\d+$/.test(empId)) {
-    showError(registerResultDiv, '員工編號必須是6位數字');
-    return;
-  }
-
-  try {
-    showLoading(registerBtn, '註冊中...');
-    
-    // 使用JSON格式發送數據
-    const response = await fetch(scriptUrl, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'register',
-        name: name,
-        empId: empId,
-        lineUserId: userId
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok || !data.success) {
-      throw new Error(data.error || data.message || '註冊失敗');
-    }
-
-    showSuccess(registerResultDiv, '註冊成功！正在進入系統...');
-    setTimeout(() => {
-      isRegistered = true;
-      userData = { name, empId };
-      showMainInterface();
-      registerContainer.style.display = 'none';
-    }, 1500);
-  } catch (error) {
-    console.error('註冊失敗:', error);
-    showError(registerResultDiv, `註冊失敗: ${error.message}`);
-  } finally {
-    registerBtn.innerHTML = '註冊';
-  }
-});
-
-        // 上班打卡 (使用JSONP)
+        // 上班打卡
         checkInBtn.addEventListener('click', async () => {
             await handleCheckInOut('checkIn');
         });
 
-        // 下班打卡 (使用JSONP)
+        // 下班打卡
         checkOutBtn.addEventListener('click', async () => {
             await handleCheckInOut('checkOut');
         });
 
-        // 處理打卡 (使用JSONP)
+        // 處理打卡
         async function handleCheckInOut(type) {
             const resultDiv = type === 'checkIn' ? checkInResultDiv : checkOutResultDiv;
             const button = type === 'checkIn' ? checkInBtn : checkOutBtn;
@@ -561,29 +403,49 @@ registerBtn.addEventListener('click', async () => {
                     throw new Error('您不在台北101大樓內，無法打卡');
                 }
                 
-                // 使用JSONP發送打卡請求
-                const response = await jsonpRequest(
-                    `${scriptUrl}?action=${type}&lineUserId=${userId}&latitude=${location.latitude}&longitude=${location.longitude}`,
-                    'callback'
-                );
+                // 發送打卡請求
+                const formData = new URLSearchParams();
+                formData.append('action', type === 'checkIn' ? 'checkIn' : 'checkOut');
+                formData.append('lineUserId', userId);
+                formData.append('latitude', location.latitude);
+                formData.append('longitude', location.longitude);
                 
-                showSuccess(resultDiv, `${type === 'checkIn' ? '上班' : '下班'}打卡成功！`);
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
                 
-                // 刷新記錄
-                loadTodayRecords();
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '打卡失敗');
+                }
                 
-                // 發送LINE通知
-                if (liff.isInClient()) {
-                    try {
-                        await liff.sendMessages([
-                            {
-                                type: 'text',
-                                text: `✅ ${type === 'checkIn' ? '上班' : '下班'}打卡成功\n姓名: ${userData.name}\n員工編號: ${userData.empId}\n時間: ${new Date().toLocaleString('zh-TW')}\n位置: 台北101大樓`
-                            }
-                        ]);
-                    } catch (err) {
-                        console.error('發送訊息失敗:', err);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess(resultDiv, `${type === 'checkIn' ? '上班' : '下班'}打卡成功！`);
+                    
+                    // 刷新記錄
+                    loadTodayRecords();
+                    
+                    // 發送LINE通知
+                    if (liff.isInClient()) {
+                        try {
+                            await liff.sendMessages([
+                                {
+                                    type: 'text',
+                                    text: `✅ ${type === 'checkIn' ? '上班' : '下班'}打卡成功\n姓名: ${displayName}\n時間: ${new Date().toLocaleString('zh-TW')}\n位置: 台北101大樓`
+                                }
+                            ]);
+                        } catch (err) {
+                            console.error('發送訊息失敗:', err);
+                        }
                     }
+                } else {
+                    throw new Error(data.message || '打卡失敗');
                 }
                 
             } catch (error) {
@@ -594,31 +456,38 @@ registerBtn.addEventListener('click', async () => {
             }
         }
 
-        // 載入今日打卡記錄 (使用JSONP)
+        // 載入今日打卡記錄
         async function loadTodayRecords() {
             try {
                 todayRecordsDiv.innerHTML = '<p>載入中...</p>';
                 
-                const response = await jsonpRequest(
-                    `${scriptUrl}?action=getTodayRecords&lineUserId=${userId}`,
-                    'callback'
-                );
+                const response = await fetch(`${scriptUrl}?action=getTodayRecords&lineUserId=${userId}`);
                 
-                if (response.records.length === 0) {
-                    todayRecordsDiv.innerHTML = '<p>今日尚無打卡記錄</p>';
+                if (!response.ok) {
+                    throw new Error('無法獲取打卡記錄');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.records.length === 0) {
+                        todayRecordsDiv.innerHTML = '<p>今日尚無打卡記錄</p>';
+                    } else {
+                        let html = '';
+                        data.records.forEach(record => {
+                            html += `
+                                <div class="record">
+                                    <p><strong>類型:</strong> ${record.type === 'checkIn' ? '上班' : '下班'}</p>
+                                    <p><strong>日期:</strong> ${record.date}</p>
+                                    <p><strong>時間:</strong> ${record.time}</p>
+                                    <p><strong>位置:</strong> ${record.address || '台北101大樓'}</p>
+                                </div>
+                            `;
+                        });
+                        todayRecordsDiv.innerHTML = html;
+                    }
                 } else {
-                    let html = '';
-                    response.records.forEach(record => {
-                        html += `
-                            <div class="record">
-                                <p><strong>類型:</strong> ${record.type === 'checkIn' ? '上班' : '下班'}</p>
-                                <p><strong>日期:</strong> ${record.date}</p>
-                                <p><strong>時間:</strong> ${record.time}</p>
-                                <p><strong>位置:</strong> ${record.address || '台北101大樓'}</p>
-                            </div>
-                        `;
-                    });
-                    todayRecordsDiv.innerHTML = html;
+                    throw new Error(data.message || '獲取記錄失敗');
                 }
                 
             } catch (error) {
