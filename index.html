@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北101打卡系統 (LINE版)</title>
+    <title>台北101大樓打卡系統</title>
     <style>
         body {
             font-family: 'Microsoft JhengHei', Arial, sans-serif;
@@ -19,7 +19,7 @@
             box-sizing: border-box;
         }
         h1, h2 {
-            color: #06C755; /* LINE 綠色 */
+            color: #06C755;
         }
         button {
             background: #06C755;
@@ -61,19 +61,7 @@
             color: #1967d2;
             border-left: 4px solid #1967d2;
         }
-        textarea {
-            width: 100%;
-            height: 120px;
-            margin: 10px 0;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            font-family: monospace;
-            font-size: 14px;
-            resize: vertical;
-            box-sizing: border-box;
-        }
-        input[type="text"] {
+        input[type="text"], input[type="password"], select {
             width: 100%;
             padding: 10px;
             margin: 5px 0 15px;
@@ -123,57 +111,160 @@
             background: #e3f2fd;
             border-radius: 4px;
         }
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .attendance-table th, .attendance-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .attendance-table th {
+            background-color: #f2f2f2;
+        }
+        .attendance-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 8px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: none;
+            flex: 1;
+            text-align: center;
+        }
+        .tab.active {
+            background-color: #06C755;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>台北101打卡系統 (LINE版)</h1>
+        <h1>台北101大樓打卡系統</h1>
         <div id="userInfo" class="user-info">載入用戶資訊中...</div>
         
-        <div class="section">
-            <h2>1. 後端服務設定</h2>
-            <div>
-                <label for="scriptUrl">Google Apps Script 部署URL:</label>
-                <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/..." style="font-family: monospace;">
+        <div id="registerModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>新員工註冊</h2>
+                <div>
+                    <label for="registerName">姓名:</label>
+                    <input type="text" id="registerName" placeholder="請輸入您的姓名">
+                </div>
+                <div>
+                    <label for="registerEmpId">員工編號 (6位數字):</label>
+                    <input type="text" id="registerEmpId" placeholder="123456" maxlength="6">
+                </div>
+                <div>
+                    <label for="registerDept">部門:</label>
+                    <select id="registerDept">
+                        <option value="行政">行政</option>
+                        <option value="財務">財務</option>
+                        <option value="業務">業務</option>
+                        <option value="資訊">資訊</option>
+                        <option value="管理">管理</option>
+                    </select>
+                </div>
+                <button id="registerBtn">提交註冊</button>
+                <div id="registerResult" class="result"></div>
             </div>
-            <button id="initBtn">測試連接後端</button>
-            <div id="initResult" class="result"></div>
         </div>
 
-        <div class="section">
-            <h2>2. 位置打卡</h2>
-            <div>
-                <label for="testName">您的姓名:</label>
-                <input type="text" id="testName" placeholder="請輸入姓名">
+        <div class="tabs">
+            <button class="tab active" onclick="openTab('checkInTab')">打卡</button>
+            <button class="tab" onclick="openTab('historyTab')">出勤記錄</button>
+        </div>
+
+        <div id="checkInTab" class="tab-content active">
+            <div class="section">
+                <h2>打卡</h2>
+                <div>
+                    <label for="checkType">打卡類型:</label>
+                    <select id="checkType">
+                        <option value="上班">上班</option>
+                        <option value="下班">下班</option>
+                    </select>
+                </div>
+                <div id="locationInfo" class="location-info">位置資訊將在此顯示</div>
+                <button id="checkInBtn">打卡</button>
+                <div id="checkInResult" class="result"></div>
             </div>
-            <div>
-                <label for="testEmpId">員工編號 (6位數字):</label>
-                <input type="text" id="testEmpId" placeholder="123456" maxlength="6">
+        </div>
+
+        <div id="historyTab" class="tab-content">
+            <div class="section">
+                <h2>今日出勤記錄</h2>
+                <button id="refreshHistoryBtn">刷新記錄</button>
+                <div id="historyResult" class="result"></div>
+                <div id="attendanceHistory"></div>
             </div>
-            <div>
-                <label for="writeSheetName">工作表名稱:</label>
-                <input type="text" id="writeSheetName" value="打卡記錄">
-            </div>
-            <div id="locationInfo" class="location-info">位置資訊將在此顯示</div>
-            <button id="checkInBtn" disabled>打卡</button>
-            <div id="writeResult" class="result"></div>
         </div>
     </div>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
         // DOM元素
-        const initBtn = document.getElementById('initBtn');
         const checkInBtn = document.getElementById('checkInBtn');
-        const scriptUrlInput = document.getElementById('scriptUrl');
-        const initResult = document.getElementById('initResult');
-        const writeResult = document.getElementById('writeResult');
+        const refreshHistoryBtn = document.getElementById('refreshHistoryBtn');
+        const registerBtn = document.getElementById('registerBtn');
         const userInfoDiv = document.getElementById('userInfo');
         const locationInfoDiv = document.getElementById('locationInfo');
+        const checkInResultDiv = document.getElementById('checkInResult');
+        const historyResultDiv = document.getElementById('historyResult');
+        const attendanceHistoryDiv = document.getElementById('attendanceHistory');
+        const registerModal = document.getElementById('registerModal');
+        const closeModal = document.querySelector('.close');
+        const registerResultDiv = document.getElementById('registerResult');
 
-        let scriptUrl = '';
+        // 後端服務URL (部署後替換為您的Google Apps Script URL)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
         let userId = '';
         let displayName = '';
+        let isRegistered = false;
+        let currentPosition = null;
 
         // 初始化LIFF
         async function initializeLiff() {
@@ -189,14 +280,8 @@
                 userId = profile.userId;
                 displayName = profile.displayName;
                 
-                userInfoDiv.innerHTML = `
-                    <strong>用戶資訊:</strong><br>
-                    名稱: ${displayName}<br>
-                    LINE User ID: ${userId}
-                `;
-                
-                // 自動填入姓名欄位
-                document.getElementById('testName').value = displayName;
+                // 檢查用戶是否已註冊
+                await checkUserRegistration();
                 
             } catch (error) {
                 console.error('LIFF初始化失敗:', error);
@@ -204,38 +289,46 @@
             }
         }
 
-        // 初始化 - 測試後端連接
-        initBtn.addEventListener('click', async () => {
-            scriptUrl = scriptUrlInput.value.trim();
-            
-            if (!scriptUrl) {
-                showResult(initResult, '請輸入Google Apps Script部署URL', 'error');
-                return;
-            }
-
+        // 檢查用戶是否已註冊
+        async function checkUserRegistration() {
             try {
-                showLoading(initResult, '正在連接後端服務...');
+                showLoading(userInfoDiv, '檢查用戶註冊狀態...');
                 
-                const response = await fetch(`${scriptUrl}?action=test`);
+                const response = await fetch(`${SCRIPT_URL}?action=check_registration&lineUserId=${userId}`);
                 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || `HTTP錯誤! 狀態碼: ${response.status}`);
+                    throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
                 }
 
                 const data = await response.json();
                 
                 if (data.success) {
-                    showResult(initResult, '後端服務連接成功!', 'success');
-                    checkInBtn.disabled = false;
+                    if (data.registered) {
+                        isRegistered = true;
+                        userInfoDiv.innerHTML = `
+                            <strong>員工資訊:</strong><br>
+                            姓名: ${data.userData.name}<br>
+                            員工編號: ${data.userData.empId}<br>
+                            部門: ${data.userData.department}
+                        `;
+                    } else {
+                        // 顯示註冊模態框
+                        showRegistrationModal();
+                    }
                 } else {
-                    throw new Error(data.message || '後端服務返回錯誤');
+                    throw new Error(data.message || '檢查註冊狀態失敗');
                 }
             } catch (error) {
-                console.error('連接失敗:', error);
-                showError(initResult, `連接失敗: ${error.message}`, error);
+                console.error('檢查註冊狀態失敗:', error);
+                userInfoDiv.innerHTML = `檢查註冊狀態失敗: ${error.message}`;
             }
-        });
+        }
+
+        // 顯示註冊模態框
+        function showRegistrationModal() {
+            userInfoDiv.innerHTML = '您尚未註冊，請填寫以下資訊完成註冊';
+            registerModal.style.display = 'block';
+        }
 
         // 獲取位置資訊
         async function getLocation() {
@@ -277,26 +370,21 @@
 
         // 打卡功能
         checkInBtn.addEventListener('click', async () => {
-            const name = document.getElementById('testName').value.trim();
-            const empId = document.getElementById('testEmpId').value.trim();
-            const sheetName = document.getElementById('writeSheetName').value.trim();
-
-            if (!name || !empId || !sheetName) {
-                showResult(writeResult, '請填寫所有欄位', 'error');
+            if (!isRegistered) {
+                showResult(checkInResultDiv, '請先完成註冊', 'error');
+                showRegistrationModal();
                 return;
             }
 
-            if (empId.length !== 6 || !/^\d+$/.test(empId)) {
-                showResult(writeResult, '員工編號必須是6位數字', 'error');
-                return;
-            }
+            const checkType = document.getElementById('checkType').value;
 
             try {
-                showLoading(writeResult, '正在獲取位置資訊...');
+                showLoading(checkInResultDiv, '正在獲取位置資訊...');
                 showLoading(locationInfoDiv, '定位中...');
 
                 // 獲取用戶位置
                 const position = await getLocation();
+                currentPosition = position;
                 const { latitude, longitude } = position.coords;
                 
                 locationInfoDiv.innerHTML = `
@@ -306,19 +394,17 @@
                     精確度: ±${position.coords.accuracy.toFixed(1)} 公尺
                 `;
 
-                showLoading(writeResult, '正在提交打卡資料...');
+                showLoading(checkInResultDiv, '正在驗證位置並提交打卡...');
 
-                // 發送到 Google Apps Script
+                // 發送到後端驗證並記錄打卡
                 const formData = new URLSearchParams();
-                formData.append('action', 'write');
-                formData.append('name', name);
-                formData.append('empId', empId);
-                formData.append('sheetName', sheetName);
+                formData.append('action', 'check_in');
+                formData.append('checkType', checkType);
                 formData.append('latitude', latitude);
                 formData.append('longitude', longitude);
                 formData.append('lineUserId', userId);
 
-                const response = await fetch(scriptUrl, {
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -334,7 +420,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showResult(writeResult, '打卡成功!', 'success');
+                    showResult(checkInResultDiv, `打卡成功 (${checkType})`, 'success');
                     
                     // 顯示打卡成功訊息
                     if (liff.isInClient()) {
@@ -342,20 +428,187 @@
                             await liff.sendMessages([
                                 {
                                     type: 'text',
-                                    text: `✅ 打卡成功\n姓名: ${name}\n員工編號: ${empId}\n時間: ${new Date().toLocaleString('zh-TW')}\n位置: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+                                    text: `✅ 打卡成功\n類型: ${checkType}\n時間: ${new Date().toLocaleString('zh-TW')}\n位置: ${data.address || '台北101大樓'}`
                                 }
                             ]);
                         } catch (err) {
                             console.error('發送訊息失敗:', err);
                         }
                     }
+                    
+                    // 刷新出勤記錄
+                    if (document.getElementById('historyTab').classList.contains('active')) {
+                        await loadAttendanceHistory();
+                    }
                 } else {
                     throw new Error(data.message || '打卡失敗');
                 }
             } catch (error) {
                 console.error('打卡失敗:', error);
-                showError(writeResult, error.message, error);
+                showError(checkInResultDiv, error.message, error);
                 locationInfoDiv.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            }
+        });
+
+        // 註冊功能
+        registerBtn.addEventListener('click', async () => {
+            const name = document.getElementById('registerName').value.trim();
+            const empId = document.getElementById('registerEmpId').value.trim();
+            const dept = document.getElementById('registerDept').value;
+
+            if (!name || !empId) {
+                showResult(registerResultDiv, '請填寫所有欄位', 'error');
+                return;
+            }
+
+            if (empId.length !== 6 || !/^\d+$/.test(empId)) {
+                showResult(registerResultDiv, '員工編號必須是6位數字', 'error');
+                return;
+            }
+
+            try {
+                showLoading(registerResultDiv, '正在提交註冊資訊...');
+
+                const formData = new URLSearchParams();
+                formData.append('action', 'register');
+                formData.append('name', name);
+                formData.append('empId', empId);
+                formData.append('department', dept);
+                formData.append('lineUserId', userId);
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || `HTTP錯誤! 狀態碼: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(registerResultDiv, '註冊成功!', 'success');
+                    isRegistered = true;
+                    
+                    // 更新用戶資訊顯示
+                    userInfoDiv.innerHTML = `
+                        <strong>員工資訊:</strong><br>
+                        姓名: ${name}<br>
+                        員工編號: ${empId}<br>
+                        部門: ${dept}
+                    `;
+                    
+                    // 關閉模態框
+                    setTimeout(() => {
+                        registerModal.style.display = 'none';
+                    }, 1500);
+                } else {
+                    throw new Error(data.message || '註冊失敗');
+                }
+            } catch (error) {
+                console.error('註冊失敗:', error);
+                showError(registerResultDiv, `註冊失敗: ${error.message}`, error);
+            }
+        });
+
+        // 載取出勤記錄
+        async function loadAttendanceHistory() {
+            try {
+                showLoading(historyResultDiv, '正在載出勤記錄...');
+                attendanceHistoryDiv.innerHTML = '';
+                
+                const today = new Date().toISOString().split('T')[0];
+                const response = await fetch(`${SCRIPT_URL}?action=get_attendance&lineUserId=${userId}&date=${today}`);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || `HTTP錯誤! 狀態碼: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.records.length > 0) {
+                        let html = `
+                            <table class="attendance-table">
+                                <tr>
+                                    <th>類型</th>
+                                    <th>日期</th>
+                                    <th>時間</th>
+                                    <th>位置</th>
+                                </tr>
+                        `;
+                        
+                        data.records.forEach(record => {
+                            html += `
+                                <tr>
+                                    <td>${record.checkType}</td>
+                                    <td>${record.date}</td>
+                                    <td>${record.time}</td>
+                                    <td>${record.address || '台北101大樓'}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        html += `</table>`;
+                        attendanceHistoryDiv.innerHTML = html;
+                        showResult(historyResultDiv, `找到 ${data.records.length} 筆記錄`, 'success');
+                    } else {
+                        attendanceHistoryDiv.innerHTML = '今日尚無出勤記錄';
+                        showResult(historyResultDiv, '今日尚無出勤記錄', 'info');
+                    }
+                } else {
+                    throw new Error(data.message || '獲取出勤記錄失敗');
+                }
+            } catch (error) {
+                console.error('載出勤記錄失敗:', error);
+                showError(historyResultDiv, `載出勤記錄失敗: ${error.message}`, error);
+            }
+        }
+
+        // 刷新出勤記錄
+        refreshHistoryBtn.addEventListener('click', async () => {
+            await loadAttendanceHistory();
+        });
+
+        // 切換標籤頁
+        function openTab(tabId) {
+            // 隱藏所有標籤內容
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 取消所有標籤按鈕的active類
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 顯示選定的標籤內容
+            document.getElementById(tabId).classList.add('active');
+            
+            // 設置當前標籤按鈕為active
+            event.currentTarget.classList.add('active');
+            
+            // 如果是歷史標籤，則載數據
+            if (tabId === 'historyTab') {
+                loadAttendanceHistory();
+            }
+        }
+
+        // 關閉模態框
+        closeModal.addEventListener('click', () => {
+            registerModal.style.display = 'none';
+        });
+
+        // 點擊模態框外部關閉
+        window.addEventListener('click', (event) => {
+            if (event.target === registerModal) {
+                registerModal.style.display = 'none';
             }
         });
 
@@ -384,6 +637,7 @@
             // 檢查瀏覽器是否支持地理位置
             if (!navigator.geolocation) {
                 locationInfoDiv.innerHTML = '<span style="color: red;">警告: 您的瀏覽器不支持地理位置功能</span>';
+                checkInBtn.disabled = true;
             }
         });
     </script>
