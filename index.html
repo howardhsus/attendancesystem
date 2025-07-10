@@ -194,11 +194,7 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
         // 全局變量
-        // 全局配置
-const CONFIG = {
-  scriptUrl: 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec', // 替換為您的Google Apps Script部署URL
-  liffId: '2007700262-da76ZbYE' // 替換為您的LIFF ID
-};
+        let scriptUrl = 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec'; // 替換為您的Google Apps Script部署URL
         let userId = '';
         let displayName = '';
         let isRegistered = false;
@@ -235,157 +231,59 @@ const CONFIG = {
         const checkOutSection = document.getElementById('checkOutSection');
         const recordsSection = document.getElementById('recordsSection');
 
-        // 初始化LIFF (增強版)
-async function initializeLiff() {
-    try {
-        // 顯示加載狀態
-        showLoading(loadingDiv, '正在初始化LINE LIFF...');
-        
-        // 初始化LIFF SDK
-        await liff.init({ liffId: CONFIG.liffId });
-        
-        if (!liff.isLoggedIn()) {
-            showLoading(loadingDiv, '正在導向LINE登入...');
-            liff.login();
-            return;
-        }
-        
-        // 獲取用戶資料
-        const profile = await liff.getProfile();
-        userId = profile.userId;
-        displayName = profile.displayName;
-        
-        // 檢查用戶註冊狀態
-        await checkUserRegistration();
-        
-    } catch (error) {
-        console.error('初始化失敗:', error);
-        showError(loadingDiv, `初始化失敗: ${error.message}`);
-        
-        // 提供更多解決方案
-        loadingDiv.innerHTML += `
-            <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 5px;">
-                <h3>解決方案嘗試：</h3>
-                <ol>
-                    <li>檢查網路連接是否正常</li>
-                    <li>確認您已登入LINE帳號</li>
-                    <li>嘗試重新載入頁面</li>
-                    <li>如果問題持續，請聯繫系統管理員</li>
-                </ol>
-                <button onclick="location.reload()" style="padding: 10px 20px; background: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
-                    重新載入頁面
-                </button>
-            </div>
-        `;
-    }
-}
-
-        // 檢查用戶是否已註冊 (終極修正版)
-async function checkUserRegistration() {
-    try {
-        showLoading(loadingDiv, '檢查用戶註冊狀態...');
-        
-        // 構建請求URL (確保正確編碼參數)
-        const url = new URL(CONFIG.scriptUrl);
-        url.searchParams.append('action', 'checkRegistration');
-        url.searchParams.append('lineUserId', userId);
-        url.searchParams.append('t', Date.now()); // 防止緩存
-        
-        // 使用更穩健的fetch實現
-        const response = await fetchWithRetry(url.toString(), {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-            },
-            credentials: 'include'
-        }, 3); // 重試3次
-        
-        const data = await response.json();
-        
-        if (data.success === false) {
-            throw new Error(data.error || '註冊檢查失敗');
-        }
-        
-        if (data.registered) {
-            // 已註冊用戶
-            isRegistered = true;
-            userData = data.userData;
-            showMainInterface();
-        } else {
-            // 新用戶
-            isRegistered = false;
-            showRegisterInterface();
-        }
-        
-    } catch (error) {
-        console.error('檢查註冊失敗:', error);
-        showError(loadingDiv, `檢查註冊失敗: ${error.message}`);
-        
-        // 添加更強的重試功能
-        loadingDiv.innerHTML += `
-            <div style="margin-top: 15px;">
-                <button id="retryBtn" style="padding: 10px 20px; background: #06c755; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                    重試連接 (3次)
-                </button>
-                <button id="reloadBtn" style="padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
-                    重新載入頁面
-                </button>
-            </div>
-        `;
-        
-        let retryCount = 0;
-        document.getElementById('retryBtn').addEventListener('click', async () => {
-            retryCount++;
-            if (retryCount >= 3) {
-                showError(loadingDiv, '重試次數已達上限，請重新載入頁面');
-                return;
-            }
-            document.getElementById('retryBtn').textContent = `重試連接 (${3 - retryCount}次)`;
-            await checkUserRegistration();
-        });
-        
-        document.getElementById('reloadBtn').addEventListener('click', () => {
-            location.reload();
-        });
-    }
-}
-// 增強版fetch函數，帶重試機制
-async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
-    try {
-        const response = await fetch(url, options);
-        
-        // 檢查HTTP狀態碼
-        if (!response.ok) {
-            // 如果是伺服器錯誤(5xx)且還有重試次數，則重試
-            if (response.status >= 500 && retries > 0) {
-                await new Promise(resolve => setTimeout(resolve, delay));
-                return fetchWithRetry(url, options, retries - 1, delay * 2);
-            }
-            
-            // 嘗試解析錯誤訊息
-            let errorMessage = `HTTP錯誤! 狀態碼: ${response.status}`;
+        // 初始化LIFF
+        async function initializeLiff() {
             try {
-                const errorData = await response.json();
-                errorMessage += ` - ${errorData.error || JSON.stringify(errorData)}`;
-            } catch (e) {
-                const text = await response.text();
-                if (text) errorMessage += ` - ${text}`;
+                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為您的LIFF ID
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                
+                const profile = await liff.getProfile();
+                userId = profile.userId;
+                displayName = profile.displayName;
+                
+                // 檢查用戶是否已註冊
+                await checkUserRegistration();
+                
+            } catch (error) {
+                console.error('初始化失敗:', error);
+                showError(loadingDiv, `系統初始化失敗: ${error.message}`);
             }
-            
-            throw new Error(errorMessage);
         }
-        
-        return response;
-    } catch (error) {
-        // 如果是網路錯誤且還有重試次數，則重試
-        if (error.name === 'TypeError' && retries > 0) {
-            await new Promise(resolve => setTimeout(resolve, delay));
-            return fetchWithRetry(url, options, retries - 1, delay * 2);
+
+        // 檢查用戶是否已註冊
+        async function checkUserRegistration() {
+            try {
+                showLoading(loadingDiv, '檢查用戶註冊狀態...');
+                
+                const response = await fetch(`${scriptUrl}?action=checkRegistration&lineUserId=${userId}`);
+                
+                if (!response.ok) {
+                    throw new Error('無法檢查用戶註冊狀態');
+                }
+                
+                const data = await response.json();
+                
+                if (data.registered) {
+                    // 已註冊用戶
+                    isRegistered = true;
+                    userData = data.userData;
+                    showMainInterface();
+                } else {
+                    // 新用戶
+                    isRegistered = false;
+                    showRegisterInterface();
+                }
+                
+            } catch (error) {
+                console.error('檢查註冊失敗:', error);
+                showError(loadingDiv, `檢查註冊失敗: ${error.message}`);
+            }
         }
-        
-        throw error;
-    }
-}
+
         // 顯示註冊界面
         function showRegisterInterface() {
             loadingDiv.style.display = 'none';
@@ -513,63 +411,71 @@ async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
             return R * c;
         }
 
-        // 註冊新員工 (修正版)
-        registerBtn.addEventListener('click', async () => {
-            const name = registerNameInput.value.trim();
-            const empId = registerEmpIdInput.value.trim();
-            
-            if (!name || !empId) {
-                showError(registerResultDiv, '請填寫所有欄位');
-                return;
-            }
-            
-            if (empId.length !== 6 || !/^\d+$/.test(empId)) {
-                showError(registerResultDiv, '員工編號必須是6位數字');
-                return;
-            }
-            
-            try {
-                showLoading(registerBtn, '註冊中...');
-                
-                const formData = new URLSearchParams();
-                formData.append('action', 'register');
-                formData.append('name', name);
-                formData.append('empId', empId);
-                formData.append('lineUserId', userId);
-                
-                const response = await fetch(scriptUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    const error = await response.text();
-                    throw new Error(error || '註冊失敗');
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showSuccess(registerResultDiv, '註冊成功！正在進入系統...');
-                    setTimeout(() => {
-                        isRegistered = true;
-                        userData = { name, empId };
-                        showMainInterface();
-                        registerContainer.style.display = 'none';
-                    }, 1500);
-                } else {
-                    throw new Error(data.message || '註冊失敗');
-                }
-                
-            } catch (error) {
-                console.error('註冊失敗:', error);
-                showError(registerResultDiv, `註冊失敗: ${error.message}`);
-                registerBtn.innerHTML = '註冊';
-            }
+        // 修改所有 fetch 請求，確保正確的 CORS 處理
+async function registerUser() {
+    const name = registerNameInput.value.trim();
+    const empId = registerEmpIdInput.value.trim();
+    
+    if (!name || !empId) {
+        showError(registerResultDiv, '請填寫所有欄位');
+        return;
+    }
+    
+    if (empId.length !== 6 || !/^\d+$/.test(empId)) {
+        showError(registerResultDiv, '員工編號必須是6位數字');
+        return;
+    }
+    
+    try {
+        showLoading(registerBtn, '註冊中...');
+        
+        // 使用 URLSearchParams 代替 JSON
+        const formData = new URLSearchParams();
+        formData.append('action', 'register');
+        formData.append('name', name);
+        formData.append('empId', empId);
+        formData.append('lineUserId', userId);
+        
+        const response = await fetch(scriptUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded', // 重要
+            },
+            body: formData
         });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            let errorMessage = '註冊失敗';
+            try {
+                const errorData = JSON.parse(errorText);
+                errorMessage = errorData.error || errorData.message || errorMessage;
+            } catch (e) {
+                errorMessage = errorText || errorMessage;
+            }
+            throw new Error(errorMessage);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSuccess(registerResultDiv, '註冊成功！正在進入系統...');
+            setTimeout(() => {
+                isRegistered = true;
+                userData = { name, empId };
+                showMainInterface();
+                registerContainer.style.display = 'none';
+            }, 1500);
+        } else {
+            throw new Error(data.message || '註冊失敗');
+        }
+        
+    } catch (error) {
+        console.error('註冊失敗:', error);
+        showError(registerResultDiv, `註冊失敗: ${error.message}`);
+        registerBtn.innerHTML = '註冊';
+    }
+}
 
         // 上班打卡
         checkInBtn.addEventListener('click', async () => {
@@ -613,8 +519,8 @@ async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
                 });
                 
                 if (!response.ok) {
-                    const error = await response.text();
-                    throw new Error(error || '打卡失敗');
+                    const error = await response.json();
+                    throw new Error(error.message || '打卡失敗');
                 }
                 
                 const data = await response.json();
@@ -655,10 +561,10 @@ async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
             try {
                 todayRecordsDiv.innerHTML = '<p>載入中...</p>';
                 
-                const response = await fetch(`${scriptUrl}?action=getTodayRecords&lineUserId=${encodeURIComponent(userId)}`);
+                const response = await fetch(`${scriptUrl}?action=getTodayRecords&lineUserId=${userId}`);
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
+                    throw new Error('無法獲取打卡記錄');
                 }
                 
                 const data = await response.json();
