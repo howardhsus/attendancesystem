@@ -483,7 +483,6 @@ async function tryFallbackProxy() {
             return R * c;
         }
 
-  // 改進的註冊函數
 registerBtn.addEventListener('click', async () => {
   const name = registerNameInput.value.trim();
   const empId = registerEmpIdInput.value.trim();
@@ -492,50 +491,42 @@ registerBtn.addEventListener('click', async () => {
     showError(registerResultDiv, '請填寫所有欄位');
     return;
   }
-  
+
   if (empId.length !== 6 || !/^\d+$/.test(empId)) {
     showError(registerResultDiv, '員工編號必須是6位數字');
     return;
   }
-  
+
   try {
     showLoading(registerBtn, '註冊中...');
     
-    // 使用FormData確保正確編碼
-    const formData = new FormData();
-    formData.append('action', 'register');
-    formData.append('name', name);
-    formData.append('empId', empId);
-    formData.append('lineUserId', userId);
-    
-    // 明確指定POST方法
+    // 使用JSON格式發送數據
     const response = await fetch(scriptUrl, {
       method: 'POST',
-      body: new URLSearchParams(formData),
+      body: JSON.stringify({
+        action: 'register',
+        name: name,
+        empId: empId,
+        lineUserId: userId
+      }),
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/json'
       }
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || '註冊失敗');
-    }
-    
+
     const data = await response.json();
     
-    if (data.success) {
-      showSuccess(registerResultDiv, '註冊成功！正在進入系統...');
-      setTimeout(() => {
-        isRegistered = true;
-        userData = { name, empId };
-        showMainInterface();
-        registerContainer.style.display = 'none';
-      }, 1500);
-    } else {
-      throw new Error(data.message || '註冊失敗');
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || data.message || '註冊失敗');
     }
-    
+
+    showSuccess(registerResultDiv, '註冊成功！正在進入系統...');
+    setTimeout(() => {
+      isRegistered = true;
+      userData = { name, empId };
+      showMainInterface();
+      registerContainer.style.display = 'none';
+    }, 1500);
   } catch (error) {
     console.error('註冊失敗:', error);
     showError(registerResultDiv, `註冊失敗: ${error.message}`);
