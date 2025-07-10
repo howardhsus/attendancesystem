@@ -117,12 +117,18 @@
             border-radius: 4px;
             margin-bottom: 15px;
         }
+        .location-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>台北101打卡系統 (LINE版)</h1>
-        <div id="userInfo" class="user-info"></div>
+        <div id="userInfo" class="user-info">載入用戶資訊中...</div>
         
         <div class="section">
             <h2>1. 後端服務設定</h2>
@@ -135,18 +141,7 @@
         </div>
 
         <div class="section">
-            <h2>2. Google Sheets 讀取測試</h2>
-            <div>
-                <label for="sheetsRange">資料範圍 (例如 Sheet1!A1:B2):</label>
-                <input type="text" id="sheetsRange" value="Sheet1!A1:B2">
-            </div>
-            <button id="testSheetsBtn" disabled>測試讀取資料</button>
-            <div id="sheetsResult" class="result"></div>
-            <textarea id="sheetsData" readonly placeholder="讀取結果將顯示在這裡"></textarea>
-        </div>
-
-        <div class="section">
-            <h2>3. 位置打卡</h2>
+            <h2>2. 位置打卡</h2>
             <div>
                 <label for="testName">您的姓名:</label>
                 <input type="text" id="testName" placeholder="請輸入姓名">
@@ -159,6 +154,7 @@
                 <label for="writeSheetName">工作表名稱:</label>
                 <input type="text" id="writeSheetName" value="打卡記錄">
             </div>
+            <div id="locationInfo" class="location-info">位置資訊將在此顯示</div>
             <button id="checkInBtn" disabled>打卡</button>
             <div id="writeResult" class="result"></div>
         </div>
@@ -168,16 +164,12 @@
     <script>
         // DOM元素
         const initBtn = document.getElementById('initBtn');
-        const testSheetsBtn = document.getElementById('testSheetsBtn');
         const checkInBtn = document.getElementById('checkInBtn');
         const scriptUrlInput = document.getElementById('scriptUrl');
-        
         const initResult = document.getElementById('initResult');
-        const sheetsResult = document.getElementById('sheetsResult');
         const writeResult = document.getElementById('writeResult');
         const userInfoDiv = document.getElementById('userInfo');
-        
-        const sheetsData = document.getElementById('sheetsData');
+        const locationInfoDiv = document.getElementById('locationInfo');
 
         let scriptUrl = '';
         let userId = '';
@@ -186,7 +178,7 @@
         // 初始化LIFF
         async function initializeLiff() {
             try {
-                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 請替換為您的LIFF ID
+                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為您的LIFF ID
                 
                 if (!liff.isLoggedIn()) {
                     liff.login();
@@ -235,7 +227,6 @@
                 
                 if (data.success) {
                     showResult(initResult, '後端服務連接成功!', 'success');
-                    testSheetsBtn.disabled = false;
                     checkInBtn.disabled = false;
                 } else {
                     throw new Error(data.message || '後端服務返回錯誤');
@@ -246,40 +237,43 @@
             }
         });
 
-        // 測試讀取Google Sheet
-        testSheetsBtn.addEventListener('click', async () => {
-            const range = document.getElementById('sheetsRange').value.trim();
-            
-            if (!range) {
-                showResult(sheetsResult, '請輸入資料範圍', 'error');
-                return;
-            }
-
-            try {
-                showLoading(sheetsResult, '正在讀取資料...');
-                sheetsData.value = '讀取中...';
-
-                const response = await fetch(`${scriptUrl}?action=read&range=${encodeURIComponent(range)}`);
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || `HTTP錯誤! 狀態碼: ${response.status}`);
+        // 獲取位置資訊
+        async function getLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('您的瀏覽器不支持地理位置功能'));
+                    return;
                 }
 
-                const data = await response.json();
-                
-                if (data.success) {
-                    sheetsData.value = JSON.stringify(data.data, null, 2);
-                    showResult(sheetsResult, `成功讀取 ${data.data.length || 0} 行資料`, 'success');
-                } else {
-                    throw new Error(data.message || '讀取資料失敗');
-                }
-            } catch (error) {
-                console.error('讀取失敗:', error);
-                sheetsData.value = `錯誤: ${error.message}`;
-                showError(sheetsResult, `讀取失敗: ${error.message}`, error);
-            }
-        });
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve(position);
+                    },
+                    (error) => {
+                        let errorMessage = '獲取位置失敗: ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += '用戶拒絕了位置請求';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += '位置資訊不可用';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += '獲取位置超時';
+                                break;
+                            default:
+                                errorMessage += '未知錯誤';
+                        }
+                        reject(new Error(errorMessage));
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            });
+        }
 
         // 打卡功能
         checkInBtn.addEventListener('click', async () => {
@@ -298,22 +292,30 @@
             }
 
             try {
-                showLoading(writeResult, '正在打卡中...');
+                showLoading(writeResult, '正在獲取位置資訊...');
+                showLoading(locationInfoDiv, '定位中...');
 
                 // 獲取用戶位置
-                const location = await liff.getLocation();
-                if (!location) {
-                    throw new Error('無法獲取位置資訊');
-                }
+                const position = await getLocation();
+                const { latitude, longitude } = position.coords;
+                
+                locationInfoDiv.innerHTML = `
+                    <strong>位置資訊:</strong><br>
+                    緯度: ${latitude.toFixed(6)}<br>
+                    經度: ${longitude.toFixed(6)}<br>
+                    精確度: ±${position.coords.accuracy.toFixed(1)} 公尺
+                `;
 
-                // 使用URLSearchParams解決CORS問題
+                showLoading(writeResult, '正在提交打卡資料...');
+
+                // 發送到 Google Apps Script
                 const formData = new URLSearchParams();
                 formData.append('action', 'write');
                 formData.append('name', name);
                 formData.append('empId', empId);
                 formData.append('sheetName', sheetName);
-                formData.append('latitude', location.latitude);
-                formData.append('longitude', location.longitude);
+                formData.append('latitude', latitude);
+                formData.append('longitude', longitude);
                 formData.append('lineUserId', userId);
 
                 const response = await fetch(scriptUrl, {
@@ -336,23 +338,24 @@
                     
                     // 顯示打卡成功訊息
                     if (liff.isInClient()) {
-                        liff.sendMessages([
-                            {
-                                type: 'text',
-                                text: `打卡成功！\n姓名: ${name}\n員工編號: ${empId}\n時間: ${new Date().toLocaleString()}`
-                            }
-                        ]).then(() => {
-                            console.log('訊息已發送');
-                        }).catch((err) => {
+                        try {
+                            await liff.sendMessages([
+                                {
+                                    type: 'text',
+                                    text: `✅ 打卡成功\n姓名: ${name}\n員工編號: ${empId}\n時間: ${new Date().toLocaleString('zh-TW')}\n位置: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+                                }
+                            ]);
+                        } catch (err) {
                             console.error('發送訊息失敗:', err);
-                        });
+                        }
                     }
                 } else {
                     throw new Error(data.message || '打卡失敗');
                 }
             } catch (error) {
                 console.error('打卡失敗:', error);
-                showError(writeResult, `打卡失敗: ${error.message}`, error);
+                showError(writeResult, error.message, error);
+                locationInfoDiv.innerHTML = `<span style="color: red;">${error.message}</span>`;
             }
         });
 
@@ -377,8 +380,12 @@
         // 初始化應用
         document.addEventListener('DOMContentLoaded', () => {
             initializeLiff();
+            
+            // 檢查瀏覽器是否支持地理位置
+            if (!navigator.geolocation) {
+                locationInfoDiv.innerHTML = '<span style="color: red;">警告: 您的瀏覽器不支持地理位置功能</span>';
+            }
         });
     </script>
 </body>
 </html>
-
