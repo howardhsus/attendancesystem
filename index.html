@@ -254,35 +254,62 @@
             }
         }
 
-        // 檢查用戶是否已註冊 (修正版)
-        async function checkUserRegistration() {
-            try {
-                showLoading(loadingDiv, '檢查用戶註冊狀態...');
-                
-                const response = await fetch(`${scriptUrl}?action=checkRegistration&lineUserId=${encodeURIComponent(userId)}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.registered) {
-                    // 已註冊用戶
-                    isRegistered = true;
-                    userData = data.userData;
-                    showMainInterface();
-                } else {
-                    // 新用戶
-                    isRegistered = false;
-                    showRegisterInterface();
-                }
-                
-            } catch (error) {
-                console.error('檢查註冊失敗:', error);
-                showError(loadingDiv, `檢查註冊失敗: ${error.message}`);
+        // 檢查用戶是否已註冊 (最終修正版)
+async function checkUserRegistration() {
+    try {
+        showLoading(loadingDiv, '檢查用戶註冊狀態...');
+        
+        // 使用URLSearchParams構建查詢參數
+        const params = new URLSearchParams();
+        params.append('action', 'checkRegistration');
+        params.append('lineUserId', userId);
+        
+        // 添加隨機參數避免緩存問題
+        params.append('t', Date.now());
+        
+        const response = await fetch(`${scriptUrl}?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
             }
+        });
+        
+        if (!response.ok) {
+            // 嘗試獲取錯誤詳情
+            let errorDetail = '';
+            try {
+                const errorData = await response.json();
+                errorDetail = errorData.error || '';
+            } catch (e) {
+                errorDetail = await response.text();
+            }
+            throw new Error(`HTTP錯誤! 狀態碼: ${response.status} ${errorDetail}`);
         }
+        
+        const data = await response.json();
+        
+        if (data.registered) {
+            // 已註冊用戶
+            isRegistered = true;
+            userData = data.userData;
+            showMainInterface();
+        } else {
+            // 新用戶
+            isRegistered = false;
+            showRegisterInterface();
+        }
+        
+    } catch (error) {
+        console.error('檢查註冊失敗:', error);
+        showError(loadingDiv, `檢查註冊失敗: ${error.message}`);
+        
+        // 添加重試按鈕
+        loadingDiv.innerHTML += `
+            <button id="retryBtn" style="margin-top: 10px;">重試</button>
+        `;
+        document.getElementById('retryBtn').addEventListener('click', checkUserRegistration);
+    }
+}
 
         // 顯示註冊界面
         function showRegisterInterface() {
