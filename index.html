@@ -268,7 +268,23 @@
                 showError(loadingDiv, `系統初始化失敗: ${error.message}`);
             }
         }
-
+// 改進的請求函數
+async function safeFetch(url, options = {}) {
+  try {
+    // 嘗試直接fetch
+    let response = await fetch(url, options);
+    
+    // 如果失敗，嘗試JSONP方式
+    if (!response.ok) {
+      return await jsonpRequest(url.replace('action=', 'action=jsonp_'));
+    }
+    
+    return await response.json();
+  } catch (error) {
+    // 兩種方式都失敗時回退到JSONP
+    return await jsonpRequest(url.replace('action=', 'action=jsonp_'));
+  }
+}
         // JSONP請求函數
         function jsonpRequest(url, callbackParam, callback) {
             return new Promise((resolve, reject) => {
@@ -298,33 +314,48 @@
             });
         }
 
-        // 檢查用戶是否已註冊 (使用JSONP)
-        async function checkUserRegistration() {
-            try {
-                showLoading(loadingDiv, '檢查用戶註冊狀態...');
-                
-                const response = await jsonpRequest(
-                    `${scriptUrl}?action=checkRegistration&lineUserId=${userId}`,
-                    'callback'
-                );
-                
-                if (response.registered) {
-                    // 已註冊用戶
-                    isRegistered = true;
-                    userData = response.userData;
-                    showMainInterface();
-                } else {
-                    // 新用戶
-                    isRegistered = false;
-                    showRegisterInterface();
-                }
-                
-            } catch (error) {
-                console.error('檢查註冊失敗:', error);
-                showError(loadingDiv, `檢查註冊失敗: ${error.message}`);
-            }
-        }
-
+// 檢查註冊狀態函數
+async function checkUserRegistration() {
+  try {
+    showLoading(loadingDiv, '檢查用戶註冊狀態...');
+    
+    // 先嘗試正規fetch
+    const response = await safeFetch(
+      `${scriptUrl}?action=checkRegistration&lineUserId=${userId}`
+    );
+    
+    if (response.registered) {
+      isRegistered = true;
+      userData = response.userData;
+      showMainInterface();
+    } else {
+      isRegistered = false;
+      showRegisterInterface();
+    }
+  } catch (error) {
+    console.error('檢查註冊失敗:', error);
+    showError(loadingDiv, `檢查註冊失敗: ${error.message}`);
+    
+    // 終極回退方案：使用代理服務
+    await tryFallbackProxy();
+  }
+}
+// 終極回退方案
+async function tryFallbackProxy() {
+  try {
+    const proxyUrl = `https://cors-anywhere.herokuapp.com/${scriptUrl}?action=checkRegistration&lineUserId=${userId}`;
+    const response = await fetch(proxyUrl, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    
+    const data = await response.json();
+    // 處理數據...
+  } catch (proxyError) {
+    showError(loadingDiv, '系統暫時不可用，請稍後再試');
+  }
+}
         // 顯示註冊界面
         function showRegisterInterface() {
             loadingDiv.style.display = 'none';
