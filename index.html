@@ -194,7 +194,7 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
         // 全局變量
-        let scriptUrl = 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec'; // 替換為您的Google Apps Script部署URL
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec'; // 替換為您的Google Apps Script部署URL
         let userId = '';
         let displayName = '';
         let isRegistered = false;
@@ -254,15 +254,15 @@
             }
         }
 
-        // 檢查用戶是否已註冊
+        // 檢查用戶是否已註冊 (修正版)
         async function checkUserRegistration() {
             try {
                 showLoading(loadingDiv, '檢查用戶註冊狀態...');
                 
-                const response = await fetch(`${scriptUrl}?action=checkRegistration&lineUserId=${userId}`);
+                const response = await fetch(`${scriptUrl}?action=checkRegistration&lineUserId=${encodeURIComponent(userId)}`);
                 
                 if (!response.ok) {
-                    throw new Error('無法檢查用戶註冊狀態');
+                    throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
                 }
                 
                 const data = await response.json();
@@ -411,7 +411,7 @@
             return R * c;
         }
 
-        // 註冊新員工
+        // 註冊新員工 (修正版)
         registerBtn.addEventListener('click', async () => {
             const name = registerNameInput.value.trim();
             const empId = registerEmpIdInput.value.trim();
@@ -444,8 +444,8 @@
                 });
                 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || '註冊失敗');
+                    const error = await response.text();
+                    throw new Error(error || '註冊失敗');
                 }
                 
                 const data = await response.json();
@@ -511,8 +511,8 @@
                 });
                 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || '打卡失敗');
+                    const error = await response.text();
+                    throw new Error(error || '打卡失敗');
                 }
                 
                 const data = await response.json();
@@ -553,10 +553,10 @@
             try {
                 todayRecordsDiv.innerHTML = '<p>載入中...</p>';
                 
-                const response = await fetch(`${scriptUrl}?action=getTodayRecords&lineUserId=${userId}`);
+                const response = await fetch(`${scriptUrl}?action=getTodayRecords&lineUserId=${encodeURIComponent(userId)}`);
                 
                 if (!response.ok) {
-                    throw new Error('無法獲取打卡記錄');
+                    throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
                 }
                 
                 const data = await response.json();
