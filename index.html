@@ -194,7 +194,11 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
         // 全局變量
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec'; // 替換為您的Google Apps Script部署URL
+        // 全局配置
+const CONFIG = {
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec', // 替換為您的Google Apps Script部署URL
+  liffId: '2007700262-da76ZbYE' // 替換為您的LIFF ID
+};
         let userId = '';
         let displayName = '';
         let isRegistered = false;
@@ -231,62 +235,76 @@
         const checkOutSection = document.getElementById('checkOutSection');
         const recordsSection = document.getElementById('recordsSection');
 
-        // 初始化LIFF
-        async function initializeLiff() {
-            try {
-                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為您的LIFF ID
-                
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
-                
-                const profile = await liff.getProfile();
-                userId = profile.userId;
-                displayName = profile.displayName;
-                
-                // 檢查用戶是否已註冊
-                await checkUserRegistration();
-                
-            } catch (error) {
-                console.error('初始化失敗:', error);
-                showError(loadingDiv, `系統初始化失敗: ${error.message}`);
-            }
+        // 初始化LIFF (增強版)
+async function initializeLiff() {
+    try {
+        // 顯示加載狀態
+        showLoading(loadingDiv, '正在初始化LINE LIFF...');
+        
+        // 初始化LIFF SDK
+        await liff.init({ liffId: CONFIG.liffId });
+        
+        if (!liff.isLoggedIn()) {
+            showLoading(loadingDiv, '正在導向LINE登入...');
+            liff.login();
+            return;
         }
+        
+        // 獲取用戶資料
+        const profile = await liff.getProfile();
+        userId = profile.userId;
+        displayName = profile.displayName;
+        
+        // 檢查用戶註冊狀態
+        await checkUserRegistration();
+        
+    } catch (error) {
+        console.error('初始化失敗:', error);
+        showError(loadingDiv, `初始化失敗: ${error.message}`);
+        
+        // 提供更多解決方案
+        loadingDiv.innerHTML += `
+            <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 5px;">
+                <h3>解決方案嘗試：</h3>
+                <ol>
+                    <li>檢查網路連接是否正常</li>
+                    <li>確認您已登入LINE帳號</li>
+                    <li>嘗試重新載入頁面</li>
+                    <li>如果問題持續，請聯繫系統管理員</li>
+                </ol>
+                <button onclick="location.reload()" style="padding: 10px 20px; background: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                    重新載入頁面
+                </button>
+            </div>
+        `;
+    }
+}
 
-        // 檢查用戶是否已註冊 (最終修正版)
+        // 檢查用戶是否已註冊 (終極修正版)
 async function checkUserRegistration() {
     try {
         showLoading(loadingDiv, '檢查用戶註冊狀態...');
         
-        // 使用URLSearchParams構建查詢參數
-        const params = new URLSearchParams();
-        params.append('action', 'checkRegistration');
-        params.append('lineUserId', userId);
+        // 構建請求URL (確保正確編碼參數)
+        const url = new URL(CONFIG.scriptUrl);
+        url.searchParams.append('action', 'checkRegistration');
+        url.searchParams.append('lineUserId', userId);
+        url.searchParams.append('t', Date.now()); // 防止緩存
         
-        // 添加隨機參數避免緩存問題
-        params.append('t', Date.now());
-        
-        const response = await fetch(`${scriptUrl}?${params.toString()}`, {
+        // 使用更穩健的fetch實現
+        const response = await fetchWithRetry(url.toString(), {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        });
-        
-        if (!response.ok) {
-            // 嘗試獲取錯誤詳情
-            let errorDetail = '';
-            try {
-                const errorData = await response.json();
-                errorDetail = errorData.error || '';
-            } catch (e) {
-                errorDetail = await response.text();
-            }
-            throw new Error(`HTTP錯誤! 狀態碼: ${response.status} ${errorDetail}`);
-        }
+                'Accept': 'application/json',
+            },
+            credentials: 'include'
+        }, 3); // 重試3次
         
         const data = await response.json();
+        
+        if (data.success === false) {
+            throw new Error(data.error || '註冊檢查失敗');
+        }
         
         if (data.registered) {
             // 已註冊用戶
@@ -303,14 +321,71 @@ async function checkUserRegistration() {
         console.error('檢查註冊失敗:', error);
         showError(loadingDiv, `檢查註冊失敗: ${error.message}`);
         
-        // 添加重試按鈕
+        // 添加更強的重試功能
         loadingDiv.innerHTML += `
-            <button id="retryBtn" style="margin-top: 10px;">重試</button>
+            <div style="margin-top: 15px;">
+                <button id="retryBtn" style="padding: 10px 20px; background: #06c755; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    重試連接 (3次)
+                </button>
+                <button id="reloadBtn" style="padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                    重新載入頁面
+                </button>
+            </div>
         `;
-        document.getElementById('retryBtn').addEventListener('click', checkUserRegistration);
+        
+        let retryCount = 0;
+        document.getElementById('retryBtn').addEventListener('click', async () => {
+            retryCount++;
+            if (retryCount >= 3) {
+                showError(loadingDiv, '重試次數已達上限，請重新載入頁面');
+                return;
+            }
+            document.getElementById('retryBtn').textContent = `重試連接 (${3 - retryCount}次)`;
+            await checkUserRegistration();
+        });
+        
+        document.getElementById('reloadBtn').addEventListener('click', () => {
+            location.reload();
+        });
     }
 }
-
+// 增強版fetch函數，帶重試機制
+async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+    try {
+        const response = await fetch(url, options);
+        
+        // 檢查HTTP狀態碼
+        if (!response.ok) {
+            // 如果是伺服器錯誤(5xx)且還有重試次數，則重試
+            if (response.status >= 500 && retries > 0) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return fetchWithRetry(url, options, retries - 1, delay * 2);
+            }
+            
+            // 嘗試解析錯誤訊息
+            let errorMessage = `HTTP錯誤! 狀態碼: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMessage += ` - ${errorData.error || JSON.stringify(errorData)}`;
+            } catch (e) {
+                const text = await response.text();
+                if (text) errorMessage += ` - ${text}`;
+            }
+            
+            throw new Error(errorMessage);
+        }
+        
+        return response;
+    } catch (error) {
+        // 如果是網路錯誤且還有重試次數，則重試
+        if (error.name === 'TypeError' && retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return fetchWithRetry(url, options, retries - 1, delay * 2);
+        }
+        
+        throw error;
+    }
+}
         // 顯示註冊界面
         function showRegisterInterface() {
             loadingDiv.style.display = 'none';
