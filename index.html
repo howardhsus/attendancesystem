@@ -139,6 +139,12 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        .retry-btn {
+            background: #f39c12;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -246,7 +252,7 @@
                     <div class="error">
                         <p>系統初始化失敗</p>
                         <p>${error.message}</p>
-                        <button onclick="window.location.reload()">重新載入</button>
+                        <button onclick="window.location.reload()" class="retry-btn">重新載入</button>
                     </div>
                 `;
             }
@@ -269,7 +275,7 @@
             }
         }
 
-        // 表單提交函數 (避免CORS)
+        // 改進的表單提交函數
         function submitFormData(action, data) {
             return new Promise((resolve, reject) => {
                 const form = document.createElement('form');
@@ -293,40 +299,59 @@
                     form.appendChild(input);
                 }
                 
+                // 添加時間戳防止重複提交
+                const timestampInput = document.createElement('input');
+                timestampInput.type = 'hidden';
+                timestampInput.name = 'timestamp';
+                timestampInput.value = Date.now();
+                form.appendChild(timestampInput);
+                
                 // 創建iframe接收響應
                 const iframe = document.createElement('iframe');
                 iframe.name = 'form-response-' + Date.now();
                 iframe.style.display = 'none';
                 
+                // 設置超時
+                const timeout = setTimeout(() => {
+                    reject(new Error('請求超時，但資料可能已提交成功'));
+                    cleanup();
+                }, 10000); // 10秒超時
+                
                 iframe.onload = function() {
+                    clearTimeout(timeout);
                     try {
-                        // 直接獲取iframe的文本內容
-                        const responseText = iframe.contentDocument.body.textContent.trim();
+                        const doc = iframe.contentDocument || iframe.contentWindow.document;
+                        const responseText = doc.body.textContent.trim();
                         
-                        // 嘗試解析JSON
                         if (!responseText) {
                             throw new Error('空響應');
                         }
                         
                         const response = JSON.parse(responseText);
-                        resolve(response);
+                        
+                        if (response.success) {
+                            resolve(response);
+                        } else {
+                            throw new Error(response.error || response.message || '操作失敗');
+                        }
                     } catch (e) {
-                        console.error('解析響應失敗:', e, '響應內容:', iframe.contentDocument.body.textContent);
-                        reject(new Error('系統繁忙，請稍後再試 (資料可能已成功提交)'));
+                        console.error('解析響應失敗:', e);
+                        reject(new Error('系統響應異常，但資料可能已提交成功'));
+                    } finally {
+                        cleanup();
                     }
-                    
-                    // 清理
-                    setTimeout(() => {
-                        document.body.removeChild(form);
-                        document.body.removeChild(iframe);
-                    }, 1000);
                 };
                 
                 iframe.onerror = function() {
+                    clearTimeout(timeout);
                     reject(new Error('請求失敗'));
-                    document.body.removeChild(form);
-                    document.body.removeChild(iframe);
+                    cleanup();
                 };
+                
+                function cleanup() {
+                    if (form.parentNode) document.body.removeChild(form);
+                    if (iframe.parentNode) document.body.removeChild(iframe);
+                }
                 
                 document.body.appendChild(iframe);
                 document.body.appendChild(form);
@@ -377,13 +402,19 @@
             } catch (error) {
                 console.error('註冊失敗:', error);
                 
-                // 更友好的錯誤顯示
                 let errorMessage = error.message;
-                if (error.message.includes('系統繁忙')) {
-                    errorMessage = '系統繁忙，請稍後檢查是否註冊成功';
+                let showRefresh = error.message.includes('可能已提交') || 
+                                error.message.includes('響應異常');
+                
+                let errorHtml = `註冊狀態: ${errorMessage}`;
+                
+                if (showRefresh) {
+                    errorHtml += `<br><button onclick="window.location.reload()" 
+                                 class="retry-btn">刷新頁面確認</button>`;
                 }
                 
-                showError('registerResult', `註冊狀態: ${errorMessage}`, error);
+                document.getElementById('registerResult').innerHTML = errorHtml;
+                document.getElementById('registerResult').className = 'error';
             }
         });
 
