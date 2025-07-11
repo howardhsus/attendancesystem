@@ -300,15 +300,26 @@
                 
                 iframe.onload = function() {
                     try {
-                        const responseText = iframe.contentWindow.document.body.textContent;
+                        // 直接獲取iframe的文本內容
+                        const responseText = iframe.contentDocument.body.textContent.trim();
+                        
+                        // 嘗試解析JSON
+                        if (!responseText) {
+                            throw new Error('空響應');
+                        }
+                        
                         const response = JSON.parse(responseText);
                         resolve(response);
                     } catch (e) {
-                        reject(new Error('解析響應失敗'));
+                        console.error('解析響應失敗:', e, '響應內容:', iframe.contentDocument.body.textContent);
+                        reject(new Error('系統繁忙，請稍後再試 (資料可能已成功提交)'));
                     }
+                    
                     // 清理
-                    document.body.removeChild(form);
-                    document.body.removeChild(iframe);
+                    setTimeout(() => {
+                        document.body.removeChild(form);
+                        document.body.removeChild(iframe);
+                    }, 1000);
                 };
                 
                 iframe.onerror = function() {
@@ -350,7 +361,7 @@
                 });
                 
                 if (response.success) {
-                    showResult('registerResult', '註冊成功！', 'success');
+                    showResult('registerResult', '註冊成功！系統將自動跳轉...', 'success');
                     isRegistered = true;
                     empId = empIdInput;
                     
@@ -361,11 +372,18 @@
                         showMainContainer();
                     }, 1500);
                 } else {
-                    throw new Error(response.message || '註冊失敗');
+                    throw new Error(response.error || response.message || '註冊失敗');
                 }
             } catch (error) {
                 console.error('註冊失敗:', error);
-                showError('registerResult', `註冊失敗: ${error.message}`, error);
+                
+                // 更友好的錯誤顯示
+                let errorMessage = error.message;
+                if (error.message.includes('系統繁忙')) {
+                    errorMessage = '系統繁忙，請稍後檢查是否註冊成功';
+                }
+                
+                showError('registerResult', `註冊狀態: ${errorMessage}`, error);
             }
         });
 
