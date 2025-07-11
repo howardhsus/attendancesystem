@@ -7,23 +7,23 @@
     <style>
         :root {
             --primary-color: #06C755; /* LINE綠色 */
-            --secondary-color: #00B900;
-            --background-color: #f8f9fa;
+            --secondary-color: #333333;
+            --background-color: #f5f5f5;
             --card-color: #ffffff;
             --text-color: #333333;
-            --text-light: #777777;
+            --text-light: #666666;
             --error-color: #e74c3c;
             --success-color: #2ecc71;
             --info-color: #3498db;
-            --border-radius: 12px;
-            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         body {
             font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
-            line-height: 1.6;
+            line-height: 1.5;
             margin: 0;
             padding: 0;
         }
@@ -31,67 +31,56 @@
         .container {
             max-width: 500px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 15px;
         }
         
         .card {
             background-color: var(--card-color);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
-            padding: 25px;
-            margin-bottom: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
         }
         
         .header h1 {
             color: var(--primary-color);
             margin: 0;
-            font-size: 24px;
+            font-size: 22px;
         }
         
         .header p {
             color: var(--text-light);
-            margin: 5px 0 0;
+            margin: 8px 0 0;
+            font-size: 14px;
         }
         
-        .user-info {
-            background-color: rgba(6, 199, 85, 0.1);
+        .info-section {
+            background-color: rgba(0, 0, 0, 0.03);
             border-radius: var(--border-radius);
             padding: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
-        .user-info p {
-            margin: 5px 0;
+        .info-row {
             display: flex;
+            margin-bottom: 8px;
         }
         
-        .user-info p span:first-child {
+        .info-label {
             font-weight: bold;
-            min-width: 80px;
-            color: var(--primary-color);
-        }
-        
-        .location-info {
-            background-color: rgba(0, 185, 0, 0.1);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .location-info p {
-            margin: 5px 0;
-            display: flex;
-        }
-        
-        .location-info p span:first-child {
-            font-weight: bold;
-            min-width: 120px;
+            min-width: 100px;
             color: var(--secondary-color);
+        }
+        
+        .info-value {
+            flex: 1;
         }
         
         button {
@@ -99,24 +88,22 @@
             color: white;
             border: none;
             border-radius: var(--border-radius);
-            padding: 12px 20px;
+            padding: 12px;
             font-size: 16px;
             font-weight: bold;
             width: 100%;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             margin-bottom: 10px;
         }
         
         button:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
+            background-color: #05b34a;
         }
         
         button:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
-            transform: none;
         }
         
         .btn-checkout {
@@ -124,7 +111,7 @@
         }
         
         .btn-checkout:hover {
-            background-color: #c0392b;
+            background-color: #d63b2a;
         }
         
         .btn-record {
@@ -138,37 +125,38 @@
         .message {
             padding: 12px;
             border-radius: var(--border-radius);
-            margin: 15px 0;
+            margin: 10px 0;
             font-size: 14px;
+            border-left: 4px solid;
         }
         
         .error {
             background-color: rgba(231, 76, 60, 0.1);
             color: var(--error-color);
-            border-left: 4px solid var(--error-color);
+            border-left-color: var(--error-color);
         }
         
         .success {
             background-color: rgba(46, 204, 113, 0.1);
             color: var(--success-color);
-            border-left: 4px solid var(--success-color);
+            border-left-color: var(--success-color);
         }
         
         .info {
             background-color: rgba(52, 152, 219, 0.1);
             color: var(--info-color);
-            border-left: 4px solid var(--info-color);
+            border-left-color: var(--info-color);
         }
         
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(0,0,0,.1);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0,0,0,.1);
             border-radius: 50%;
             border-top-color: var(--primary-color);
             animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
+            margin-right: 8px;
             vertical-align: middle;
         }
         
@@ -177,40 +165,34 @@
         }
         
         .records-container {
-            margin-top: 20px;
+            margin-top: 15px;
         }
         
         .record-item {
             background-color: var(--card-color);
             border-radius: var(--border-radius);
-            padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid #eee;
         }
         
-        .record-item p {
-            margin: 5px 0;
-            display: flex;
-        }
-        
-        .record-item p span:first-child {
-            font-weight: bold;
-            min-width: 80px;
-            color: var(--text-light);
+        .record-item .info-row {
+            margin-bottom: 5px;
         }
         
         .no-access {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 15px;
         }
         
         .no-access h2 {
             color: var(--primary-color);
+            margin-bottom: 15px;
         }
         
         .no-access p {
             color: var(--text-light);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .user-id {
@@ -220,7 +202,8 @@
             padding: 8px;
             border-radius: 6px;
             margin-top: 10px;
-            font-size: 14px;
+            font-size: 13px;
+            text-align: center;
         }
     </style>
 </head>
@@ -232,7 +215,7 @@
                 <p>系統載入中...</p>
             </div>
             <div class="message info">
-                <span class="loading"></span> 正在初始化系統...
+                <span class="loading"></span>正在初始化系統...
             </div>
         </div>
     </div>
@@ -244,25 +227,40 @@
                 <p>精準定位打卡系統</p>
             </div>
             
-            <div class="user-info">
-                <p><span>員工姓名:</span> <span id="displayName"></span></p>
-                <p><span>員工編號:</span> <span id="displayEmpId"></span></p>
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">員工姓名:</span>
+                    <span class="info-value" id="displayName"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">員工編號:</span>
+                    <span class="info-value" id="displayEmpId"></span>
+                </div>
             </div>
             
-            <div class="location-info">
-                <p><span>定位狀態:</span> <span id="locationStatus">準備獲取位置...</span></p>
-                <p><span>定位精確度:</span> <span id="locationAccuracy">--</span></p>
-                <p><span>距離台北101:</span> <span id="locationDistance">--</span></p>
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">定位狀態:</span>
+                    <span class="info-value" id="locationStatus">準備獲取位置...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">定位精確度:</span>
+                    <span class="info-value" id="locationAccuracy">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">距離台北101:</span>
+                    <span class="info-value" id="locationDistance">--</span>
+                </div>
             </div>
             
             <button id="checkInBtn">上班打卡</button>
             <button id="checkOutBtn" class="btn-checkout">下班打卡</button>
             <button id="showRecordsBtn" class="btn-record">查看今日記錄</button>
             
-            <div id="checkInResult" class="message"></div>
+            <div id="checkInResult" class="message" style="display:none;"></div>
             
             <div id="recordsContainer" class="records-container" style="display:none;">
-                <h3>今日打卡記錄</h3>
+                <h3 style="margin-top:0; font-size:16px;">今日打卡記錄</h3>
                 <div id="recordsList"></div>
             </div>
         </div>
@@ -274,8 +272,10 @@
                 <h2>台北101打卡系統</h2>
                 <p>您尚未被授權使用本系統</p>
                 <p>請聯繫管理人員提供以下LINE用戶ID進行註冊</p>
-                <div class="user-info">
-                    <p><span>LINE用戶ID:</span></p>
+                <div class="info-section">
+                    <div class="info-row">
+                        <span class="info-label">LINE用戶ID:</span>
+                    </div>
                     <div class="user-id" id="lineUserId"></div>
                 </div>
                 <div class="message info">
@@ -288,7 +288,7 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
         // 全局變量
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec'; // 替換為您的Google Apps Script部署URL
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec';
         let userId = '';
         let displayName = '';
         let empId = '';
@@ -298,7 +298,7 @@
         async function initializeApp() {
             try {
                 // 初始化LIFF
-                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為您的LIFF ID
+                await liff.init({ liffId: '2007700262-da76ZbYE' });
                 
                 if (!liff.isLoggedIn()) {
                     liff.login();
@@ -327,8 +327,7 @@
                 document.getElementById('loading').innerHTML = `
                     <div class="card">
                         <div class="message error">
-                            <p>系統初始化失敗</p>
-                            <p>${error.message}</p>
+                            系統初始化失敗: ${error.message}
                             <button onclick="window.location.reload()" style="margin-top:10px;">重新載入</button>
                         </div>
                     </div>
@@ -364,8 +363,11 @@
         document.getElementById('showRecordsBtn').addEventListener('click', toggleRecords);
 
         async function handleCheckIn(type) {
+            const resultElement = document.getElementById('checkInResult');
+            resultElement.style.display = 'none';
+            
             try {
-                showLoading('checkInResult', '正在驗證位置...');
+                showLoading('正在驗證位置...');
                 updateLocationStatus('正在獲取位置...', 'info');
                 
                 // 獲取位置
@@ -392,7 +394,7 @@
                 }
                 
                 // 提交打卡
-                showLoading('checkInResult', `${type === 'checkIn' ? '上班' : '下班'}打卡中...`);
+                showLoading(`${type === 'checkIn' ? '上班' : '下班'}打卡中...`);
                 
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
@@ -416,7 +418,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showResult('checkInResult', `${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
+                    showResult(`${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
                     
                     // 刷新記錄顯示
                     if (document.getElementById('recordsContainer').style.display === 'block') {
@@ -428,7 +430,7 @@
             } catch (error) {
                 console.error('打卡失敗:', error);
                 updateLocationStatus(error.message, 'error');
-                showError('checkInResult', `打卡失敗: ${error.message}`, error);
+                showError(`打卡失敗: ${error.message}`);
             }
         }
 
@@ -465,7 +467,7 @@
                 }
             } catch (error) {
                 console.error('獲取記錄失敗:', error);
-                showError('recordsList', `獲取記錄失敗: ${error.message}`, error);
+                showError('recordsList', `獲取記錄失敗: ${error.message}`);
             }
         }
 
@@ -487,12 +489,24 @@
                 const recordDiv = document.createElement('div');
                 recordDiv.className = 'record-item';
                 recordDiv.innerHTML = `
-                    <p><span>類型:</span> <strong style="color:${record.type === 'checkIn' ? 'var(--success-color)' : 'var(--error-color)'}">${record.type === 'checkIn' ? '上班打卡' : '下班打卡'}</strong></p>
-                    <p><span>日期:</span> ${record.date}</p>
-                    <p><span>時間:</span> ${record.time}</p>
-                    <p><span>位置:</span> ${record.address || '未知位置'}</p>
-                    <p><span>距離:</span> ${record.distance || '--'} 公尺</p>
-                    <p><span>狀態:</span> ${record.status || '--'}</p>
+                    <div class="info-row">
+                        <span class="info-label">類型:</span>
+                        <span class="info-value" style="color:${record.type === 'checkIn' ? 'var(--success-color)' : 'var(--error-color)'}">
+                            ${record.type === 'checkIn' ? '上班打卡' : '下班打卡'}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">時間:</span>
+                        <span class="info-value">${record.time}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">位置:</span>
+                        <span class="info-value">${record.address || '未知位置'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">距離:</span>
+                        <span class="info-value">${record.distance || '--'} 公尺</span>
+                    </div>
                 `;
                 recordsList.appendChild(recordDiv);
             });
@@ -554,7 +568,8 @@
         function updateLocationStatus(message, type) {
             const statusElement = document.getElementById('locationStatus');
             statusElement.textContent = message;
-            statusElement.className = type;
+            statusElement.style.color = type === 'error' ? 'var(--error-color)' : 
+                                      type === 'success' ? 'var(--success-color)' : 'var(--info-color)';
         }
 
         // 顯示主畫面
@@ -573,24 +588,27 @@
         }
 
         // 顯示加載狀態
-        function showLoading(elementId, message) {
-            const element = document.getElementById(elementId);
-            element.innerHTML = `<span class="loading"></span> ${message}`;
+        function showLoading(message) {
+            const element = document.getElementById('checkInResult');
+            element.innerHTML = `<span class="loading"></span>${message}`;
             element.className = 'message info';
+            element.style.display = 'block';
         }
 
         // 顯示結果
-        function showResult(elementId, message, type) {
-            const element = document.getElementById(elementId);
+        function showResult(message, type) {
+            const element = document.getElementById('checkInResult');
             element.innerHTML = message;
             element.className = `message ${type}`;
+            element.style.display = 'block';
         }
 
         // 顯示錯誤
-        function showError(elementId, message, error) {
-            const element = document.getElementById(elementId);
-            element.innerHTML = `${message}<br><small>${error.message || ''}</small>`;
+        function showError(message) {
+            const element = document.getElementById('checkInResult');
+            element.innerHTML = message;
             element.className = 'message error';
+            element.style.display = 'block';
         }
 
         // 啟動應用
