@@ -351,75 +351,90 @@
         document.getElementById('checkOutBtn').addEventListener('click', () => handleCheckIn('checkOut'));
 
         // 處理打卡
-        async function handleCheckIn(type) {
-            try {
-                showStatus('checkInStatus', `<span class="spinner"></span>${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
-                
-                // 獲取當前位置
-                const position = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, {
-                        enableHighAccuracy: true,
-                        timeout: 10000
-                    });
-                });
-                
-                const { latitude, longitude, accuracy } = position.coords;
-                
-                // 提交打卡資料
-                submitToBackend({
-                    action: 'checkIn',
-                    type: type,
-                    userId: state.userId,
-                    empId: state.empId,
-                    latitude: latitude,
-                    longitude: longitude,
-                    accuracy: accuracy
-                });
-                
-                showStatus('checkInStatus', `${type === 'checkIn' ? '上班' : '下班'}打卡成功！`, 'success');
-                
-                // 如果是記錄頁面，刷新記錄
-                if (document.getElementById('recordsTab').style.display === 'block') {
-                    fetchRecords();
-                }
-                
-            } catch (error) {
-                console.error('打卡失敗:', error);
-                showStatus('checkInStatus', `打卡失敗: ${error.message}`, 'error');
-            }
-        }
+// 修改後的handleCheckIn函數
+async function handleCheckIn(type) {
+  try {
+    showStatus('checkInStatus', `<span class="spinner"></span>處理中...`, 'info');
+    
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000
+      });
+    });
+    
+    const { latitude, longitude, accuracy } = position.coords;
+    
+    // 先確保用戶已註冊
+    const registerResult = await submitToBackend({
+      action: 'register',
+      name: state.displayName,
+      empId: state.empId,
+      userId: state.userId
+    });
+    
+    console.log('註冊結果:', registerResult);
+    
+    // 提交打卡
+    const checkInResult = await submitToBackend({
+      action: 'checkIn',
+      type: type,
+      userId: state.userId,
+      empId: state.empId,
+      latitude: latitude,
+      longitude: longitude,
+      accuracy: accuracy
+    });
+    
+    console.log('打卡結果:', checkInResult);
+    showStatus('checkInStatus', `${type === 'checkIn' ? '上班' : '下班'}打卡成功！`, 'success');
+    
+  } catch (error) {
+    console.error('打卡失敗:', error);
+    showStatus('checkInStatus', `打卡失敗: ${error.message}`, 'error');
+  }
+}
+
 
         // 提交資料到後端 (使用表單提交避免CORS問題)
-        function submitToBackend(data) {
-            return new Promise((resolve) => {
-                // 創建隱藏表單
-                const form = document.createElement('form');
-                form.method = 'GET';
-                form.action = state.scriptUrl;
-                form.target = 'hiddenFrame'; // 使用隱藏iframe避免頁面跳轉
-                
-                // 添加所有參數
-                Object.keys(data).forEach(key => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = key;
-                    input.value = data[key];
-                    form.appendChild(input);
-                });
-                
-                // 添加表單到DOM並提交
-                document.body.appendChild(form);
-                form.submit();
-                
-                // 清理表單
-                setTimeout(() => {
-                    document.body.removeChild(form);
-                    resolve();
-                }, 1000);
-                
-                console.log('已提交資料:', data);
-            });
-        }
+// 修改後的submitToBackend函數
+async function submitToBackend(data) {
+  try {
+    // 使用fetch並添加錯誤處理
+    const response = await fetch(`${state.scriptUrl}?${new URLSearchParams(data)}`);
+    const result = await response.text();
+    console.log('後端回應:', result);
+    return result;
+  } catch (error) {
+    console.error('提交失敗:', error);
+    
+    // 備用方案：使用圖片載入
+    const img = new Image();
+    img.src = `${state.scriptUrl}?${new URLSearchParams(data)}`;
+    
+    // 第二備用方案：使用表單提交
+    const form = document.createElement('form');
+    form.method = 'GET';
+    form.action = state.scriptUrl;
+    form.target = '_blank';
+    form.style.display = 'none';
+    
+    Object.keys(data).forEach(key => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = data[key];
+      form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+    
+    return '使用備用方案提交';
+  }
+}
+
 
         // 顯示狀態訊息
         function showStatus(elementId, message, type) {
