@@ -18,39 +18,71 @@
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .error-box {
-            background: #fdecea;
-            border-left: 4px solid #e74c3c;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 0 5px 5px 0;
+        .form-group {
+            margin-bottom: 15px;
         }
-        .success-box {
-            background: #e8f8f0;
-            border-left: 4px solid #2ecc71;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 0 5px 5px 0;
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
         }
         button {
             background: #06c755;
             color: white;
             border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 5px;
-            font-size: 16px;
-            margin: 10px 0;
             cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
         }
         button:disabled {
-            background: #ddd;
+            background: #cccccc;
+            cursor: not-allowed;
         }
-        .location-status {
-            padding: 15px;
-            background: #ebf5fb;
+        .status {
+            padding: 10px;
             border-radius: 5px;
             margin: 15px 0;
+            text-align: center;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,.1);
+            border-radius: 50%;
+            border-top-color: #06c755;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error {
+            color: #e74c3c;
+            background: #fdecea;
+        }
+        .success {
+            color: #2ecc71;
+            background: #e8f8f0;
+        }
+        .info {
+            color: #3498db;
+            background: #ebf5fb;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #06c755;
+            padding-bottom: 10px;
+            margin-top: 0;
         }
         .hidden {
             display: none;
@@ -58,171 +90,288 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>台北101大樓打卡系統</h1>
-        
-        <!-- 狀態顯示區 -->
-        <div id="errorBox" class="error-box hidden">
-            <h3>⚠️ 打卡失敗</h3>
-            <p id="errorMessage"></p>
-            <p><strong>建議操作：</strong></p>
-            <ol>
-                <li>確認網路連線正常</li>
-                <li>重新整理頁面後再試</li>
-                <li>檢查網址列是否為 <code>https://liff.line.me/...</code></li>
-            </ol>
+    <div id="loading" class="container status info">
+        <p><span class="loading"></span>系統初始化中...</p>
+    </div>
+
+    <!-- 註冊畫面 -->
+    <div id="registerContainer" class="container hidden">
+        <h2>新員工註冊</h2>
+        <div class="form-group">
+            <label for="registerName">您的姓名</label>
+            <input type="text" id="registerName" placeholder="請輸入真實姓名">
+        </div>
+        <div class="form-group">
+            <label for="registerEmpId">員工編號 (6位數字)</label>
+            <input type="text" id="registerEmpId" placeholder="123456" maxlength="6">
+        </div>
+        <button id="registerBtn">註冊</button>
+        <div id="registerStatus" class="status hidden"></div>
+    </div>
+
+    <!-- 打卡畫面 -->
+    <div id="checkinContainer" class="container hidden">
+        <h2>台北101打卡系統</h2>
+        <div id="userInfo" class="status info">
+            <p>員工: <span id="displayName"></span></p>
+            <p>編號: <span id="displayEmpId"></span></p>
         </div>
         
-        <div id="successBox" class="success-box hidden">
-            <h3>✅ 打卡成功</h3>
-            <p id="successMessage"></p>
+        <div id="locationStatus" class="status info">
+            準備獲取位置資訊...
         </div>
         
-        <!-- 打卡表單 -->
-        <div class="location-status">
-            <p id="locationText">正在準備定位系統...</p>
-            <p id="distanceText"></p>
-        </div>
-        
-        <button id="checkInBtn" disabled>上班打卡</button>
-        <button id="checkOutBtn" disabled>下班打卡</button>
-        
-        <div id="troubleshootTip" class="hidden">
-            <h3>ℹ️ 技術提示</h3>
-            <p>如持續遇到問題，可能是以下原因：</p>
-            <ul>
-                <li>LINE 伺服器暫時繁忙（請稍後再試）</li>
-                <li>您的網路環境限制（嘗試切換網路）</li>
-            </ul>
-        </div>
+        <button id="checkInBtn">上班打卡</button>
+        <button id="checkOutBtn">下班打卡</button>
+        <div id="checkinStatus" class="status hidden"></div>
     </div>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
         // 狀態管理
         const state = {
-            isInTaipei101: false,
-            lastCheckTime: null
+            userId: '',
+            displayName: '',
+            empId: '',
+            isRegistered: false,
+            scriptUrl: 'https://script.google.com/macros/s/AKfycbx5I9vg9m7nTmkb0qrU8gMGXeguzVJ__ALYnqZPLdxTXTbmQr0x4voXcS_l1HpqCsw/exec' // 替換為您的Google Apps Script部署URL
         };
 
-        // DOM 元素
-        const elements = {
-            errorBox: document.getElementById('errorBox'),
-            errorMessage: document.getElementById('errorMessage'),
-            successBox: document.getElementById('successBox'),
-            successMessage: document.getElementById('successMessage'),
-            locationText: document.getElementById('locationText'),
-            distanceText: document.getElementById('distanceText'),
-            checkInBtn: document.getElementById('checkInBtn'),
-            checkOutBtn: document.getElementById('checkOutBtn'),
-            troubleshootTip: document.getElementById('troubleshootTip')
-        };
-
-        // 初始化
-        async function init() {
+        // 初始化應用
+        async function initApp() {
             try {
-                await liff.init({ liffId: '2007700262-da76ZbYE' });
+                // 初始化LIFF
+                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為您的LIFF ID
                 
                 if (!liff.isLoggedIn()) {
                     liff.login();
                     return;
                 }
                 
-                // 模擬位置檢查（實際應使用瀏覽器Geolocation）
-                checkLocation();
+                // 獲取用戶資料
+                const profile = await liff.getProfile();
+                state.userId = profile.userId;
+                state.displayName = profile.displayName;
+                
+                // 檢查註冊狀態 (使用前端緩存)
+                checkRegistrationStatus();
                 
             } catch (error) {
-                showError('LIFF初始化失敗，請關閉後重新進入');
-                console.error('初始化錯誤:', error);
+                console.error('初始化失敗:', error);
+                showStatus('loading', `系統錯誤: ${error.message}`, 'error');
             }
         }
 
-        // 位置檢查（純前端模擬）
-        function checkLocation() {
-            elements.locationText.textContent = "定位中...";
+        // 檢查註冊狀態 (簡化版)
+        function checkRegistrationStatus() {
+            // 這裡使用localStorage模擬已註冊狀態
+            // 實際應用中應該從後端檢查，但為避免跨域問題，我們簡化流程
+            const registered = localStorage.getItem('registered');
             
-            // 模擬延遲
+            if (registered) {
+                state.isRegistered = true;
+                state.empId = localStorage.getItem('empId') || '';
+                showCheckinScreen();
+            } else {
+                showRegisterScreen();
+            }
+            
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        // 顯示註冊畫面
+        function showRegisterScreen() {
+            document.getElementById('registerContainer').classList.remove('hidden');
+            document.getElementById('checkinContainer').classList.add('hidden');
+            document.getElementById('registerName').value = state.displayName;
+        }
+
+        // 顯示打卡畫面
+        function showCheckinScreen() {
+            document.getElementById('registerContainer').classList.add('hidden');
+            document.getElementById('checkinContainer').classList.remove('hidden');
+            document.getElementById('displayName').textContent = state.displayName;
+            document.getElementById('displayEmpId').textContent = state.empId;
+            
+            // 開始獲取位置
+            getLocation();
+        }
+
+        // 註冊按鈕事件
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            const name = document.getElementById('registerName').value.trim();
+            const empId = document.getElementById('registerEmpId').value.trim();
+            
+            if (!name || !empId) {
+                showStatus('registerStatus', '請填寫所有欄位', 'error');
+                return;
+            }
+            
+            if (empId.length !== 6 || !/^\d+$/.test(empId)) {
+                showStatus('registerStatus', '員工編號必須是6位數字', 'error');
+                return;
+            }
+            
+            // 模擬註冊成功
+            localStorage.setItem('registered', 'true');
+            localStorage.setItem('empId', empId);
+            localStorage.setItem('name', name);
+            
+            state.isRegistered = true;
+            state.empId = empId;
+            
+            showStatus('registerStatus', '註冊成功！', 'success');
+            
+            // 延遲後顯示打卡畫面
             setTimeout(() => {
-                // 隨機模擬位置結果（開發用）
-                const isInRange = Math.random() > 0.3; // 70% 機率在範圍內
-                
-                if (isInRange) {
-                    state.isInTaipei101 = true;
-                    elements.locationText.textContent = "📍 位置：台北101大樓範圍內";
-                    elements.distanceText.textContent = "距離：約50公尺";
-                    enableButtons();
-                } else {
-                    state.isInTaipei101 = false;
-                    elements.locationText.textContent = "⚠️ 您不在台北101大樓範圍內";
-                    elements.distanceText.textContent = "請移動至台北101大樓後重試";
-                    disableButtons();
-                }
+                document.getElementById('registerStatus').classList.add('hidden');
+                showCheckinScreen();
             }, 1500);
-        }
-
-        // 打卡處理（純前端模擬）
-        function setupCheckInButtons() {
-            elements.checkInBtn.addEventListener('click', () => {
-                simulateCheckIn('checkIn');
-            });
             
-            elements.checkOutBtn.addEventListener('click', () => {
-                simulateCheckIn('checkOut');
+            // 實際應用中這裡應該提交資料到Google Sheet
+            // 但為避免跨域問題，我們使用以下替代方案
+            submitDataToGoogleSheet({
+                action: 'register',
+                name: name,
+                empId: empId,
+                userId: state.userId
             });
-        }
+        });
 
-        // 模擬打卡（僅前端顯示）
-        function simulateCheckIn(type) {
-            disableButtons();
-            
-            // 模擬API呼叫延遲
-            setTimeout(() => {
-                // 隨機模擬成功/失敗（開發用）
-                const isSuccess = Math.random() > 0.3; // 70% 成功機率
+        // 打卡按鈕事件
+        document.getElementById('checkInBtn').addEventListener('click', () => handleCheckIn('checkIn'));
+        document.getElementById('checkOutBtn').addEventListener('click', () => handleCheckIn('checkOut'));
+
+        // 處理打卡
+        async function handleCheckIn(type) {
+            try {
+                showStatus('checkinStatus', '處理中...', 'info');
                 
-                if (isSuccess) {
-                    const time = new Date().toLocaleTimeString('zh-TW');
-                    showSuccess(`${type === 'checkIn' ? '上班' : '下班'}打卡成功 (${time})`);
-                    state.lastCheckTime = new Date();
-                } else {
-                    showError('打卡失敗：連線異常 (模擬錯誤)');
-                    elements.troubleshootTip.classList.remove('hidden');
+                // 獲取位置
+                const position = await getLocation();
+                const { latitude, longitude, accuracy } = position.coords;
+                
+                // 計算距離 (簡化版)
+                const distance = calculateDistance(
+                    latitude, longitude, 
+                    25.0330, 121.5654
+                );
+                
+                // 檢查距離
+                if (distance > 500) {
+                    throw new Error(`您距離台北101大樓 ${distance.toFixed(0)} 公尺，超出允許範圍`);
                 }
                 
-                enableButtons();
-            }, 2000);
-        }
-
-        // UI 控制函數
-        function showError(message) {
-            elements.errorMessage.textContent = message;
-            elements.errorBox.classList.remove('hidden');
-            elements.successBox.classList.add('hidden');
-        }
-
-        function showSuccess(message) {
-            elements.successMessage.textContent = message;
-            elements.successBox.classList.remove('hidden');
-            elements.errorBox.classList.add('hidden');
-        }
-
-        function enableButtons() {
-            if (state.isInTaipei101) {
-                elements.checkInBtn.disabled = false;
-                elements.checkOutBtn.disabled = false;
+                // 模擬打卡成功
+                showStatus('checkinStatus', `${type === 'checkIn' ? '上班' : '下班'}打卡成功！`, 'success');
+                
+                // 實際應用中這裡應該提交資料到Google Sheet
+                // 但為避免跨域問題，我們使用以下替代方案
+                submitDataToGoogleSheet({
+                    action: 'checkIn',
+                    type: type,
+                    userId: state.userId,
+                    empId: state.empId,
+                    latitude: latitude,
+                    longitude: longitude,
+                    accuracy: accuracy,
+                    distance: distance.toFixed(0)
+                });
+                
+            } catch (error) {
+                console.error('打卡失敗:', error);
+                showStatus('checkinStatus', `打卡失敗: ${error.message}`, 'error');
             }
         }
 
-        function disableButtons() {
-            elements.checkInBtn.disabled = true;
-            elements.checkOutBtn.disabled = true;
+        // 獲取位置
+        function getLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('您的瀏覽器不支持地理位置功能'));
+                    return;
+                }
+                
+                showStatus('locationStatus', '正在獲取位置...', 'info');
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude, accuracy } = position.coords;
+                        showStatus('locationStatus', 
+                            `位置已獲取<br>緯度: ${latitude.toFixed(6)}<br>經度: ${longitude.toFixed(6)}<br>精確度: ±${accuracy.toFixed(1)} 公尺`, 
+                            'success');
+                        resolve(position);
+                    },
+                    (error) => {
+                        let message = '獲取位置失敗: ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                message += '您拒絕了位置權限請求';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message += '位置資訊不可用';
+                                break;
+                            case error.TIMEOUT:
+                                message += '獲取位置超時';
+                                break;
+                            default:
+                                message += '未知錯誤';
+                        }
+                        showStatus('locationStatus', message, 'error');
+                        reject(new Error(message));
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            });
+        }
+
+        // 計算距離 (簡化版)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            // 簡化計算，實際應用中應使用更精確的公式
+            const dx = 111320 * (lon2 - lon1);
+            const dy = 110574 * (lat2 - lat1);
+            return Math.sqrt(dx*dx + dy*dy);
+        }
+
+        // 顯示狀態訊息
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `status ${type}`;
+            element.classList.remove('hidden');
+        }
+
+        // 提交資料到Google Sheet (避免跨域的替代方案)
+        function submitDataToGoogleSheet(data) {
+            // 方法1: 使用圖片載入觸發請求 (不會阻塞UI)
+            const img = new Image();
+            const params = new URLSearchParams(data);
+            img.src = `${state.scriptUrl}?${params.toString()}`;
+            
+            // 方法2: 使用表單提交 (如果需要POST)
+            // const form = document.createElement('form');
+            // form.action = state.scriptUrl;
+            // form.method = 'POST';
+            // form.target = '_blank';
+            // form.style.display = 'none';
+            // 
+            // Object.entries(data).forEach(([key, value]) => {
+            //     const input = document.createElement('input');
+            //     input.type = 'hidden';
+            //     input.name = key;
+            //     input.value = value;
+            //     form.appendChild(input);
+            // });
+            // 
+            // document.body.appendChild(form);
+            // form.submit();
+            // document.body.removeChild(form);
+            
+            console.log('資料已提交:', data);
         }
 
         // 啟動應用
-        document.addEventListener('DOMContentLoaded', () => {
-            init();
-            setupCheckInButtons();
-        });
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
