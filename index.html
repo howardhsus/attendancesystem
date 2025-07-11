@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北101大樓打卡系統</title>
+    <title>台北101打卡系統</title>
     <style>
         body {
             font-family: 'Microsoft JhengHei', Arial, sans-serif;
@@ -13,105 +13,10 @@
             background-color: #f5f5f5;
         }
         .container {
-            display: none;
             background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        #loading {
-            text-align: center;
-            padding: 20px;
-            font-size: 18px;
-        }
-        .tab {
-            display: flex;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .tab button {
-            flex: 1;
-            padding: 12px;
-            background: #ddd;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        .tab button.active {
-            background: #06c755;
-            color: white;
-            font-weight: bold;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, button {
-            width: 100%;
-            padding: 12px;
-            box-sizing: border-box;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-        }
-        button {
-            background: #06c755;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
-        .record {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            background: white;
-        }
-        .record p {
-            margin: 5px 0;
-        }
-        .error {
-            color: #e74c3c;
-            background: #fdecea;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        .success {
-            color: #2ecc71;
-            background: #e8f8f0;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        .info {
-            color: #3498db;
-            background: #ebf5fb;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        h2 {
-            color: #333;
-            border-bottom: 2px solid #06c755;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        #locationStatus {
-            font-weight: bold;
-            margin: 15px 0;
         }
         .user-info {
             background: #e8f5e9;
@@ -119,11 +24,23 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
-        .location-details {
-            background: #e3f2fd;
-            padding: 15px;
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #06c755;
+            color: white;
+            border: none;
             border-radius: 5px;
-            margin: 15px 0;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .error {
+            color: #e74c3c;
+            background: #fdecea;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
         }
         .spinner {
             display: inline-block;
@@ -139,106 +56,33 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        .hidden-form {
-            display: none;
-        }
     </style>
 </head>
 <body>
-    <div id="loading">
-        <p><span class="spinner"></span>系統載入中...</p>
-    </div>
-
-    <!-- 註冊畫面 (新員工) -->
-    <div id="registerContainer" class="container">
-        <h2>新員工註冊</h2>
-        <div class="user-info">
-            <p>歡迎使用台北101打卡系統</p>
-            <p>請填寫以下資訊完成註冊</p>
+    <div class="container" id="appContainer">
+        <h1>台北101打卡系統</h1>
+        <div id="loading">
+            <p><span class="spinner"></span>系統載入中...</p>
         </div>
-        
-        <form id="registerForm" class="hidden-form" action="https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec" method="post">
-            <input type="hidden" name="action" value="register">
-            <input type="hidden" name="userId" id="registerUserId">
-            
-            <div class="form-group">
-                <label for="registerName">您的姓名</label>
-                <input type="text" id="registerName" name="name" placeholder="請輸入真實姓名" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="registerEmpId">員工編號 (6位數字)</label>
-                <input type="text" id="registerEmpId" name="empId" placeholder="123456" maxlength="6" required pattern="\d{6}">
-            </div>
-            
-            <button type="submit">註冊</button>
-        </form>
-        <div id="registerResult"></div>
-    </div>
-
-    <!-- 主畫面 (已註冊員工) -->
-    <div id="mainContainer" class="container">
-        <div class="user-info">
-            <p>員工: <span id="displayName"></span></p>
-            <p>編號: <span id="displayEmpId"></span></p>
+        <div id="userInfo" class="user-info" style="display:none;"></div>
+        <div id="checkInSection" style="display:none;">
+            <button id="checkInBtn">上班打卡</button>
+            <button id="checkOutBtn">下班打卡</button>
+            <div id="resultMessage"></div>
         </div>
-        
-        <div class="tab">
-            <button class="tablinks active" onclick="openTab(event, 'checkInTab')">打卡</button>
-            <button class="tablinks" onclick="openTab(event, 'recordsTab')">出勤記錄</button>
-        </div>
-        
-        <!-- 打卡分頁 -->
-        <div id="checkInTab" class="tabcontent" style="display:block;">
-            <h2>上下班打卡</h2>
-            
-            <div class="location-details">
-                <p id="locationStatus">準備獲取位置...</p>
-                <p id="locationAccuracy"></p>
-                <p id="locationDistance"></p>
-            </div>
-            
-            <form id="checkInForm" class="hidden-form" action="https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec" method="post">
-                <input type="hidden" name="action" value="checkIn">
-                <input type="hidden" name="userId" id="checkInUserId">
-                <input type="hidden" name="empId" id="checkInEmpId">
-                <input type="hidden" name="type" id="checkInType">
-                <input type="hidden" name="latitude" id="checkInLat">
-                <input type="hidden" name="longitude" id="checkInLng">
-                <input type="hidden" name="accuracy" id="checkInAccuracy">
-                <input type="hidden" name="distance" id="checkInDistance">
-            </form>
-            
-            <button id="checkInBtn" onclick="prepareCheckIn('checkIn')">上班打卡</button>
-            <button id="checkOutBtn" onclick="prepareCheckIn('checkOut')">下班打卡</button>
-            <div id="checkInResult"></div>
-        </div>
-        
-        <!-- 出勤記錄分頁 -->
-        <div id="recordsTab" class="tabcontent">
-            <h2>今日出勤記錄</h2>
-            <button id="refreshRecordsBtn" onclick="loadRecords()">刷新記錄</button>
-            <div id="recordsList"></div>
+        <div id="noAccessMessage" class="error" style="display:none;">
+            <p>您尚未被授權使用此系統</p>
+            <p>請聯繫管理人員</p>
         </div>
     </div>
-
-    <!-- 用於記錄查詢的隱藏iframe -->
-    <iframe id="recordsFrame" name="recordsFrame" class="hidden-form"></iframe>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // 全局變量
-        let userId = '';
-        let displayName = '';
-        let empId = '';
-        let isRegistered = false;
-        let scriptUrl = 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec'; // 替換為您的Google Apps Script部署URL
-
         // 初始化應用
         async function initializeApp() {
             try {
                 // 初始化LIFF
-                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為您的LIFF ID
+                await liff.init({ liffId: '2007700262-da76ZbYE' });
                 
                 if (!liff.isLoggedIn()) {
                     liff.login();
@@ -247,24 +91,10 @@
                 
                 // 獲取用戶資料
                 const profile = await liff.getProfile();
-                userId = profile.userId;
-                displayName = profile.displayName;
+                const userId = profile.userId;
                 
-                // 設置表單中的userId
-                document.getElementById('registerUserId').value = userId;
-                document.getElementById('checkInUserId').value = userId;
-                
-                // 檢查用戶是否已註冊
-                await checkUserRegistration();
-                
-                // 顯示適當的畫面
-                if (isRegistered) {
-                    showMainContainer();
-                } else {
-                    showRegisterContainer();
-                }
-                
-                document.getElementById('loading').style.display = 'none';
+                // 檢查是否為員工 (使用LIFF發送訊息到後端)
+                await checkEmployeeAccess(userId);
                 
             } catch (error) {
                 console.error('初始化失敗:', error);
@@ -272,284 +102,80 @@
                     <div class="error">
                         <p>系統初始化失敗</p>
                         <p>${error.message}</p>
-                        <button onclick="window.location.reload()">重新載入</button>
                     </div>
                 `;
             }
         }
 
-        // 檢查用戶是否已註冊
-        async function checkUserRegistration() {
+        // 使用LIFF訊息API檢查員工權限
+        async function checkEmployeeAccess(userId) {
             try {
-                // 使用iframe加載註冊狀態檢查
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.name = 'checkRegistrationFrame';
-                document.body.appendChild(iframe);
+                // 使用LIFF的sendMessages與後端溝通
+                const response = await liff.sendMessages([{
+                    type: 'text',
+                    text: JSON.stringify({
+                        action: 'checkAccess',
+                        userId: userId
+                    })
+                }]);
                 
-                const form = document.createElement('form');
-                form.method = 'post';
-                form.action = scriptUrl;
-                form.target = 'checkRegistrationFrame';
-                
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'checkRegistration';
-                form.appendChild(actionInput);
-                
-                const userIdInput = document.createElement('input');
-                userIdInput.type = 'hidden';
-                userIdInput.name = 'userId';
-                userIdInput.value = userId;
-                form.appendChild(userIdInput);
-                
-                document.body.appendChild(form);
-                form.submit();
-                
-                // 監聽iframe加載完成
-                iframe.onload = function() {
-                    try {
-                        const response = JSON.parse(iframe.contentDocument.body.textContent);
-                        
-                        if (response.success && response.registered) {
-                            isRegistered = true;
-                            empId = response.empId;
-                            document.getElementById('displayName').textContent = response.name || displayName;
-                            document.getElementById('displayEmpId').textContent = response.empId;
-                            document.getElementById('checkInEmpId').value = response.empId;
-                        }
-                    } catch (e) {
-                        console.error('解析註冊狀態失敗:', e);
-                    } finally {
-                        document.body.removeChild(iframe);
-                        document.body.removeChild(form);
-                    }
-                };
+                // 後端會透過LIFF回傳訊息處理結果
+                // 這裡簡化處理，實際應由後端回調處理
                 
             } catch (error) {
-                console.error('檢查註冊失敗:', error);
-                isRegistered = false;
+                console.error('權限檢查失敗:', error);
+                showNoAccess();
             }
         }
 
-        // 準備打卡數據
-        async function prepareCheckIn(type) {
+        // 顯示打卡界面
+        function showCheckInUI(userData) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('checkInSection').style.display = 'block';
+            
+            document.getElementById('userInfo').innerHTML = `
+                <p>員工: ${userData.name}</p>
+                <p>編號: ${userData.empId}</p>
+            `;
+            
+            // 綁定打卡按鈕事件
+            document.getElementById('checkInBtn').addEventListener('click', () => handleCheckIn('checkIn'));
+            document.getElementById('checkOutBtn').addEventListener('click', () => handleCheckIn('checkOut'));
+        }
+
+        // 顯示無權限訊息
+        function showNoAccess() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('noAccessMessage').style.display = 'block';
+        }
+
+        // 打卡處理
+        async function handleCheckIn(type) {
             try {
-                showLoading('checkInResult', '正在驗證位置...');
-                updateLocationStatus('正在獲取位置...', 'info');
-                
-                // 獲取位置
-                const position = await getLocation();
-                const { latitude, longitude, accuracy } = position.coords;
-                
-                // 更新位置狀態
-                updateLocationStatus('位置已獲取', 'success');
-                document.getElementById('locationAccuracy').textContent = `精確度: ±${accuracy.toFixed(1)} 公尺`;
-                
-                // 計算與台北101的距離
-                const distance = calculateDistance(
-                    latitude, 
-                    longitude, 
-                    25.0330, // 台北101緯度
-                    121.5654 // 台北101經度
-                );
-                
-                document.getElementById('locationDistance').textContent = `距離台北101: ${distance.toFixed(0)} 公尺`;
-                
-                // 檢查是否在台北101範圍內 (500公尺內)
-                if (distance > 500) {
-                    throw new Error('您不在台北101大樓範圍內，無法打卡');
-                }
-                
-                // 設置表單數據
-                document.getElementById('checkInType').value = type;
-                document.getElementById('checkInLat').value = latitude;
-                document.getElementById('checkInLng').value = longitude;
-                document.getElementById('checkInAccuracy').value = accuracy;
-                document.getElementById('checkInDistance').value = distance.toFixed(0);
-                
-                // 提交表單
-                document.getElementById('checkInForm').submit();
-                
-            } catch (error) {
-                console.error('打卡失敗:', error);
-                updateLocationStatus(error.message, 'error');
-                showError('checkInResult', `打卡失敗: ${error.message}`, error);
-            }
-        }
-
-        // 獲取位置
-        function getLocation() {
-            return new Promise((resolve, reject) => {
-                if (!navigator.geolocation) {
-                    reject(new Error('您的瀏覽器不支持地理位置功能'));
-                    return;
-                }
-                
-                navigator.geolocation.getCurrentPosition(
-                    position => resolve(position),
-                    error => {
-                        let message = '獲取位置失敗: ';
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                message += '您拒絕了位置權限請求';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                message += '位置資訊不可用';
-                                break;
-                            case error.TIMEOUT:
-                                message += '獲取位置超時';
-                                break;
-                            default:
-                                message += '未知錯誤';
-                        }
-                        reject(new Error(message));
-                    },
-                    { enableHighAccuracy: true, timeout: 10000 }
-                );
-            });
-        }
-
-        // 計算兩個座標之間的距離 (公尺)
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // 地球半徑 (公尺)
-            const φ1 = lat1 * Math.PI/180;
-            const φ2 = lat2 * Math.PI/180;
-            const Δφ = (lat2-lat1) * Math.PI/180;
-            const Δλ = (lon2-lon1) * Math.PI/180;
-
-            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                      Math.cos(φ1) * Math.cos(φ2) *
-                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-            return R * c;
-        }
-
-        // 加載出勤記錄
-        function loadRecords() {
-            const iframe = document.getElementById('recordsFrame');
-            const form = document.createElement('form');
-            form.method = 'post';
-            form.action = scriptUrl;
-            form.target = 'recordsFrame';
-            
-            const actionInput = document.createElement('input');
-            actionInput.type = 'hidden';
-            actionInput.name = 'action';
-            actionInput.value = 'getRecords';
-            form.appendChild(actionInput);
-            
-            const userIdInput = document.createElement('input');
-            userIdInput.type = 'hidden';
-            userIdInput.name = 'userId';
-            userIdInput.value = userId;
-            form.appendChild(userIdInput);
-            
-            document.body.appendChild(form);
-            form.submit();
-            
-            // 監聽iframe加載完成
-            iframe.onload = function() {
-                try {
-                    const response = JSON.parse(iframe.contentDocument.body.textContent);
-                    
-                    if (response.success) {
-                        displayRecords(response.records);
-                    } else {
-                        showError('recordsList', `獲取記錄失敗: ${response.error || '未知錯誤'}`, null);
-                    }
-                } catch (e) {
-                    console.error('解析記錄失敗:', e);
-                    showError('recordsList', '解析記錄失敗', e);
-                }
-            };
-        }
-
-        // 顯示出勤記錄
-        function displayRecords(records) {
-            const recordsList = document.getElementById('recordsList');
-            
-            if (!records || records.length === 0) {
-                recordsList.innerHTML = '<div class="info">今日尚無打卡記錄</div>';
-                return;
-            }
-            
-            recordsList.innerHTML = '';
-            
-            records.forEach(record => {
-                const recordDiv = document.createElement('div');
-                recordDiv.className = 'record';
-                recordDiv.innerHTML = `
-                    <p><strong>${record.type === 'checkIn' ? '上班' : '下班'}打卡</strong></p>
-                    <p>日期: ${record.date}</p>
-                    <p>時間: ${record.time}</p>
-                    <p>狀態: ${record.status}</p>
-                    ${record.distance ? `<p>距離: ${record.distance} 公尺</p>` : ''}
+                document.getElementById('resultMessage').innerHTML = `
+                    <p><span class="spinner"></span>打卡處理中...</p>
                 `;
-                recordsList.appendChild(recordDiv);
-            });
-        }
-
-        // 切換分頁
-        function openTab(evt, tabName) {
-            const tabcontent = document.getElementsByClassName("tabcontent");
-            for (let i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
+                
+                // 使用LIFF訊息API發送打卡請求
+                await liff.sendMessages([{
+                    type: 'text',
+                    text: JSON.stringify({
+                        action: 'checkIn',
+                        type: type
+                    })
+                }]);
+                
+                // 實際應用中應等待後端回調
+                document.getElementById('resultMessage').innerHTML = `
+                    <p class="success">${type === 'checkIn' ? '上班' : '下班'}打卡成功</p>
+                `;
+                
+            } catch (error) {
+                document.getElementById('resultMessage').innerHTML = `
+                    <p class="error">打卡失敗: ${error.message}</p>
+                `;
             }
-            
-            const tablinks = document.getElementsByClassName("tablinks");
-            for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
-            
-            if (tabName === 'recordsTab') {
-                loadRecords();
-            }
-        }
-
-        // 更新位置狀態
-        function updateLocationStatus(message, type) {
-            const statusElement = document.getElementById('locationStatus');
-            statusElement.textContent = message;
-            statusElement.className = type;
-        }
-
-        // 顯示註冊畫面
-        function showRegisterContainer() {
-            document.getElementById('registerContainer').style.display = 'block';
-            document.getElementById('mainContainer').style.display = 'none';
-        }
-
-        // 顯示主畫面
-        function showMainContainer() {
-            document.getElementById('registerContainer').style.display = 'none';
-            document.getElementById('mainContainer').style.display = 'block';
-        }
-
-        // 顯示加載狀態
-        function showLoading(elementId, message) {
-            const element = document.getElementById(elementId);
-            element.innerHTML = `<span class="spinner"></span> ${message}`;
-            element.className = 'info';
-        }
-
-        // 顯示結果
-        function showResult(elementId, message, type) {
-            const element = document.getElementById(elementId);
-            element.innerHTML = message;
-            element.className = type;
-        }
-
-        // 顯示錯誤
-        function showError(elementId, message, error) {
-            const element = document.getElementById(elementId);
-            element.innerHTML = `${message}<br><small>${error ? error.message : ''}</small>`;
-            element.className = 'error';
         }
 
         // 啟動應用
