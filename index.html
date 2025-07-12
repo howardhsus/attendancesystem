@@ -3,160 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北101打卡系統</title>
+    <title>台北101 | 員工打卡系統</title>
     <style>
         :root {
-            --primary-color: #06C755; /* LINE綠色 */
-            --secondary-color: #333333;
-            --background-color: #f5f5f5;
-            --card-color: #ffffff;
-            --text-color: #333333;
-            --text-light: #666666;
-            --error-color: #e74c3c;
-            --success-color: #2ecc71;
-            --info-color: #3498db;
-            --border-radius: 8px;
-            --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            /* 色彩系統 */
+            --primary-900: #1A365D;
+            --primary-700: #2C5282;
+            --primary-500: #4299E1;
+            --success-500: #38A169;
+            --error-500: #E53E3E;
+            --warning-500: #DD6B20;
+            --gray-50: #F5F7FA;
+            --gray-100: #EDF2F7;
+            --gray-200: #E2E8F0;
+            --gray-500: #718096;
+            --gray-700: #2D3748;
+            
+            /* 間距系統 */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            
+            /* 圓角 */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            
+            /* 陰影 */
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         
-        body {
-            font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            line-height: 1.5;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
         
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--gray-50);
+            color: var(--gray-700);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        
         .container {
-            max-width: 500px;
+            max-width: 480px;
             margin: 0 auto;
-            padding: 15px;
+            padding: var(--space-4);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .card {
-            background-color: var(--card-color);
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 20px;
-            margin-bottom: 15px;
+            background-color: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
         }
         
-        .header {
+        .card-header {
+            background-color: var(--primary-900);
+            color: white;
+            padding: var(--space-6);
             text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
         }
         
-        .header h1 {
-            color: var(--primary-color);
-            margin: 0;
-            font-size: 22px;
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--space-1);
         }
         
-        .header p {
-            color: var(--text-light);
-            margin: 8px 0 0;
-            font-size: 14px;
+        .card-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
         }
         
-        .info-section {
-            background-color: rgba(0, 0, 0, 0.03);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            margin-bottom: 15px;
+        .card-body {
+            padding: var(--space-6);
         }
         
-        .info-row {
+        .section {
+            margin-bottom: var(--space-6);
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-900);
+            margin-bottom: var(--space-3);
             display: flex;
-            margin-bottom: 8px;
+            align-items: center;
+        }
+        
+        .section-title svg {
+            margin-right: var(--space-2);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: var(--space-3) var(--space-2);
+            font-size: 0.9375rem;
         }
         
         .info-label {
-            font-weight: bold;
-            min-width: 100px;
-            color: var(--secondary-color);
+            color: var(--gray-500);
+            font-weight: 500;
         }
         
         .info-value {
-            flex: 1;
+            font-weight: 500;
+            word-break: break-word;
         }
         
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
             cursor: pointer;
             transition: all 0.2s;
-            margin-bottom: 10px;
+            margin-bottom: var(--space-4);
         }
         
-        button:hover {
-            background-color: #05b34a;
+        .btn-primary {
+            background-color: var(--primary-700);
+            color: white;
         }
         
-        button:disabled {
-            background-color: #cccccc;
+        .btn-primary:hover {
+            background-color: var(--primary-900);
+        }
+        
+        .btn-success {
+            background-color: var(--success-500);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #2F855A;
+        }
+        
+        .btn-error {
+            background-color: var(--error-500);
+            color: white;
+        }
+        
+        .btn-error:hover {
+            background-color: #C53030;
+        }
+        
+        .btn:disabled {
+            background-color: var(--gray-200);
+            color: var(--gray-500);
             cursor: not-allowed;
         }
         
-        .btn-checkout {
-            background-color: #e74c3c;
+        .alert {
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-4);
+            font-size: 0.9375rem;
+            display: flex;
+            align-items: flex-start;
         }
         
-        .btn-checkout:hover {
-            background-color: #d63b2a;
+        .alert svg {
+            margin-right: var(--space-3);
+            flex-shrink: 0;
         }
         
-        .btn-record {
-            background-color: var(--info-color);
+        .alert-content {
+            flex: 1;
         }
         
-        .btn-record:hover {
-            background-color: #2980b9;
+        .alert-info {
+            background-color: #EBF8FF;
+            color: #2B6CB0;
         }
         
-        .message {
-            padding: 12px;
-            border-radius: var(--border-radius);
-            margin: 10px 0;
-            font-size: 14px;
-            border-left: 4px solid;
+        .alert-success {
+            background-color: #F0FFF4;
+            color: #2F855A;
         }
         
-        .error {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--error-color);
-            border-left-color: var(--error-color);
-        }
-        
-        .success {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--success-color);
-            border-left-color: var(--success-color);
-        }
-        
-        .info {
-            background-color: rgba(52, 152, 219, 0.1);
-            color: var(--info-color);
-            border-left-color: var(--info-color);
+        .alert-error {
+            background-color: #FFF5F5;
+            color: #C53030;
         }
         
         .loading {
             display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(0,0,0,.1);
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            border-top-color: var(--primary-color);
+            border-top-color: white;
             animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
+            margin-right: var(--space-2);
             vertical-align: middle;
         }
         
@@ -165,121 +224,173 @@
         }
         
         .records-container {
-            margin-top: 15px;
+            margin-top: var(--space-6);
+            border-top: 1px solid var(--gray-200);
+            padding-top: var(--space-4);
+        }
+        
+        .records-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+            color: var(--gray-700);
         }
         
         .record-item {
-            background-color: var(--card-color);
-            border-radius: var(--border-radius);
-            padding: 12px;
-            margin-bottom: 8px;
-            border: 1px solid #eee;
-        }
-        
-        .record-item .info-row {
-            margin-bottom: 5px;
+            background-color: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+            border: 1px solid var(--gray-200);
         }
         
         .no-access {
             text-align: center;
-            padding: 30px 15px;
+            padding: var(--space-8) var(--space-4);
         }
         
-        .no-access h2 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
+        .no-access-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--space-3);
+            color: var(--primary-900);
         }
         
-        .no-access p {
-            color: var(--text-light);
-            margin-bottom: 15px;
+        .no-access-text {
+            color: var(--gray-500);
+            margin-bottom: var(--space-4);
         }
         
-        .user-id {
-            word-break: break-all;
+        .user-id-box {
+            background-color: var(--gray-100);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
             font-family: monospace;
-            background-color: #f5f5f5;
-            padding: 8px;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-size: 13px;
+            word-break: break-all;
             text-align: center;
+            font-size: 0.875rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* 響應式調整 */
+        @media (max-width: 400px) {
+            .info-grid {
+                grid-template-columns: 80px 1fr;
+            }
+            
+            .card-body {
+                padding: var(--space-4);
+            }
         }
     </style>
 </head>
 <body>
     <div id="loading" class="container">
         <div class="card">
-            <div class="header">
-                <h1>台北101打卡系統</h1>
-                <p>系統載入中...</p>
+            <div class="card-header">
+                <h1 class="card-title">台北101員工打卡系統</h1>
+                <p class="card-subtitle">系統初始化中</p>
             </div>
-            <div class="message info">
-                <span class="loading"></span>正在初始化系統...
-            </div>
-        </div>
-    </div>
-
-    <div id="mainContainer" class="container" style="display:none;">
-        <div class="card">
-            <div class="header">
-                <h1>台北101打卡系統</h1>
-                <p>精準定位打卡系統</p>
-            </div>
-            
-            <div class="info-section">
-                <div class="info-row">
-                    <span class="info-label">員工姓名:</span>
-                    <span class="info-value" id="displayName"></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">員工編號:</span>
-                    <span class="info-value" id="displayEmpId"></span>
-                </div>
-            </div>
-            
-            <div class="info-section">
-                <div class="info-row">
-                    <span class="info-label">定位狀態:</span>
-                    <span class="info-value" id="locationStatus">準備獲取位置...</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">定位精確度:</span>
-                    <span class="info-value" id="locationAccuracy">--</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">距離台北101:</span>
-                    <span class="info-value" id="locationDistance">--</span>
-                </div>
-            </div>
-            
-            <button id="checkInBtn">上班打卡</button>
-            <button id="checkOutBtn" class="btn-checkout">下班打卡</button>
-            <button id="showRecordsBtn" class="btn-record">查看今日記錄</button>
-            
-            <div id="checkInResult" class="message" style="display:none;"></div>
-            
-            <div id="recordsContainer" class="records-container" style="display:none;">
-                <h3 style="margin-top:0; font-size:16px;">今日打卡記錄</h3>
-                <div id="recordsList"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="noAccessContainer" class="container" style="display:none;">
-        <div class="card">
-            <div class="no-access">
-                <h2>台北101打卡系統</h2>
-                <p>您尚未被授權使用本系統</p>
-                <p>請聯繫管理人員提供以下LINE用戶ID進行註冊</p>
-                <div class="info-section">
-                    <div class="info-row">
-                        <span class="info-label">LINE用戶ID:</span>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="alert-content">
+                        正在連接系統服務，請稍候...
                     </div>
-                    <div class="user-id" id="lineUserId"></div>
                 </div>
-                <div class="message info">
-                    請將此ID提供給管理人員以完成註冊流程
+            </div>
+        </div>
+    </div>
+
+    <div id="mainContainer" class="container hidden">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">台北101員工打卡系統</h1>
+                <p class="card-subtitle">精準定位打卡</p>
+            </div>
+            
+            <div class="card-body">
+                <div class="section">
+                    <h2 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                        員工資訊
+                    </h2>
+                    <div class="info-grid">
+                        <div class="info-label">員工姓名</div>
+                        <div class="info-value" id="displayName"></div>
+                        <div class="info-label">員工編號</div>
+                        <div class="info-value" id="displayEmpId"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                        </svg>
+                        位置資訊
+                    </h2>
+                    <div class="info-grid">
+                        <div class="info-label">定位狀態</div>
+                        <div class="info-value" id="locationStatus">準備獲取位置...</div>
+                        <div class="info-label">精確度</div>
+                        <div class="info-value" id="locationAccuracy">--</div>
+                        <div class="info-label">距離101</div>
+                        <div class="info-value" id="locationDistance">--</div>
+                    </div>
+                </div>
+                
+                <button id="checkInBtn" class="btn btn-success">
+                    上班打卡
+                </button>
+                <button id="checkOutBtn" class="btn btn-error">
+                    下班打卡
+                </button>
+                <button id="showRecordsBtn" class="btn btn-primary">
+                    查看今日記錄
+                </button>
+                
+                <div id="checkInResult" class="alert hidden"></div>
+                
+                <div id="recordsContainer" class="records-container hidden">
+                    <h3 class="records-title">今日打卡記錄</h3>
+                    <div id="recordsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="noAccessContainer" class="container hidden">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">台北101員工打卡系統</h1>
+            </div>
+            
+            <div class="no-access">
+                <h2 class="no-access-title">存取權限不足</h2>
+                <p class="no-access-text">您尚未被授權使用本系統</p>
+                <p class="no-access-text">請聯繫管理人員提供以下LINE用戶ID進行註冊</p>
+                
+                <div class="info-grid" style="margin-top: var(--space-4);">
+                    <div class="info-label">LINE用戶ID</div>
+                    <div class="user-id-box" id="lineUserId"></div>
+                </div>
+                
+                <div class="alert alert-info" style="margin-top: var(--space-6);">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="alert-content">
+                        請將此ID提供給管理人員以完成註冊流程
+                    </div>
                 </div>
             </div>
         </div>
@@ -320,15 +431,27 @@
                     showNoAccessContainer();
                 }
                 
-                document.getElementById('loading').style.display = 'none';
+                document.getElementById('loading').classList.add('hidden');
                 
             } catch (error) {
                 console.error('初始化失敗:', error);
                 document.getElementById('loading').innerHTML = `
                     <div class="card">
-                        <div class="message error">
-                            系統初始化失敗: ${error.message}
-                            <button onclick="window.location.reload()" style="margin-top:10px;">重新載入</button>
+                        <div class="card-header">
+                            <h1 class="card-title">系統錯誤</h1>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-error">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                </svg>
+                                <div class="alert-content">
+                                    系統初始化失敗: ${error.message}
+                                    <button onclick="window.location.reload()" class="btn btn-primary" style="margin-top: var(--space-3);">
+                                        重新載入
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -364,10 +487,10 @@
 
         async function handleCheckIn(type) {
             const resultElement = document.getElementById('checkInResult');
-            resultElement.style.display = 'none';
+            resultElement.classList.add('hidden');
             
             try {
-                showLoading('正在驗證位置...');
+                showLoading(`${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`);
                 updateLocationStatus('正在獲取位置...', 'info');
                 
                 // 獲取位置
@@ -394,7 +517,7 @@
                 }
                 
                 // 提交打卡
-                showLoading(`${type === 'checkIn' ? '上班' : '下班'}打卡中...`);
+                showLoading(`${type === 'checkIn' ? '上班' : '下班'}打卡提交中...`);
                 
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
@@ -421,7 +544,7 @@
                     showResult(`${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
                     
                     // 刷新記錄顯示
-                    if (document.getElementById('recordsContainer').style.display === 'block') {
+                    if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
                         fetchRecords();
                     }
                 } else {
@@ -437,13 +560,13 @@
         // 切換記錄顯示
         function toggleRecords() {
             const recordsContainer = document.getElementById('recordsContainer');
-            if (recordsContainer.style.display === 'block') {
-                recordsContainer.style.display = 'none';
-                document.getElementById('showRecordsBtn').textContent = '查看今日記錄';
-            } else {
-                recordsContainer.style.display = 'block';
+            if (recordsContainer.classList.contains('hidden')) {
+                recordsContainer.classList.remove('hidden');
                 document.getElementById('showRecordsBtn').textContent = '隱藏記錄';
                 fetchRecords();
+            } else {
+                recordsContainer.classList.add('hidden');
+                document.getElementById('showRecordsBtn').textContent = '查看今日記錄';
             }
         }
 
@@ -476,7 +599,16 @@
             const recordsList = document.getElementById('recordsList');
             
             if (!records || records.length === 0) {
-                recordsList.innerHTML = '<div class="message info">今日尚無打卡記錄</div>';
+                recordsList.innerHTML = `
+                    <div class="alert alert-info">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                        </svg>
+                        <div class="alert-content">
+                            今日尚無打卡記錄
+                        </div>
+                    </div>
+                `;
                 return;
             }
             
@@ -488,24 +620,20 @@
             records.forEach(record => {
                 const recordDiv = document.createElement('div');
                 recordDiv.className = 'record-item';
+                
+                const typeColor = record.type === 'checkIn' ? 'var(--success-500)' : 'var(--error-500)';
+                const typeText = record.type === 'checkIn' ? '上班打卡' : '下班打卡';
+                
                 recordDiv.innerHTML = `
-                    <div class="info-row">
-                        <span class="info-label">類型:</span>
-                        <span class="info-value" style="color:${record.type === 'checkIn' ? 'var(--success-color)' : 'var(--error-color)'}">
-                            ${record.type === 'checkIn' ? '上班打卡' : '下班打卡'}
-                        </span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">時間:</span>
-                        <span class="info-value">${record.time}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">位置:</span>
-                        <span class="info-value">${record.address || '未知位置'}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">距離:</span>
-                        <span class="info-value">${record.distance || '--'} 公尺</span>
+                    <div class="info-grid">
+                        <div class="info-label">類型</div>
+                        <div class="info-value" style="color:${typeColor}">${typeText}</div>
+                        <div class="info-label">時間</div>
+                        <div class="info-value">${record.time}</div>
+                        <div class="info-label">位置</div>
+                        <div class="info-value">${record.address || '未知位置'}</div>
+                        <div class="info-label">距離</div>
+                        <div class="info-value">${record.distance || '--'} 公尺</div>
                     </div>
                 `;
                 recordsList.appendChild(recordDiv);
@@ -568,47 +696,71 @@
         function updateLocationStatus(message, type) {
             const statusElement = document.getElementById('locationStatus');
             statusElement.textContent = message;
-            statusElement.style.color = type === 'error' ? 'var(--error-color)' : 
-                                      type === 'success' ? 'var(--success-color)' : 'var(--info-color)';
+            statusElement.style.color = type === 'error' ? 'var(--error-500)' : 
+                                      type === 'success' ? 'var(--success-500)' : 'var(--primary-500)';
         }
 
         // 顯示主畫面
         function showMainContainer() {
-            document.getElementById('mainContainer').style.display = 'block';
-            document.getElementById('noAccessContainer').style.display = 'none';
+            document.getElementById('mainContainer').classList.remove('hidden');
+            document.getElementById('noAccessContainer').classList.add('hidden');
             document.getElementById('displayName').textContent = displayName;
             document.getElementById('displayEmpId').textContent = empId;
         }
 
         // 顯示無權限畫面
         function showNoAccessContainer() {
-            document.getElementById('mainContainer').style.display = 'none';
-            document.getElementById('noAccessContainer').style.display = 'block';
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('noAccessContainer').classList.remove('hidden');
             document.getElementById('lineUserId').textContent = userId;
         }
 
         // 顯示加載狀態
         function showLoading(message) {
             const element = document.getElementById('checkInResult');
-            element.innerHTML = `<span class="loading"></span>${message}`;
-            element.className = 'message info';
-            element.style.display = 'block';
+            element.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                </svg>
+                <div class="alert-content">
+                    ${message}
+                </div>
+            `;
+            element.className = 'alert alert-info';
+            element.classList.remove('hidden');
         }
 
         // 顯示結果
         function showResult(message, type) {
             const element = document.getElementById('checkInResult');
-            element.innerHTML = message;
-            element.className = `message ${type}`;
-            element.style.display = 'block';
+            const icon = type === 'success' ? `
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+            ` : `
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                </svg>
+            `;
+            
+            element.innerHTML = `${icon}<div class="alert-content">${message}</div>`;
+            element.className = `alert alert-${type}`;
+            element.classList.remove('hidden');
         }
 
         // 顯示錯誤
         function showError(message) {
             const element = document.getElementById('checkInResult');
-            element.innerHTML = message;
-            element.className = 'message error';
-            element.style.display = 'block';
+            element.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <div class="alert-content">
+                    ${message}
+                </div>
+            `;
+            element.className = 'alert alert-error';
+            element.classList.remove('hidden');
         }
 
         // 啟動應用
