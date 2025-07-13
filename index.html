@@ -6,10 +6,11 @@
     <title>台北101 | 員工打卡系統</title>
     <style>
         :root {
-            --primary-color: #2c7be5;
-            --success-color: #00b383;
-            --error-color: #e63757;
-            --warning-color: #ff7d00;
+            --primary-color: #1a365d;
+            --primary-light: #2c5282;
+            --success-color: #38a169;
+            --error-color: #e53e3e;
+            --warning-color: #dd6b20;
             --background-color: #f8fafc;
             --card-color: #ffffff;
             --text-color: #2d3748;
@@ -45,7 +46,7 @@
         .app-header {
             background-color: var(--primary-color);
             color: white;
-            padding: 20px;
+            padding: 24px 20px;
             text-align: center;
         }
         
@@ -61,7 +62,7 @@
         }
         
         .app-body {
-            padding: 20px;
+            padding: 24px 20px;
         }
         
         .section {
@@ -96,26 +97,26 @@
         }
         
         .status-container {
-            background-color: rgba(44, 123, 229, 0.05);
+            background-color: rgba(26, 54, 93, 0.05);
             border-radius: 8px;
             padding: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             border-left: 4px solid var(--primary-color);
             transition: all 0.3s ease;
         }
         
         .status-container.success {
-            background-color: rgba(0, 179, 131, 0.05);
+            background-color: rgba(56, 161, 105, 0.05);
             border-left-color: var(--success-color);
         }
         
         .status-container.error {
-            background-color: rgba(230, 55, 87, 0.05);
+            background-color: rgba(229, 62, 62, 0.05);
             border-left-color: var(--error-color);
         }
         
         .status-container.warning {
-            background-color: rgba(255, 125, 0, 0.05);
+            background-color: rgba(221, 107, 32, 0.05);
             border-left-color: var(--warning-color);
         }
         
@@ -147,7 +148,7 @@
         }
         
         .btn-primary:hover {
-            background-color: #2563eb;
+            background-color: var(--primary-light);
         }
         
         .btn-success {
@@ -156,7 +157,7 @@
         }
         
         .btn-success:hover {
-            background-color: #009973;
+            background-color: #2f855a;
         }
         
         .btn-error {
@@ -165,7 +166,7 @@
         }
         
         .btn-error:hover {
-            background-color: #d42a4a;
+            background-color: #c53030;
         }
         
         .btn:disabled {
@@ -237,17 +238,6 @@
         .hidden {
             display: none;
         }
-        
-        /* 響應式調整 */
-        @media (max-width: 400px) {
-            .info-grid {
-                grid-template-columns: 80px 1fr;
-            }
-            
-            .app-body {
-                padding: 16px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -292,10 +282,6 @@
                 <div class="status-message" id="statusMessage">
                     <span>⏳ 請選擇上班或下班打卡</span>
                 </div>
-                <div class="info-grid" style="margin-top: 12px;">
-                    <div class="info-label">定位距離</div>
-                    <div class="info-value" id="locationDistance">--</div>
-                </div>
             </div>
             
             <button id="checkInBtn" class="btn btn-success">
@@ -308,9 +294,7 @@
                 查看打卡記錄
             </button>
             
-            <div id="recordsContainer" class="records-container hidden">
-                <div id="recordsList"></div>
-            </div>
+            <div id="recordsContainer" class="records-container hidden"></div>
         </div>
     </div>
 
@@ -369,7 +353,7 @@
                 // 顯示適當的畫面
                 if (isRegistered) {
                     showMainContainer();
-                    updateStatus('✅ 系統準備就緒', 'success');
+                    updateStatus('✅ 系統準備就緒，請選擇打卡類型', 'success');
                 } else {
                     showNoAccessContainer();
                 }
@@ -425,11 +409,9 @@
                     121.5654 // 台北101經度
                 );
                 
-                document.getElementById('locationDistance').textContent = `${distance.toFixed(0)} 公尺`;
-                
                 // 檢查是否在台北101範圍內 (500公尺內)
                 if (distance > 500) {
-                    throw new Error('您不在台北101大樓範圍內，無法打卡');
+                    throw new Error(`您不在台北101大樓範圍內（距離 ${distance.toFixed(0)} 公尺），無法打卡`);
                 }
                 
                 // 提交打卡
@@ -489,8 +471,6 @@
                 statusContainer.classList.add('error');
             } else if (type === 'warning') {
                 statusContainer.classList.add('warning');
-            } else {
-                statusContainer.classList.add('info');
             }
         }
 
@@ -521,8 +501,13 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    displayRecords(data.records);
-                    updateStatus('✅ 打卡記錄已載入', 'success');
+                    if (data.records && data.records.length > 0) {
+                        displayRecords(data.records);
+                        updateStatus('✅ 已載入今日打卡記錄', 'success');
+                    } else {
+                        updateStatus('ℹ️ 今日尚無打卡記錄', 'info');
+                        document.getElementById('recordsContainer').innerHTML = '';
+                    }
                 } else {
                     throw new Error(data.message || '獲取記錄失敗');
                 }
@@ -534,39 +519,26 @@
 
         // 顯示打卡記錄
         function displayRecords(records) {
-            const recordsList = document.getElementById('recordsList');
-            
-            if (!records || records.length === 0) {
-                recordsList.innerHTML = `
-                    <div class="status-container">
-                        <div class="status-message">
-                            <span>尚無打卡記錄</span>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            recordsList.innerHTML = '';
+            const recordsList = document.getElementById('recordsContainer');
             
             // 按時間排序 (最新的在前面)
             records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             
+            let html = '';
             records.forEach(record => {
-                const recordDiv = document.createElement('div');
-                recordDiv.className = 'record-item';
-                
                 const typeColor = record.type === 'checkIn' ? 'var(--success-color)' : 'var(--error-color)';
                 const typeText = record.type === 'checkIn' ? '上班打卡' : '下班打卡';
                 
-                recordDiv.innerHTML = `
-                    <p><strong style="color:${typeColor}">${typeText}</strong></p>
-                    <p>時間: ${record.time}</p>
-                    <p>位置: ${record.address || '未知位置'}</p>
-                    <p>距離: ${record.distance || '--'} 公尺</p>
+                html += `
+                    <div class="record-item">
+                        <p><strong style="color:${typeColor}">${typeText}</strong></p>
+                        <p>時間: ${record.time}</p>
+                        <p>位置: ${record.address || '未知位置'}</p>
+                    </div>
                 `;
-                recordsList.appendChild(recordDiv);
             });
+            
+            recordsList.innerHTML = html;
         }
 
         // 獲取位置
