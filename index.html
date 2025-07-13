@@ -3,224 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北101打卡系統</title>
+    <title>台北101 | 員工打卡系統</title>
     <style>
+        :root {
+            --primary-color: #2c7be5;
+            --success-color: #00b383;
+            --error-color: #e63757;
+            --warning-color: #ff7d00;
+            --background-color: #f8fafc;
+            --card-color: #ffffff;
+            --text-color: #2d3748;
+            --text-secondary: #718096;
+            --border-color: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
-            font-family: 'Microsoft JhengHei', Arial, sans-serif;
-            max-width: 500px;
+            font-family: 'Microsoft JhengHei', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px;
+        }
+        
+        .app-container {
+            max-width: 480px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--card-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
         }
-        .container {
-            display: none;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        #loading {
-            text-align: center;
-            padding: 20px;
-            font-size: 18px;
-        }
-        h1 {
-            color: #06c755;
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 20px;
-        }
-        .info-section {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .info-row {
-            display: flex;
-            margin-bottom: 10px;
-        }
-        .info-label {
-            width: 100px;
-            color: #555;
-            font-weight: bold;
-        }
-        .info-value {
-            flex: 1;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #06c755;
+        
+        .app-header {
+            background-color: var(--primary-color);
             color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .app-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .app-body {
+            padding: 20px;
+        }
+        
+        .section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 12px 8px;
+            font-size: 0.9375rem;
+        }
+        
+        .info-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            word-break: break-word;
+        }
+        
+        .status-container {
+            background-color: rgba(44, 123, 229, 0.05);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .status-container.success {
+            background-color: rgba(0, 179, 131, 0.05);
+            border-left-color: var(--success-color);
+        }
+        
+        .status-container.error {
+            background-color: rgba(230, 55, 87, 0.05);
+            border-left-color: var(--error-color);
+        }
+        
+        .status-container.warning {
+            background-color: rgba(255, 125, 0, 0.05);
+            border-left-color: var(--warning-color);
+        }
+        
+        .status-message {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 10px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.2s;
+            margin-bottom: 12px;
         }
-        button:hover {
-            background: #05a84c;
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
         }
-        button:disabled {
-            background: #cccccc;
+        
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #009973;
+        }
+        
+        .btn-error {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        .btn-error:hover {
+            background-color: #d42a4a;
+        }
+        
+        .btn:disabled {
+            background-color: #e2e8f0;
+            color: #a0aec0;
             cursor: not-allowed;
         }
-        .btn-checkout {
-            background: #e74c3c;
-        }
-        .btn-checkout:hover {
-            background: #d63b2a;
-        }
-        .btn-record {
-            background: #3498db;
-        }
-        .btn-record:hover {
-            background: #2980b9;
-        }
-        .status-box {
-            padding: 12px;
-            border-radius: 5px;
-            margin: 15px 0;
-            font-size: 14px;
-            border-left: 4px solid;
-        }
-        .status-error {
-            background: #fdecea;
-            color: #e74c3c;
-            border-left-color: #e74c3c;
-        }
-        .status-success {
-            background: #e8f8f0;
-            color: #2ecc71;
-            border-left-color: #2ecc71;
-        }
-        .status-info {
-            background: #ebf5fb;
-            color: #3498db;
-            border-left-color: #3498db;
-        }
+        
         .loading {
             display: inline-block;
             width: 16px;
             height: 16px;
-            border: 2px solid rgba(0,0,0,.1);
+            border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            border-top-color: #06c755;
+            border-top-color: white;
             animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-            vertical-align: middle;
         }
+        
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
         .records-container {
-            margin-top: 20px;
+            margin-top: 24px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
         }
+        
         .record-item {
-            background: white;
-            border-radius: 5px;
-            padding: 12px;
-            margin-bottom: 10px;
-            border: 1px solid #eee;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
         }
+        
         .record-item p {
-            margin: 5px 0;
+            margin: 4px 0;
         }
+        
         .no-access {
             text-align: center;
-            padding: 30px 20px;
+            padding: 40px 20px;
         }
-        .no-access h2 {
-            color: #06c755;
-            margin-bottom: 15px;
+        
+        .no-access-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--primary-color);
         }
-        .no-access p {
-            color: #666;
-            margin-bottom: 15px;
+        
+        .no-access-text {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
         }
-        .user-id {
-            word-break: break-all;
+        
+        .user-id-box {
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
             font-family: monospace;
-            background: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-size: 14px;
+            word-break: break-all;
             text-align: center;
+            font-size: 0.875rem;
         }
-        .status-icon {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            margin-right: 5px;
-            vertical-align: middle;
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* 響應式調整 */
+        @media (max-width: 400px) {
+            .info-grid {
+                grid-template-columns: 80px 1fr;
+            }
+            
+            .app-body {
+                padding: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="loading" class="container">
-        <div class="info-section">
-            <h1>台北101打卡系統</h1>
-            <p class="subtitle">系統初始化中...</p>
-            <div class="status-box status-info">
-                <span class="loading"></span>正在連接系統...
+    <div id="loading" class="app-container">
+        <div class="app-header">
+            <h1 class="app-title">台北101員工打卡系統</h1>
+            <p class="app-subtitle">系統載入中</p>
+        </div>
+        <div class="app-body">
+            <div class="status-container">
+                <div class="status-message">
+                    <span class="loading"></span>
+                    <span>正在初始化系統，請稍候...</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="mainContainer" class="container">
-        <h1>台北101打卡系統</h1>
-        <p class="subtitle">員工打卡服務</p>
-        
-        <div class="info-section">
-            <div class="info-row">
-                <span class="info-label">員工姓名:</span>
-                <span class="info-value" id="displayName"></span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">員工編號:</span>
-                <span class="info-value" id="displayEmpId"></span>
-            </div>
+    <div id="mainContainer" class="app-container hidden">
+        <div class="app-header">
+            <h1 class="app-title">台北101員工打卡系統</h1>
+            <p class="app-subtitle">精準定位打卡</p>
         </div>
         
-        <div class="info-section">
-            <div class="info-row">
-                <span class="info-label">打卡狀態:</span>
-                <span class="info-value">
-                    <div id="statusMessage" class="status-box status-info">
-                        <span class="status-icon">⏳</span>請選擇上班或下班打卡
-                    </div>
-                </span>
+        <div class="app-body">
+            <div class="section">
+                <h2 class="section-title">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                    </svg>
+                    員工資訊
+                </h2>
+                <div class="info-grid">
+                    <div class="info-label">員工姓名</div>
+                    <div class="info-value" id="displayName"></div>
+                    <div class="info-label">員工編號</div>
+                    <div class="info-value" id="displayEmpId"></div>
+                </div>
             </div>
-            <div class="info-row">
-                <span class="info-label">定位狀態:</span>
-                <span class="info-value" id="locationDistance">--</span>
+            
+            <div class="status-container" id="statusContainer">
+                <div class="status-message" id="statusMessage">
+                    <span>⏳ 請選擇上班或下班打卡</span>
+                </div>
+                <div class="info-grid" style="margin-top: 12px;">
+                    <div class="info-label">定位距離</div>
+                    <div class="info-value" id="locationDistance">--</div>
+                </div>
             </div>
-        </div>
-        
-        <button id="checkInBtn">上班打卡</button>
-        <button id="checkOutBtn" class="btn-checkout">下班打卡</button>
-        <button id="showRecordsBtn" class="btn-record">查看打卡記錄</button>
-        
-        <div id="recordsContainer" class="records-container" style="display:none;">
-            <div id="recordsList"></div>
+            
+            <button id="checkInBtn" class="btn btn-success">
+                上班打卡
+            </button>
+            <button id="checkOutBtn" class="btn btn-error">
+                下班打卡
+            </button>
+            <button id="showRecordsBtn" class="btn btn-primary">
+                查看打卡記錄
+            </button>
+            
+            <div id="recordsContainer" class="records-container hidden">
+                <div id="recordsList"></div>
+            </div>
         </div>
     </div>
 
-    <div id="noAccessContainer" class="container">
+    <div id="noAccessContainer" class="app-container hidden">
+        <div class="app-header">
+            <h1 class="app-title">台北101員工打卡系統</h1>
+        </div>
+        
         <div class="no-access">
-            <h2>台北101打卡系統</h2>
-            <p>請聯繫管理人員提供以下ID進行註冊</p>
-            <div class="user-id" id="lineUserId"></div>
-            <div class="status-box status-info">
-                提供給管理人員完成註冊流程
+            <h2 class="no-access-title">存取權限不足</h2>
+            <p class="no-access-text">請聯繫管理人員提供以下ID進行註冊</p>
+            
+            <div class="user-id-box" id="lineUserId"></div>
+            
+            <div class="status-container" style="margin-top: 24px;">
+                <div class="status-message">
+                    <span>提供給管理人員完成註冊流程</span>
+                </div>
             </div>
         </div>
     </div>
@@ -237,30 +345,36 @@
         // 初始化應用
         async function initializeApp() {
             try {
+                updateStatus('⏳ 正在連接系統，請稍候...', 'info');
+                
                 // 初始化LIFF
                 await liff.init({ liffId: '2007700262-da76ZbYE' });
                 
                 if (!liff.isLoggedIn()) {
+                    updateStatus('⏳ 正在登入LINE帳號...', 'info');
                     liff.login();
                     return;
                 }
                 
                 // 獲取用戶資料
+                updateStatus('⏳ 正在獲取用戶資料...', 'info');
                 const profile = await liff.getProfile();
                 userId = profile.userId;
                 displayName = profile.displayName;
                 
                 // 檢查用戶是否已註冊
+                updateStatus('⏳ 正在檢查註冊狀態...', 'info');
                 await checkUserRegistration();
                 
                 // 顯示適當的畫面
                 if (isRegistered) {
                     showMainContainer();
+                    updateStatus('✅ 系統準備就緒', 'success');
                 } else {
                     showNoAccessContainer();
                 }
                 
-                document.getElementById('loading').style.display = 'none';
+                document.getElementById('loading').classList.add('hidden');
                 
             } catch (error) {
                 console.error('初始化失敗:', error);
@@ -297,7 +411,7 @@
 
         async function handleCheckIn(type) {
             try {
-                updateStatus(`⌛ ${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
+                updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
                 
                 // 獲取位置
                 const position = await getLocation();
@@ -319,7 +433,7 @@
                 }
                 
                 // 提交打卡
-                updateStatus(`⌛ ${type === 'checkIn' ? '上班' : '下班'}打卡提交中...`, 'info');
+                updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡提交中...`, 'info');
                 
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
@@ -346,7 +460,7 @@
                     updateStatus(`✅ ${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
                     
                     // 刷新記錄顯示
-                    if (document.getElementById('recordsContainer').style.display === 'block') {
+                    if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
                         fetchRecords();
                     }
                 } else {
@@ -360,28 +474,43 @@
 
         // 更新狀態訊息
         function updateStatus(message, type) {
-            const statusElement = document.getElementById('statusMessage');
-            statusElement.innerHTML = message;
-            statusElement.className = `status-box status-${type}`;
+            const statusContainer = document.getElementById('statusContainer');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            statusMessage.innerHTML = message;
+            
+            // 移除所有狀態類別
+            statusContainer.className = 'status-container';
+            
+            // 添加對應的狀態類別
+            if (type === 'success') {
+                statusContainer.classList.add('success');
+            } else if (type === 'error') {
+                statusContainer.classList.add('error');
+            } else if (type === 'warning') {
+                statusContainer.classList.add('warning');
+            } else {
+                statusContainer.classList.add('info');
+            }
         }
 
         // 切換記錄顯示
         function toggleRecords() {
             const recordsContainer = document.getElementById('recordsContainer');
-            if (recordsContainer.style.display === 'block') {
-                recordsContainer.style.display = 'none';
-                document.getElementById('showRecordsBtn').textContent = '查看打卡記錄';
-            } else {
-                recordsContainer.style.display = 'block';
+            if (recordsContainer.classList.contains('hidden')) {
+                recordsContainer.classList.remove('hidden');
                 document.getElementById('showRecordsBtn').textContent = '隱藏記錄';
                 fetchRecords();
+            } else {
+                recordsContainer.classList.add('hidden');
+                document.getElementById('showRecordsBtn').textContent = '查看打卡記錄';
             }
         }
 
         // 獲取打卡記錄
         async function fetchRecords() {
             try {
-                updateStatus('⌛ 載入打卡記錄中...', 'info');
+                updateStatus('⏳ 正在載入打卡記錄...', 'info');
                 
                 const response = await fetch(`${scriptUrl}?action=getMyRecords&userId=${userId}`);
                 
@@ -408,7 +537,13 @@
             const recordsList = document.getElementById('recordsList');
             
             if (!records || records.length === 0) {
-                recordsList.innerHTML = '<div class="status-box status-info">尚無打卡記錄</div>';
+                recordsList.innerHTML = `
+                    <div class="status-container">
+                        <div class="status-message">
+                            <span>尚無打卡記錄</span>
+                        </div>
+                    </div>
+                `;
                 return;
             }
             
@@ -420,8 +555,12 @@
             records.forEach(record => {
                 const recordDiv = document.createElement('div');
                 recordDiv.className = 'record-item';
+                
+                const typeColor = record.type === 'checkIn' ? 'var(--success-color)' : 'var(--error-color)';
+                const typeText = record.type === 'checkIn' ? '上班打卡' : '下班打卡';
+                
                 recordDiv.innerHTML = `
-                    <p><strong>${record.type === 'checkIn' ? '上班打卡' : '下班打卡'}</strong></p>
+                    <p><strong style="color:${typeColor}">${typeText}</strong></p>
                     <p>時間: ${record.time}</p>
                     <p>位置: ${record.address || '未知位置'}</p>
                     <p>距離: ${record.distance || '--'} 公尺</p>
@@ -484,16 +623,16 @@
 
         // 顯示主畫面
         function showMainContainer() {
-            document.getElementById('mainContainer').style.display = 'block';
-            document.getElementById('noAccessContainer').style.display = 'none';
+            document.getElementById('mainContainer').classList.remove('hidden');
+            document.getElementById('noAccessContainer').classList.add('hidden');
             document.getElementById('displayName').textContent = displayName;
             document.getElementById('displayEmpId').textContent = empId;
         }
 
         // 顯示無權限畫面
         function showNoAccessContainer() {
-            document.getElementById('mainContainer').style.display = 'none';
-            document.getElementById('noAccessContainer').style.display = 'block';
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('noAccessContainer').classList.remove('hidden');
             document.getElementById('lineUserId').textContent = userId;
         }
 
