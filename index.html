@@ -369,7 +369,14 @@
         // 檢查用戶是否已註冊
         async function checkUserRegistration() {
             try {
-                const response = await fetch(`${scriptUrl}?action=checkRegistration&userId=${userId}`);
+                const url = `${scriptUrl}?action=checkRegistration&userId=${encodeURIComponent(userId)}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
                 
                 if (!response.ok) {
                     throw new Error('無法連接到伺服器，請檢查網路連線');
@@ -418,22 +425,27 @@
                 // 提交打卡
                 updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡提交中...`, 'info');
                 
+                // 使用URLSearchParams構造表單數據
+                const formData = new URLSearchParams();
+                formData.append('action', 'checkIn');
+                formData.append('type', type);
+                formData.append('userId', userId);
+                formData.append('empId', empId);
+                formData.append('latitude', latitude);
+                formData.append('longitude', longitude);
+                formData.append('accuracy', accuracy);
+                
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        action: 'checkIn',
-                        type: type,
-                        userId: userId,
-                        empId: empId,
-                        latitude: latitude,
-                        longitude: longitude,
-                        accuracy: accuracy
-                    })
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
                 });
                 
                 if (!response.ok) {
-                    throw new Error('無法連接到伺服器，請稍後再試');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || '無法連接到伺服器，請稍後再試');
                 }
                 
                 const data = await response.json();
@@ -443,7 +455,7 @@
                     
                     // 刷新記錄顯示
                     if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
-                        fetchRecords();
+                        await fetchRecords();
                     }
                 } else {
                     throw new Error(data.message || '打卡失敗，請稍後再試');
@@ -492,7 +504,14 @@
             try {
                 updateStatus('⏳ 正在載入打卡記錄...', 'info');
                 
-                const response = await fetch(`${scriptUrl}?action=getMyRecords&userId=${userId}`);
+                const url = `${scriptUrl}?action=getMyRecords&userId=${encodeURIComponent(userId)}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
                 
                 if (!response.ok) {
                     throw new Error('無法連接到伺服器，請檢查網路連線');
@@ -614,4 +633,3 @@
     </script>
 </body>
 </html>
-
