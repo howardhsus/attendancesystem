@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>台北101 | 員工打卡系統</title>
     <style>
+        /* 保持原有的 CSS 樣式不變 */
         :root {
             --primary-color: #1a365d;
             --primary-light: #2c5282;
@@ -326,96 +327,68 @@
         let empId = '';
         let isRegistered = false;
 
-        // 修正後的初始化應用函數
-async function initializeApp() {
-  try {
-    updateStatus('⏳ 正在連接系統，請稍候...', 'info');
-    
-    // 初始化LIFF
-    await liff.init({ liffId: '2007700262-da76ZbYE' });
-    
-    if (!liff.isLoggedIn()) {
-      updateStatus('⏳ 正在登入LINE帳號...', 'info');
-      liff.login();
-      return;
-    }
-    
-    // 獲取用戶資料
-    updateStatus('⏳ 正在獲取用戶資料...', 'info');
-    const profile = await liff.getProfile();
-    userId = profile.userId;
-    displayName = profile.displayName;
-    
-    // 顯示用戶ID（用於調試）
-    console.log('LINE User ID:', userId);
-    
-    // 檢查用戶是否已註冊
-    updateStatus('⏳ 正在檢查註冊狀態...', 'info');
-    const isRegistered = await checkUserRegistration();
-    
-    // 顯示適當的畫面
-    if (isRegistered) {
-      showMainContainer();
-      updateStatus('✅ 系統準備就緒，請選擇打卡類型', 'success');
-    } else {
-      showNoAccessContainer();
-      // 顯示詳細的調試信息
-      console.log('註冊檢查返回:', {
-        userId: userId,
-        isRegistered: isRegistered,
-        empId: empId,
-        displayName: displayName
-      });
-    }
-    
-    document.getElementById('loading').classList.add('hidden');
-    
-  } catch (error) {
-    console.error('初始化失敗:', error);
-    updateStatus(`❌ 系統初始化失敗: ${error.message}`, 'error');
-    // 顯示錯誤詳情
-    document.getElementById('lineUserId').textContent = `錯誤: ${error.message}\n用戶ID: ${userId || '未獲取'}`;
-    showNoAccessContainer();
-  }
-}
+        // 初始化應用
+        async function initializeApp() {
+            try {
+                updateStatus('⏳ 正在連接系統，請稍候...', 'info');
+                
+                // 初始化LIFF
+                await liff.init({ liffId: '2007700262-da76ZbYE' });
+                
+                if (!liff.isLoggedIn()) {
+                    updateStatus('⏳ 正在登入LINE帳號...', 'info');
+                    liff.login();
+                    return;
+                }
+                
+                // 獲取用戶資料
+                updateStatus('⏳ 正在獲取用戶資料...', 'info');
+                const profile = await liff.getProfile();
+                userId = profile.userId;
+                displayName = profile.displayName;
+                
+                // 檢查用戶是否已註冊
+                updateStatus('⏳ 正在檢查註冊狀態...', 'info');
+                await checkUserRegistration();
+                
+                // 顯示適當的畫面
+                if (isRegistered) {
+                    showMainContainer();
+                    updateStatus('✅ 系統準備就緒，請選擇打卡類型', 'success');
+                } else {
+                    showNoAccessContainer();
+                }
+                
+                document.getElementById('loading').classList.add('hidden');
+                
+            } catch (error) {
+                console.error('初始化失敗:', error);
+                updateStatus(`❌ 系統初始化失敗: ${error.message}`, 'error');
+            }
+        }
 
-// 修正後的檢查用戶註冊函數
-async function checkUserRegistration() {
-  try {
-    // 使用encodeURIComponent確保URL安全
-    const url = `${scriptUrl}?action=checkRegistration&userId=${encodeURIComponent(userId)}`;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('無法連接到伺服器，請檢查網路連線');
-    }
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      if (data.registered) {
-        isRegistered = true;
-        empId = data.empId || '';
-        displayName = data.name || displayName;
-        return true;
-      }
-      return false;
-    } else {
-      throw new Error(data.message || '註冊檢查失敗');
-    }
-  } catch (error) {
-    console.error('檢查註冊失敗:', error);
-    updateStatus(`❌ ${error.message}`, 'error');
-    isRegistered = false;
-    return false;
-  }
-}
+        // 檢查用戶是否已註冊
+        async function checkUserRegistration() {
+            try {
+                const response = await fetch(`${scriptUrl}?action=checkRegistration&userId=${encodeURIComponent(userId)}`);
+                
+                if (!response.ok) {
+                    throw new Error('無法連接到伺服器，請檢查網路連線');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.registered) {
+                    isRegistered = true;
+                    empId = data.empId;
+                    displayName = data.name || displayName;
+                }
+            } catch (error) {
+                console.error('檢查註冊失敗:', error);
+                updateStatus(`❌ ${error.message}`, 'error');
+                isRegistered = false;
+            }
+        }
 
         // 打卡功能
         document.getElementById('checkInBtn').addEventListener('click', () => handleCheckIn('checkIn'));
@@ -446,8 +419,8 @@ async function checkUserRegistration() {
                 // 提交打卡
                 updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡提交中...`, 'info');
                 
-                // 使用URLSearchParams構造表單數據
-                const formData = new URLSearchParams();
+                // 使用 FormData 來發送 POST 請求
+                const formData = new FormData();
                 formData.append('action', 'checkIn');
                 formData.append('type', type);
                 formData.append('userId', userId);
@@ -455,18 +428,18 @@ async function checkUserRegistration() {
                 formData.append('latitude', latitude);
                 formData.append('longitude', longitude);
                 formData.append('accuracy', accuracy);
-                
+
+                // 修正跨域請求問題
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
+                    body: new URLSearchParams(formData),
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: formData
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
                 });
                 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.error || '無法連接到伺服器，請稍後再試');
+                    throw new Error('無法連接到伺服器，請稍後再試');
                 }
                 
                 const data = await response.json();
@@ -476,7 +449,7 @@ async function checkUserRegistration() {
                     
                     // 刷新記錄顯示
                     if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
-                        await fetchRecords();
+                        fetchRecords();
                     }
                 } else {
                     throw new Error(data.message || '打卡失敗，請稍後再試');
@@ -525,14 +498,7 @@ async function checkUserRegistration() {
             try {
                 updateStatus('⏳ 正在載入打卡記錄...', 'info');
                 
-                const url = `${scriptUrl}?action=getMyRecords&userId=${encodeURIComponent(userId)}`;
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+                const response = await fetch(`${scriptUrl}?action=getMyRecords&userId=${encodeURIComponent(userId)}`);
                 
                 if (!response.ok) {
                     throw new Error('無法連接到伺服器，請檢查網路連線');
