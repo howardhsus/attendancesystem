@@ -372,7 +372,7 @@
                 const response = await fetch(`${scriptUrl}?action=checkRegistration&userId=${userId}`);
                 
                 if (!response.ok) {
-                    throw new Error('無法檢查註冊狀態');
+                    throw new Error('無法連接到伺服器，請檢查網路連線');
                 }
                 
                 const data = await response.json();
@@ -384,6 +384,7 @@
                 }
             } catch (error) {
                 console.error('檢查註冊失敗:', error);
+                updateStatus(`❌ ${error.message}`, 'error');
                 isRegistered = false;
             }
         }
@@ -433,7 +434,7 @@
                 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.message || '打卡失敗');
+                    throw new Error(error.message || '無法連接到伺服器，請稍後再試');
                 }
                 
                 const data = await response.json();
@@ -446,7 +447,7 @@
                         fetchRecords();
                     }
                 } else {
-                    throw new Error(data.message || '打卡失敗');
+                    throw new Error(data.message || '打卡失敗，請稍後再試');
                 }
             } catch (error) {
                 console.error('打卡失敗:', error);
@@ -495,7 +496,7 @@
                 const response = await fetch(`${scriptUrl}?action=getMyRecords&userId=${userId}`);
                 
                 if (!response.ok) {
-                    throw new Error('無法獲取打卡記錄');
+                    throw new Error('無法連接到伺服器，請檢查網路連線');
                 }
                 
                 const data = await response.json();
@@ -509,11 +510,11 @@
                         document.getElementById('recordsContainer').innerHTML = '';
                     }
                 } else {
-                    throw new Error(data.message || '獲取記錄失敗');
+                    throw new Error(data.message || '無法獲取打卡記錄');
                 }
             } catch (error) {
                 console.error('獲取記錄失敗:', error);
-                updateStatus(`❌ 獲取記錄失敗: ${error.message}`, 'error');
+                updateStatus(`❌ ${error.message}`, 'error');
             }
         }
 
@@ -534,6 +535,7 @@
                         <p><strong style="color:${typeColor}">${typeText}</strong></p>
                         <p>時間: ${record.time}</p>
                         <p>位置: ${record.address || '未知位置'}</p>
+                        <p>距離: ${record.distance || '--'} 公尺</p>
                     </div>
                 `;
             });
@@ -613,3 +615,4 @@
     </script>
 </body>
 </html>
+
