@@ -325,8 +325,6 @@
         let displayName = '';
         let empId = '';
         let isRegistered = false;
-        let retryCount = 0;
-        const maxRetries = 3;
 
         // 初始化應用
         async function initializeApp() {
@@ -349,6 +347,7 @@
                 displayName = profile.displayName;
                 
                 // 檢查用戶是否已註冊
+                updateStatus('⏳ 正在檢查註冊狀態...', 'info');
                 await checkUserRegistration();
                 
                 // 顯示適當的畫面
@@ -364,21 +363,13 @@
             } catch (error) {
                 console.error('初始化失敗:', error);
                 updateStatus(`❌ 系統初始化失敗: ${error.message}`, 'error');
-                
-                // 自動重試機制
-                if (retryCount < maxRetries) {
-                    retryCount++;
-                    setTimeout(initializeApp, 2000 * retryCount);
-                }
             }
         }
 
-        // 檢查用戶是否已註冊 (帶重試機制)
+        // 檢查用戶是否已註冊
         async function checkUserRegistration() {
             try {
-                updateStatus('⏳ 正在檢查註冊狀態...', 'info');
-                
-                const response = await fetchWithRetry(`${scriptUrl}?action=checkRegistration&userId=${userId}`);
+                const response = await fetch(`${scriptUrl}?action=checkRegistration&userId=${userId}`);
                 
                 if (!response.ok) {
                     throw new Error('無法連接到伺服器，請檢查網路連線');
@@ -398,20 +389,7 @@
             }
         }
 
-        // 帶重試機制的fetch請求
-        async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
-            try {
-                const response = await fetch(url, options);
-                if (!response.ok) throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
-                return response;
-            } catch (error) {
-                if (retries <= 0) throw error;
-                await new Promise(resolve => setTimeout(resolve, delay));
-                return fetchWithRetry(url, options, retries - 1, delay * 2);
-            }
-        }
-
-        // 打卡功能 (帶重試機制)
+        // 打卡功能
         document.getElementById('checkInBtn').addEventListener('click', () => handleCheckIn('checkIn'));
         document.getElementById('checkOutBtn').addEventListener('click', () => handleCheckIn('checkOut'));
         document.getElementById('showRecordsBtn').addEventListener('click', toggleRecords);
@@ -421,7 +399,7 @@
                 updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
                 
                 // 獲取位置
-                const position = await getLocationWithTimeout(10000);
+                const position = await getLocation();
                 const { latitude, longitude, accuracy } = position.coords;
                 
                 // 計算與台北101的距離
@@ -437,10 +415,10 @@
                     throw new Error(`您不在台北101大樓範圍內（距離 ${distance.toFixed(0)} 公尺），無法打卡`);
                 }
                 
-                // 提交打卡 (帶重試機制)
+                // 提交打卡
                 updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡提交中...`, 'info');
                 
-                const response = await fetchWithRetry(scriptUrl, {
+                const response = await fetch(scriptUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
@@ -453,6 +431,10 @@
                         accuracy: accuracy
                     })
                 });
+                
+                if (!response.ok) {
+                    throw new Error('無法連接到伺服器，請稍後再試');
+                }
                 
                 const data = await response.json();
                 
@@ -470,44 +452,6 @@
                 console.error('打卡失敗:', error);
                 updateStatus(`❌ ${error.message}`, 'error');
             }
-        }
-
-        // 帶超時的位置獲取
-        function getLocationWithTimeout(timeout) {
-            return new Promise((resolve, reject) => {
-                const timer = setTimeout(() => {
-                    reject(new Error('獲取位置超時，請確保已開啟定位服務'));
-                }, timeout);
-
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        clearTimeout(timer);
-                        resolve(position);
-                    },
-                    (error) => {
-                        clearTimeout(timer);
-                        let message = '獲取位置失敗: ';
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                message += '您拒絕了位置權限請求';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                message += '位置資訊不可用';
-                                break;
-                            case error.TIMEOUT:
-                                message += '獲取位置超時';
-                                break;
-                            default:
-                                message += '未知錯誤';
-                        }
-                        reject(new Error(message));
-                    },
-                    { 
-                        enableHighAccuracy: true,
-                        maximumAge: 0
-                    }
-                );
-            });
         }
 
         // 更新狀態訊息
@@ -543,12 +487,16 @@
             }
         }
 
-        // 獲取打卡記錄 (帶重試機制)
+        // 獲取打卡記錄
         async function fetchRecords() {
             try {
                 updateStatus('⏳ 正在載入打卡記錄...', 'info');
                 
-                const response = await fetchWithRetry(`${scriptUrl}?action=getMyRecords&userId=${userId}`);
+                const response = await fetch(`${scriptUrl}?action=getMyRecords&userId=${userId}`);
+                
+                if (!response.ok) {
+                    throw new Error('無法連接到伺服器，請檢查網路連線');
+                }
                 
                 const data = await response.json();
                 
@@ -586,11 +534,48 @@
                         <p><strong style="color:${typeColor}">${typeText}</strong></p>
                         <p>時間: ${record.time}</p>
                         <p>位置: ${record.address || '未知位置'}</p>
+                        <p>距離: ${record.distance || '--'} 公尺</p>
                     </div>
                 `;
             });
             
             recordsList.innerHTML = html;
+        }
+
+        // 獲取位置
+        function getLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('您的瀏覽器不支持地理位置功能'));
+                    return;
+                }
+                
+                navigator.geolocation.getCurrentPosition(
+                    position => resolve(position),
+                    error => {
+                        let message = '獲取位置失敗: ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                message += '您拒絕了位置權限請求';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message += '位置資訊不可用';
+                                break;
+                            case error.TIMEOUT:
+                                message += '獲取位置超時';
+                                break;
+                            default:
+                                message += '未知錯誤';
+                        }
+                        reject(new Error(message));
+                    },
+                    { 
+                        enableHighAccuracy: true, 
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            });
         }
 
         // 計算兩個座標之間的距離 (公尺)
