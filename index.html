@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北101員工打卡系統</title>
+    <title>台北101打卡系統 (LINE版)</title>
     <style>
         body {
             font-family: 'Microsoft JhengHei', Arial, sans-serif;
@@ -129,7 +129,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>台北101員工打卡系統</h1>
+        <h1>台北101打卡系統 (LINE版)</h1>
         <div id="userInfo" class="user-info">載入用戶資訊中...</div>
         
         <div class="section">
@@ -163,9 +163,7 @@
                 <button id="checkOutBtn" class="btn-checkout" disabled>下班打卡</button>
             </div>
             
-            <button id="showRecordsBtn" class="btn btn-primary" disabled>查看打卡記錄</button>
             <div id="writeResult" class="result"></div>
-            <div id="recordsContainer"></div>
         </div>
     </div>
 
@@ -175,18 +173,15 @@
         const initBtn = document.getElementById('initBtn');
         const checkInBtn = document.getElementById('checkInBtn');
         const checkOutBtn = document.getElementById('checkOutBtn');
-        const showRecordsBtn = document.getElementById('showRecordsBtn');
         const scriptUrlInput = document.getElementById('scriptUrl');
         const initResult = document.getElementById('initResult');
         const writeResult = document.getElementById('writeResult');
         const userInfoDiv = document.getElementById('userInfo');
         const locationInfoDiv = document.getElementById('locationInfo');
-        const recordsContainer = document.getElementById('recordsContainer');
 
         let scriptUrl = '';
         let userId = '';
         let displayName = '';
-        let empId = '';
 
         // 初始化LIFF
         async function initializeLiff() {
@@ -242,10 +237,6 @@
                     showResult(initResult, '後端服務連接成功!', 'success');
                     checkInBtn.disabled = false;
                     checkOutBtn.disabled = false;
-                    showRecordsBtn.disabled = false;
-                    
-                    // 檢查用戶是否已註冊
-                    await checkUserRegistration();
                 } else {
                     throw new Error(data.message || '後端服務返回錯誤');
                 }
@@ -254,27 +245,6 @@
                 showError(initResult, `連接失敗: ${error.message}`, error);
             }
         });
-
-        // 檢查用戶是否已註冊
-        async function checkUserRegistration() {
-            try {
-                const response = await fetch(`${scriptUrl}?action=checkRegistration&userId=${encodeURIComponent(userId)}`);
-                
-                if (!response.ok) {
-                    throw new Error('無法連接到伺服器，請檢查網路連線');
-                }
-                
-                const data = await response.json();
-                
-                if (data.success && data.registered) {
-                    empId = data.empId;
-                    document.getElementById('testEmpId').value = empId;
-                    document.getElementById('testName').value = data.name || displayName;
-                }
-            } catch (error) {
-                console.error('檢查註冊失敗:', error);
-            }
-        }
 
         // 獲取位置資訊
         async function getLocation() {
@@ -317,7 +287,7 @@
         // 打卡功能
         async function handleCheckIn(type) {
             const name = document.getElementById('testName').value.trim();
-            empId = document.getElementById('testEmpId').value.trim();
+            const empId = document.getElementById('testEmpId').value.trim();
             const sheetName = document.getElementById('writeSheetName').value.trim();
 
             if (!name || !empId || !sheetName) {
@@ -347,7 +317,7 @@
 
                 showLoading(writeResult, '正在提交打卡資料...');
 
-                // 發送到 Google Apps Script
+                // 使用 URLSearchParams 來格式化 POST 數據
                 const formData = new URLSearchParams();
                 formData.append('action', 'checkIn');
                 formData.append('type', type);
@@ -358,6 +328,7 @@
                 formData.append('longitude', longitude);
                 formData.append('lineUserId', userId);
 
+                // 修正跨域請求問題
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
                     headers: {
@@ -398,60 +369,6 @@
                 showError(writeResult, error.message, error);
                 locationInfoDiv.innerHTML = `<span style="color: red;">${error.message}</span>`;
             }
-        }
-
-        // 查看打卡記錄
-        showRecordsBtn.addEventListener('click', async () => {
-            try {
-                showLoading(writeResult, '正在獲取打卡記錄...');
-                
-                const response = await fetch(`${scriptUrl}?action=getMyRecords&userId=${encodeURIComponent(userId)}`);
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || `HTTP錯誤! 狀態碼: ${response.status}`);
-                }
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    if (data.records && data.records.length > 0) {
-                        displayRecords(data.records);
-                        showResult(writeResult, '已載入打卡記錄', 'success');
-                    } else {
-                        showResult(writeResult, '今日尚無打卡記錄', 'info');
-                        recordsContainer.innerHTML = '';
-                    }
-                } else {
-                    throw new Error(data.message || '無法獲取打卡記錄');
-                }
-            } catch (error) {
-                console.error('獲取記錄失敗:', error);
-                showError(writeResult, error.message, error);
-            }
-        });
-
-        // 顯示打卡記錄
-        function displayRecords(records) {
-            // 按時間排序 (最新的在前面)
-            records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            let html = '<h3>今日打卡記錄</h3>';
-            records.forEach(record => {
-                const typeColor = record.type === 'checkIn' ? '#38a169' : '#e53e3e';
-                const typeText = record.type === 'checkIn' ? '上班打卡' : '下班打卡';
-                
-                html += `
-                    <div class="record-item">
-                        <p><strong style="color:${typeColor}">${typeText}</strong></p>
-                        <p>時間: ${record.time}</p>
-                        <p>位置: ${record.address || '未知位置'}</p>
-                        <p>距離台北101: ${record.distance || '--'} 公尺</p>
-                    </div>
-                `;
-            });
-            
-            recordsContainer.innerHTML = html;
         }
 
         // 綁定打卡按鈕事件
