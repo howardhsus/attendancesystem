@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北101打卡系統 (LINE版)</title>
+    <title>台北101員工打卡系統</title>
     <style>
         body {
             font-family: 'Microsoft JhengHei', Arial, sans-serif;
@@ -14,19 +14,23 @@
             line-height: 1.6;
         }
         .container {
-            max-width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
             padding: 15px;
             box-sizing: border-box;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1, h2 {
-            color: #06C755; /* LINE 綠色 */
+            color: #06C755;
         }
         button {
             background: #06C755;
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
+            padding: 12px 15px;
+            border-radius: 6px;
             cursor: pointer;
             margin: 10px 0;
             font-size: 16px;
@@ -40,10 +44,19 @@
             background: #cccccc;
             cursor: not-allowed;
         }
+        .btn-checkin {
+            background: #38a169;
+        }
+        .btn-checkout {
+            background: #e53e3e;
+        }
+        .btn-primary {
+            background: #1a365d;
+        }
         .result {
             margin: 15px 0;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 6px;
             font-size: 14px;
         }
         .success {
@@ -101,15 +114,15 @@
         }
         .user-info {
             background: #e8f5e9;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 6px;
             margin-bottom: 15px;
         }
         .location-info {
             margin-top: 10px;
-            padding: 10px;
+            padding: 12px;
             background: #e3f2fd;
-            border-radius: 4px;
+            border-radius: 6px;
         }
         .check-type {
             display: flex;
@@ -119,24 +132,26 @@
         .check-type button {
             flex: 1;
         }
-        .btn-checkin {
-            background: #38a169;
-        }
-        .btn-checkout {
-            background: #e53e3e;
+        .record-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 3px solid #06C755;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>台北101打卡系統 (LINE版)</h1>
+        <h1>台北101員工打卡系統</h1>
         <div id="userInfo" class="user-info">載入用戶資訊中...</div>
         
         <div class="section">
             <h2>1. 後端服務設定</h2>
             <div>
                 <label for="scriptUrl">Google Apps Script 部署URL:</label>
-                <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/..." style="font-family: monospace;" value="https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec">
+                <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/..." 
+                       value="https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec">
             </div>
             <button id="initBtn">測試連接後端</button>
             <div id="initResult" class="result"></div>
@@ -163,7 +178,9 @@
                 <button id="checkOutBtn" class="btn-checkout" disabled>下班打卡</button>
             </div>
             
+            <button id="showRecordsBtn" class="btn-primary" disabled>查看打卡記錄</button>
             <div id="writeResult" class="result"></div>
+            <div id="recordsContainer"></div>
         </div>
     </div>
 
@@ -173,20 +190,23 @@
         const initBtn = document.getElementById('initBtn');
         const checkInBtn = document.getElementById('checkInBtn');
         const checkOutBtn = document.getElementById('checkOutBtn');
+        const showRecordsBtn = document.getElementById('showRecordsBtn');
         const scriptUrlInput = document.getElementById('scriptUrl');
         const initResult = document.getElementById('initResult');
         const writeResult = document.getElementById('writeResult');
         const userInfoDiv = document.getElementById('userInfo');
         const locationInfoDiv = document.getElementById('locationInfo');
+        const recordsContainer = document.getElementById('recordsContainer');
 
         let scriptUrl = '';
         let userId = '';
         let displayName = '';
+        let empId = '';
 
         // 初始化LIFF
         async function initializeLiff() {
             try {
-                await liff.init({ liffId: '2007700262-da76ZbYE' }); // 替換為您的LIFF ID
+                await liff.init({ liffId: '2007700262-da76ZbYE' });
                 
                 if (!liff.isLoggedIn()) {
                     liff.login();
@@ -208,7 +228,7 @@
                 
             } catch (error) {
                 console.error('LIFF初始化失敗:', error);
-                userInfoDiv.innerHTML = '無法獲取用戶資訊';
+                userInfoDiv.innerHTML = '無法獲取用戶資訊: ' + error.message;
             }
         }
 
@@ -227,8 +247,8 @@
                 const response = await fetch(`${scriptUrl}?action=test`);
                 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || `HTTP錯誤! 狀態碼: ${response.status}`);
+                    const error = await response.text();
+                    throw new Error(error || `HTTP錯誤! 狀態碼: ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -237,6 +257,10 @@
                     showResult(initResult, '後端服務連接成功!', 'success');
                     checkInBtn.disabled = false;
                     checkOutBtn.disabled = false;
+                    showRecordsBtn.disabled = false;
+                    
+                    // 檢查用戶是否已註冊
+                    await checkUserRegistration();
                 } else {
                     throw new Error(data.message || '後端服務返回錯誤');
                 }
@@ -245,6 +269,27 @@
                 showError(initResult, `連接失敗: ${error.message}`, error);
             }
         });
+
+        // 檢查用戶是否已註冊
+        async function checkUserRegistration() {
+            try {
+                const response = await fetch(`${scriptUrl}?action=checkRegistration&userId=${encodeURIComponent(userId)}`);
+                
+                if (!response.ok) {
+                    throw new Error('無法連接到伺服器，請檢查網路連線');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.registered) {
+                    empId = data.empId;
+                    document.getElementById('testEmpId').value = empId;
+                    document.getElementById('testName').value = data.name || displayName;
+                }
+            } catch (error) {
+                console.error('檢查註冊失敗:', error);
+            }
+        }
 
         // 獲取位置資訊
         async function getLocation() {
@@ -287,7 +332,7 @@
         // 打卡功能
         async function handleCheckIn(type) {
             const name = document.getElementById('testName').value.trim();
-            const empId = document.getElementById('testEmpId').value.trim();
+            empId = document.getElementById('testEmpId').value.trim();
             const sheetName = document.getElementById('writeSheetName').value.trim();
 
             if (!name || !empId || !sheetName) {
@@ -306,18 +351,18 @@
 
                 // 獲取用戶位置
                 const position = await getLocation();
-                const { latitude, longitude } = position.coords;
+                const { latitude, longitude, accuracy } = position.coords;
                 
                 locationInfoDiv.innerHTML = `
                     <strong>位置資訊:</strong><br>
                     緯度: ${latitude.toFixed(6)}<br>
                     經度: ${longitude.toFixed(6)}<br>
-                    精確度: ±${position.coords.accuracy.toFixed(1)} 公尺
+                    精確度: ±${accuracy.toFixed(1)} 公尺
                 `;
 
                 showLoading(writeResult, '正在提交打卡資料...');
 
-                // 使用 URLSearchParams 來格式化 POST 數據
+                // 使用URLSearchParams來格式化POST數據
                 const formData = new URLSearchParams();
                 formData.append('action', 'checkIn');
                 formData.append('type', type);
@@ -328,7 +373,6 @@
                 formData.append('longitude', longitude);
                 formData.append('lineUserId', userId);
 
-                // 修正跨域請求問題
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
                     headers: {
@@ -338,8 +382,8 @@
                 });
 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || `HTTP錯誤! 狀態碼: ${response.status}`);
+                    const error = await response.text();
+                    throw new Error(error || `HTTP錯誤! 狀態碼: ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -369,6 +413,60 @@
                 showError(writeResult, error.message, error);
                 locationInfoDiv.innerHTML = `<span style="color: red;">${error.message}</span>`;
             }
+        }
+
+        // 查看打卡記錄
+        showRecordsBtn.addEventListener('click', async () => {
+            try {
+                showLoading(writeResult, '正在獲取打卡記錄...');
+                
+                const response = await fetch(`${scriptUrl}?action=getMyRecords&userId=${encodeURIComponent(userId)}`);
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(error || `HTTP錯誤! 狀態碼: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.records && data.records.length > 0) {
+                        displayRecords(data.records);
+                        showResult(writeResult, '已載入打卡記錄', 'success');
+                    } else {
+                        showResult(writeResult, '今日尚無打卡記錄', 'info');
+                        recordsContainer.innerHTML = '';
+                    }
+                } else {
+                    throw new Error(data.message || '無法獲取打卡記錄');
+                }
+            } catch (error) {
+                console.error('獲取記錄失敗:', error);
+                showError(writeResult, error.message, error);
+            }
+        });
+
+        // 顯示打卡記錄
+        function displayRecords(records) {
+            // 按時間排序 (最新的在前面)
+            records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            let html = '<h3>今日打卡記錄</h3>';
+            records.forEach(record => {
+                const typeColor = record.type === 'checkIn' ? '#38a169' : '#e53e3e';
+                const typeText = record.type === 'checkIn' ? '上班打卡' : '下班打卡';
+                
+                html += `
+                    <div class="record-item">
+                        <p><strong style="color:${typeColor}">${typeText}</strong></p>
+                        <p>時間: ${record.time}</p>
+                        <p>位置: ${record.address || '未知位置'}</p>
+                        <p>距離台北101: ${record.distance || '--'} 公尺</p>
+                    </div>
+                `;
+            });
+            
+            recordsContainer.innerHTML = html;
         }
 
         // 綁定打卡按鈕事件
