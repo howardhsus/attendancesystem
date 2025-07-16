@@ -394,71 +394,64 @@
         document.getElementById('checkOutBtn').addEventListener('click', () => handleCheckIn('checkOut'));
         document.getElementById('showRecordsBtn').addEventListener('click', toggleRecords);
 
-        async function handleCheckIn(type) {
-            try {
-                updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
-                
-                // 獲取位置
-                const position = await getLocation();
-                const { latitude, longitude, accuracy } = position.coords;
-                
-                // 計算與台北101的距離
-                const distance = calculateDistance(
-                    latitude, 
-                    longitude, 
-                    25.0330, // 台北101緯度
-                    121.5654 // 台北101經度
-                );
-                
-                // 檢查是否在台北101範圍內 (500公尺內)
-                if (distance > 500) {
-                    throw new Error(`您不在台北101大樓範圍內（距離 ${distance.toFixed(0)} 公尺），無法打卡`);
-                }
-                
-                // 提交打卡
-                updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡提交中...`, 'info');
-                
-                // 使用 URLSearchParams 來正確格式化 POST 數據
-                const formData = new URLSearchParams();
-                formData.append('action', 'checkIn');
-                formData.append('type', type);
-                formData.append('userId', userId);
-                formData.append('empId', empId);
-                formData.append('latitude', latitude);
-                formData.append('longitude', longitude);
-                formData.append('accuracy', accuracy);
 
-                // 修正跨域請求
-                const response = await fetch(scriptUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || '無法連接到伺服器，請稍後再試');
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    updateStatus(`✅ ${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
-                    
-                    // 刷新記錄顯示
-                    if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
-                        fetchRecords();
-                    }
-                } else {
-                    throw new Error(data.message || '打卡失敗，請稍後再試');
-                }
-            } catch (error) {
-                console.error('打卡失敗:', error);
-                updateStatus(`❌ ${error.message}`, 'error');
-            }
+
+async function handleCheckIn(type) {
+    try {
+        updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
+        
+        // 獲取位置
+        const position = await getLocation();
+        const { latitude, longitude, accuracy } = position.coords;
+        
+        // 計算距離 (保持原有邏輯)
+        const distance = calculateDistance(latitude, longitude, 25.0330, 121.5654);
+        
+        if (distance > 500) {
+            throw new Error(`您不在台北101大樓範圍內（距離 ${distance.toFixed(0)} 公尺），無法打卡`);
         }
+        
+        // 修正跨域請求的核心部分 ▼▼▼
+        const formData = new URLSearchParams();
+        formData.append('action', 'checkIn');
+        formData.append('type', type);
+        formData.append('userId', userId);
+        formData.append('empId', empId);
+        formData.append('latitude', latitude);
+        formData.append('longitude', longitude);
+        formData.append('accuracy', accuracy);
+
+        const response = await fetch(scriptUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded' // 必須設置此標頭
+            },
+            body: formData // 使用 URLSearchParams 格式
+        });
+        // 修正跨域請求的核心部分 ▲▲▲
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || '伺服器回應錯誤');
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            updateStatus(`✅ ${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
+            if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
+                fetchRecords();
+            }
+        } else {
+            throw new Error(data.message || '打卡失敗');
+        }
+    } catch (error) {
+        console.error('打卡失敗:', error);
+        updateStatus(`❌ ${error.message}`, 'error');
+    }
+}
+
+
 
         // 更新狀態訊息
         function updateStatus(message, type) {
