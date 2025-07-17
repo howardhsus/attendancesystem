@@ -18,13 +18,13 @@
             --border-color: #e2e8f0;
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
-        
+       
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        
+       
         body {
             font-family: 'Microsoft JhengHei', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--background-color);
@@ -33,7 +33,7 @@
             -webkit-font-smoothing: antialiased;
             padding: 20px;
         }
-        
+       
         .app-container {
             max-width: 480px;
             margin: 0 auto;
@@ -42,33 +42,33 @@
             box-shadow: var(--shadow);
             overflow: hidden;
         }
-        
+       
         .app-header {
             background-color: var(--primary-color);
             color: white;
             padding: 24px 20px;
             text-align: center;
         }
-        
+       
         .app-title {
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 4px;
         }
-        
+       
         .app-subtitle {
             font-size: 0.875rem;
             opacity: 0.9;
         }
-        
+       
         .app-body {
             padding: 24px 20px;
         }
-        
+       
         .section {
             margin-bottom: 24px;
         }
-        
+       
         .section-title {
             font-size: 1rem;
             font-weight: 600;
@@ -78,24 +78,24 @@
             align-items: center;
             gap: 8px;
         }
-        
+       
         .info-grid {
             display: grid;
             grid-template-columns: 100px 1fr;
             gap: 12px 8px;
             font-size: 0.9375rem;
         }
-        
+       
         .info-label {
             color: var(--text-secondary);
             font-weight: 500;
         }
-        
+       
         .info-value {
             font-weight: 500;
             word-break: break-word;
         }
-        
+       
         .status-container {
             background-color: rgba(26, 54, 93, 0.05);
             border-radius: 8px;
@@ -104,29 +104,29 @@
             border-left: 4px solid var(--primary-color);
             transition: all 0.3s ease;
         }
-        
+       
         .status-container.success {
             background-color: rgba(56, 161, 105, 0.05);
             border-left-color: var(--success-color);
         }
-        
+       
         .status-container.error {
             background-color: rgba(229, 62, 62, 0.05);
             border-left-color: var(--error-color);
         }
-        
+       
         .status-container.warning {
             background-color: rgba(221, 107, 32, 0.05);
             border-left-color: var(--warning-color);
         }
-        
+       
         .status-message {
             display: flex;
             align-items: center;
             gap: 8px;
             font-weight: 500;
         }
-        
+       
         .btn {
             display: inline-flex;
             align-items: center;
@@ -141,40 +141,40 @@
             transition: all 0.2s;
             margin-bottom: 12px;
         }
-        
+       
         .btn-primary {
             background-color: var(--primary-color);
             color: white;
         }
-        
+       
         .btn-primary:hover {
             background-color: var(--primary-light);
         }
-        
+       
         .btn-success {
             background-color: var(--success-color);
             color: white;
         }
-        
+       
         .btn-success:hover {
             background-color: #2f855a;
         }
-        
+       
         .btn-error {
             background-color: var(--error-color);
             color: white;
         }
-        
+       
         .btn-error:hover {
             background-color: #c53030;
         }
-        
+       
         .btn:disabled {
             background-color: #e2e8f0;
             color: #a0aec0;
             cursor: not-allowed;
         }
-        
+       
         .loading {
             display: inline-block;
             width: 16px;
@@ -184,17 +184,17 @@
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
         }
-        
+       
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        
+       
         .records-container {
             margin-top: 24px;
             border-top: 1px solid var(--border-color);
             padding-top: 16px;
         }
-        
+       
         .record-item {
             background-color: var(--card-color);
             border-radius: 8px;
@@ -202,28 +202,28 @@
             margin-bottom: 12px;
             border: 1px solid var(--border-color);
         }
-        
+       
         .record-item p {
             margin: 4px 0;
         }
-        
+       
         .no-access {
             text-align: center;
             padding: 40px 20px;
         }
-        
+       
         .no-access-title {
             font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 12px;
             color: var(--primary-color);
         }
-        
+       
         .no-access-text {
             color: var(--text-secondary);
             margin-bottom: 20px;
         }
-        
+       
         .user-id-box {
             background-color: #f1f5f9;
             border-radius: 8px;
@@ -234,11 +234,11 @@
             text-align: center;
             font-size: 0.875rem;
         }
-        
+       
         .hidden {
             display: none;
         }
-        
+       
         .error-detail {
             font-family: monospace;
             font-size: 12px;
@@ -247,7 +247,7 @@
             white-space: pre-wrap;
             word-break: break-all;
         }
-        
+       
         .retry-btn {
             margin-top: 10px;
             padding: 8px 16px;
@@ -280,7 +280,7 @@
             <h1 class="app-title">台北101員工打卡系統</h1>
             <p class="app-subtitle">精準定位打卡</p>
         </div>
-        
+       
         <div class="app-body">
             <div class="section">
                 <h2 class="section-title">
@@ -296,13 +296,13 @@
                     <div class="info-value" id="displayEmpId"></div>
                 </div>
             </div>
-            
+           
             <div class="status-container" id="statusContainer">
                 <div class="status-message" id="statusMessage">
                     <span>⏳ 請選擇上班或下班打卡</span>
                 </div>
             </div>
-            
+           
             <button id="checkInBtn" class="btn btn-success">
                 上班打卡
             </button>
@@ -312,7 +312,7 @@
             <button id="showRecordsBtn" class="btn btn-primary">
                 查看打卡記錄
             </button>
-            
+           
             <div id="recordsContainer" class="records-container hidden"></div>
         </div>
     </div>
@@ -321,13 +321,13 @@
         <div class="app-header">
             <h1 class="app-title">台北101員工打卡系統</h1>
         </div>
-        
+       
         <div class="no-access">
             <h2 class="no-access-title">存取權限不足</h2>
             <p class="no-access-text">請聯繫管理人員提供以下ID進行註冊</p>
-            
+           
             <div class="user-id-box" id="lineUserId"></div>
-            
+           
             <div class="status-container" style="margin-top: 24px;">
                 <div class="status-message" id="statusMessageNoAccess">
                     <span>提供給管理人員完成註冊流程</span>
@@ -349,28 +349,28 @@
         async function initializeApp() {
             try {
                 updateStatus('⏳ 正在連接系統，請稍候...', 'info');
-                
+               
                 // 初始化LIFF
                 await liff.init({ liffId: '2007700262-da76ZbYE' });
-                
+               
                 if (!liff.isLoggedIn()) {
                     updateStatus('⏳ 正在登入LINE帳號...', 'info');
                     liff.login();
                     return;
                 }
-                
+               
                 // 獲取用戶資料 (嚴格處理)
                 const profile = await liff.getProfile();
                 userId = profile.userId.trim(); // 關鍵修正：去除空白
                 displayName = profile.displayName;
-                
+               
                 console.log('獲取的LINE User ID:', JSON.stringify(userId)); // 除錯用
-                
+               
                 // 檢查用戶是否已註冊
                 await checkUserRegistration(userId);
-                
+               
                 document.getElementById('loading').classList.add('hidden');
-                
+               
             } catch (error) {
                 console.error('初始化失敗:', error);
                 showFatalError(`系統初始化失敗: ${error.message}`, error);
@@ -381,35 +381,40 @@
         async function checkUserRegistration(userId) {
             try {
                 updateStatus('⏳ 正在檢查註冊狀態...', 'info');
-                
+               
                 // 強制加入時間戳避免快取
                 const url = `${SCRIPT_URL}?action=checkRegistration&userId=${encodeURIComponent(userId)}&t=${Date.now()}`;
-                
+               
                 console.log('發送請求至:', url); // 除錯用
-                
+               
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Type': 'application/json',
                         'Cache-Control': 'no-cache'
                     },
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    mode: 'no-cors' // 添加no-cors模式
+                }).catch(error => {
+                    throw new Error(`網路請求失敗: ${error.message}`);
                 });
-                
+               
                 console.log('回應狀態:', response.status); // 除錯用
-                
+               
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => null);
-                    throw new Error(errorData?.error || `伺服器錯誤: ${response.status}`);
+                    throw new Error(`伺服器錯誤: ${response.status}`);
                 }
-                
-                const data = await response.json();
+               
+                const data = await response.json().catch(() => {
+                    throw new Error('無法解析伺服器回應');
+                });
+               
                 console.log('後端回應數據:', data); // 除錯用
-                
+               
                 if (data.success === false) {
                     throw new Error(data.error || '檢查註冊失敗');
                 }
-                
+               
                 if (data.registered) {
                     isRegistered = true;
                     empId = data.empId || '';
@@ -430,7 +435,7 @@
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('mainContainer').classList.add('hidden');
             document.getElementById('noAccessContainer').classList.add('hidden');
-            
+           
             const errorContainer = document.createElement('div');
             errorContainer.className = 'app-container';
             errorContainer.innerHTML = `
@@ -447,7 +452,7 @@
                     </div>
                 </div>
             `;
-            
+           
             document.body.appendChild(errorContainer);
         }
 
@@ -459,27 +464,27 @@
         async function handleCheckIn(type) {
             try {
                 updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
-                
+               
                 // 獲取位置
                 const position = await getLocation();
                 const { latitude, longitude, accuracy } = position.coords;
-                
+               
                 // 計算與台北101的距離
                 const distance = calculateDistance(
-                    latitude, 
-                    longitude, 
+                    latitude,
+                    longitude,
                     25.0330, // 台北101緯度
                     121.5654 // 台北101經度
                 );
-                
+               
                 // 檢查是否在台北101範圍內 (500公尺內)
                 if (distance > 500) {
                     throw new Error(`您不在台北101大樓範圍內（距離 ${distance.toFixed(0)} 公尺），無法打卡`);
                 }
-                
+               
                 // 提交打卡
                 updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡提交中...`, 'info');
-                
+               
                 // 使用 URLSearchParams 來正確格式化 POST 數據
                 const formData = new URLSearchParams();
                 formData.append('action', 'checkIn');
@@ -496,19 +501,20 @@
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: formData
+                    body: formData,
+                    mode: 'no-cors'
                 });
-                
+               
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.message || '無法連接到伺服器，請稍後再試');
                 }
-                
+               
                 const data = await response.json();
-                
+               
                 if (data.success) {
                     updateStatus(`✅ ${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
-                    
+                   
                     // 刷新記錄顯示
                     if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
                         fetchRecords();
@@ -526,12 +532,12 @@
         function updateStatus(message, type) {
             const statusContainer = document.getElementById('statusContainer');
             const statusMessage = document.getElementById('statusMessage');
-            
+           
             statusMessage.innerHTML = message;
-            
+           
             // 移除所有狀態類別
             statusContainer.className = 'status-container';
-            
+           
             // 添加對應的狀態類別
             if (type === 'success') {
                 statusContainer.classList.add('success');
@@ -559,15 +565,15 @@
         async function fetchRecords() {
             try {
                 updateStatus('⏳ 正在載入打卡記錄...', 'info');
-                
+               
                 const response = await fetch(`${SCRIPT_URL}?action=getMyRecords&userId=${encodeURIComponent(userId)}`);
-                
+               
                 if (!response.ok) {
                     throw new Error('無法連接到伺服器，請檢查網路連線');
                 }
-                
+               
                 const data = await response.json();
-                
+               
                 if (data.success) {
                     if (data.records && data.records.length > 0) {
                         displayRecords(data.records);
@@ -588,15 +594,15 @@
         // 顯示打卡記錄
         function displayRecords(records) {
             const recordsList = document.getElementById('recordsContainer');
-            
+           
             // 按時間排序 (最新的在前面)
             records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
+           
             let html = '';
             records.forEach(record => {
                 const typeColor = record.type === 'checkIn' ? 'var(--success-color)' : 'var(--error-color)';
                 const typeText = record.type === 'checkIn' ? '上班打卡' : '下班打卡';
-                
+               
                 html += `
                     <div class="record-item">
                         <p><strong style="color:${typeColor}">${typeText}</strong></p>
@@ -606,7 +612,7 @@
                     </div>
                 `;
             });
-            
+           
             recordsList.innerHTML = html;
         }
 
@@ -617,7 +623,7 @@
                     reject(new Error('您的瀏覽器不支持地理位置功能'));
                     return;
                 }
-                
+               
                 navigator.geolocation.getCurrentPosition(
                     position => resolve(position),
                     error => {
@@ -637,8 +643,8 @@
                         }
                         reject(new Error(message));
                     },
-                    { 
-                        enableHighAccuracy: true, 
+                    {
+                        enableHighAccuracy: true,
                         timeout: 10000,
                         maximumAge: 0
                     }
