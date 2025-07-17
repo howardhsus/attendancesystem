@@ -238,6 +238,25 @@
         .hidden {
             display: none;
         }
+        
+        .error-detail {
+            font-family: monospace;
+            font-size: 12px;
+            color: #d93025;
+            margin-top: 8px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .retry-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -310,7 +329,7 @@
             <div class="user-id-box" id="lineUserId"></div>
             
             <div class="status-container" style="margin-top: 24px;">
-                <div class="status-message">
+                <div class="status-message" id="statusMessageNoAccess">
                     <span>提供給管理人員完成註冊流程</span>
                 </div>
             </div>
@@ -320,7 +339,7 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
         // 全局變量
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec';
         let userId = '';
         let displayName = '';
         let empId = '';
@@ -340,133 +359,168 @@
                     return;
                 }
                 
-                // 獲取用戶資料
-                updateStatus('⏳ 正在獲取用戶資料...', 'info');
+                // 獲取用戶資料 (嚴格處理)
                 const profile = await liff.getProfile();
-                userId = profile.userId;
+                userId = profile.userId.trim(); // 關鍵修正：去除空白
                 displayName = profile.displayName;
                 
-                // 檢查用戶是否已註冊
-                updateStatus('⏳ 正在檢查註冊狀態...', 'info');
-                await checkUserRegistration();
+                console.log('獲取的LINE User ID:', JSON.stringify(userId)); // 除錯用
                 
-                // 顯示適當的畫面
-                if (isRegistered) {
-                    showMainContainer();
-                    updateStatus('✅ 系統準備就緒，請選擇打卡類型', 'success');
-                } else {
-                    showNoAccessContainer();
-                }
+                // 檢查用戶是否已註冊
+                await checkUserRegistration(userId);
                 
                 document.getElementById('loading').classList.add('hidden');
                 
             } catch (error) {
                 console.error('初始化失敗:', error);
-                updateStatus(`❌ 系統初始化失敗: ${error.message}`, 'error');
+                showFatalError(`系統初始化失敗: ${error.message}`, error);
             }
         }
 
-        // 檢查用戶是否已註冊
-async function checkUserRegistration(userId) {
-  try {
-    // 重點修正：確保userId正確編碼
-    const url = `${SCRIPT_URL}?action=checkRegistration&userId=${encodeURIComponent(userId)}`;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
+        // 檢查用戶是否已註冊 (強化版)
+        async function checkUserRegistration(userId) {
+            try {
+                updateStatus('⏳ 正在檢查註冊狀態...', 'info');
+                
+                // 強制加入時間戳避免快取
+                const url = `${SCRIPT_URL}?action=checkRegistration&userId=${encodeURIComponent(userId)}&t=${Date.now()}`;
+                
+                console.log('發送請求至:', url); // 除錯用
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Cache-Control': 'no-cache'
+                    },
+                    cache: 'no-store'
+                });
+                
+                console.log('回應狀態:', response.status); // 除錯用
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.error || `伺服器錯誤: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('後端回應數據:', data); // 除錯用
+                
+                if (data.success === false) {
+                    throw new Error(data.error || '檢查註冊失敗');
+                }
+                
+                if (data.registered) {
+                    isRegistered = true;
+                    empId = data.empId || '';
+                    displayName = data.name || displayName;
+                    showMainContainer();
+                    updateStatus('✅ 系統準備就緒，請選擇打卡類型', 'success');
+                } else {
+                    showNoAccessContainer();
+                }
+            } catch (error) {
+                console.error('檢查註冊失敗:', error);
+                showFatalError(`檢查註冊失敗: ${error.message}`, error);
+            }
+        }
 
-    if (!response.ok) throw new Error('網路錯誤');
-    
-    const data = await response.json();
-    
-    // 除錯用日誌
-    console.log('後端回應:', data);
-    
-    if (data.registered) {
-      // 顯示主界面
-      document.getElementById('displayName').textContent = data.name;
-      document.getElementById('displayEmpId').textContent = data.empId;
-      document.getElementById('mainContainer').classList.remove('hidden');
-    } else {
-      // 顯示註冊提示
-      document.getElementById('lineUserId').textContent = userId;
-      document.getElementById('noAccessContainer').classList.remove('hidden');
-    }
-  } catch (error) {
-    console.error('檢查註冊失敗:', error);
-    // 顯示錯誤訊息
-    document.getElementById('statusMessage').innerHTML = `❌ 錯誤: ${error.message}`;
-  }
-}
-
+        // 顯示致命錯誤
+        function showFatalError(message, error) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('noAccessContainer').classList.add('hidden');
+            
+            const errorContainer = document.createElement('div');
+            errorContainer.className = 'app-container';
+            errorContainer.innerHTML = `
+                <div class="app-header">
+                    <h1 class="app-title">系統錯誤</h1>
+                </div>
+                <div class="app-body">
+                    <div class="status-container error">
+                        <div class="status-message">
+                            <span>❌ ${message}</span>
+                        </div>
+                        <div class="error-detail">${error.stack || error.message}</div>
+                        <button class="retry-btn" onclick="location.reload()">重新載入</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(errorContainer);
+        }
 
         // 打卡功能
         document.getElementById('checkInBtn').addEventListener('click', () => handleCheckIn('checkIn'));
         document.getElementById('checkOutBtn').addEventListener('click', () => handleCheckIn('checkOut'));
         document.getElementById('showRecordsBtn').addEventListener('click', toggleRecords);
 
+        async function handleCheckIn(type) {
+            try {
+                updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
+                
+                // 獲取位置
+                const position = await getLocation();
+                const { latitude, longitude, accuracy } = position.coords;
+                
+                // 計算與台北101的距離
+                const distance = calculateDistance(
+                    latitude, 
+                    longitude, 
+                    25.0330, // 台北101緯度
+                    121.5654 // 台北101經度
+                );
+                
+                // 檢查是否在台北101範圍內 (500公尺內)
+                if (distance > 500) {
+                    throw new Error(`您不在台北101大樓範圍內（距離 ${distance.toFixed(0)} 公尺），無法打卡`);
+                }
+                
+                // 提交打卡
+                updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡提交中...`, 'info');
+                
+                // 使用 URLSearchParams 來正確格式化 POST 數據
+                const formData = new URLSearchParams();
+                formData.append('action', 'checkIn');
+                formData.append('type', type);
+                formData.append('userId', userId);
+                formData.append('empId', empId);
+                formData.append('latitude', latitude);
+                formData.append('longitude', longitude);
+                formData.append('accuracy', accuracy);
 
-
-async function handleCheckIn(type) {
-    try {
-        updateStatus(`⏳ ${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
-        
-        // 獲取位置
-        const position = await getLocation();
-        const { latitude, longitude, accuracy } = position.coords;
-        
-        // 計算距離 (保持原有邏輯)
-        const distance = calculateDistance(latitude, longitude, 25.0330, 121.5654);
-        
-        if (distance > 500) {
-            throw new Error(`您不在台北101大樓範圍內（距離 ${distance.toFixed(0)} 公尺），無法打卡`);
-        }
-        
-        // 修正跨域請求的核心部分 ▼▼▼
-        const formData = new URLSearchParams();
-        formData.append('action', 'checkIn');
-        formData.append('type', type);
-        formData.append('userId', userId);
-        formData.append('empId', empId);
-        formData.append('latitude', latitude);
-        formData.append('longitude', longitude);
-        formData.append('accuracy', accuracy);
-
-        const response = await fetch(scriptUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded' // 必須設置此標頭
-            },
-            body: formData // 使用 URLSearchParams 格式
-        });
-        // 修正跨域請求的核心部分 ▲▲▲
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || '伺服器回應錯誤');
-        }
-
-        const data = await response.json();
-        
-        if (data.success) {
-            updateStatus(`✅ ${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
-            if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
-                fetchRecords();
+                // 修正跨域請求
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '無法連接到伺服器，請稍後再試');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus(`✅ ${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
+                    
+                    // 刷新記錄顯示
+                    if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
+                        fetchRecords();
+                    }
+                } else {
+                    throw new Error(data.message || '打卡失敗，請稍後再試');
+                }
+            } catch (error) {
+                console.error('打卡失敗:', error);
+                updateStatus(`❌ ${error.message}`, 'error');
             }
-        } else {
-            throw new Error(data.message || '打卡失敗');
         }
-    } catch (error) {
-        console.error('打卡失敗:', error);
-        updateStatus(`❌ ${error.message}`, 'error');
-    }
-}
-
-
 
         // 更新狀態訊息
         function updateStatus(message, type) {
@@ -506,7 +560,7 @@ async function handleCheckIn(type) {
             try {
                 updateStatus('⏳ 正在載入打卡記錄...', 'info');
                 
-                const response = await fetch(`${scriptUrl}?action=getMyRecords&userId=${encodeURIComponent(userId)}`);
+                const response = await fetch(`${SCRIPT_URL}?action=getMyRecords&userId=${encodeURIComponent(userId)}`);
                 
                 if (!response.ok) {
                     throw new Error('無法連接到伺服器，請檢查網路連線');
@@ -628,3 +682,4 @@ async function handleCheckIn(type) {
     </script>
 </body>
 </html>
+
