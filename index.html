@@ -269,61 +269,42 @@
             }
         }
         async function checkUserRegistration(userId) {
-            try {
-                updateStatus('⏳ 正在檢查註冊狀態...', 'info');
-               
-                // 構建請求URL
-                const url = new URL(SCRIPT_URL);
-                url.searchParams.append('action', 'checkRegistration');
-                url.searchParams.append('userId', userId);
-                url.searchParams.append('t', Date.now()); // 防止快取
-               
-                console.log('準備發送請求至:', url.toString());
-               
-                // 使用更嚴格的fetch設定
-                const response = await fetch(url.toString(), {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    },
-                    mode: 'cors', // 明確設定CORS模式
-                    cache: 'no-store',
-                    credentials: 'omit'
-                });
-               
-                console.log('收到回應，狀態碼:', response.status);
-               
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('伺服器回應錯誤:', errorText);
-                    throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}`);
-                }
-               
-                const data = await response.json();
-                console.log('解析後的回應數據:', data);
-               
-                if (data.success === false) {
-                    throw new Error(data.error || '檢查註冊失敗');
-                }
-               
-                if (data.registered) {
-                    showMainContainer();
-                    updateStatus('✅ 您已成功登入系統', 'success');
-                } else {
-                    showNoAccessContainer();
-                }
-            } catch (error) {
-                console.error('檢查註冊失敗:', error);
-                
-                // 特別處理網路錯誤
-                if (error.message.includes('Failed to fetch')) {
-                    showFatalError('無法連接到伺服器，請檢查您的網路連線後重新載入頁面', error);
-                } else {
-                    showFatalError(`檢查註冊失敗: ${error.message}`, error);
-                }
-            }
-        }
+  try {
+    // 改用完整URL構造方式
+    const url = new URL('https://script.google.com');
+    url.pathname = `/macros/s/${YOUR_SCRIPT_ID}/exec`;
+    url.searchParams.append('action', 'checkRegistration');
+    url.searchParams.append('userId', userId);
+    url.searchParams.append('t', Date.now());
+
+    console.log('最終請求URL:', url.toString());
+
+    // 關鍵修正：添加 {redirect: 'follow'}
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      redirect: 'follow', // 必須添加這行
+      headers: {
+        'Content-Type': 'text/plain' // GAS需要text/plain
+      }
+    });
+
+    if (!response.ok) throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
+    
+    // 手動解析響應（因GAS會執行重定向）
+    const text = await response.text();
+    console.log('原始響應:', text);
+    const data = JSON.parse(text);
+
+    // 後續處理...
+  } catch (error) {
+    console.error('完整錯誤詳情:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    throw error;
+  }
+}
 
 
         // 顯示致命錯誤
