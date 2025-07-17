@@ -367,27 +367,42 @@
         }
 
         // 檢查用戶是否已註冊
-        async function checkUserRegistration() {
-            try {
-                const response = await fetch(`${scriptUrl}?action=checkRegistration&userId=${encodeURIComponent(userId)}`);
-                
-                if (!response.ok) {
-                    throw new Error('無法連接到伺服器，請檢查網路連線');
-                }
-                
-                const data = await response.json();
-                
-                if (data.success && data.registered) {
-                    isRegistered = true;
-                    empId = data.empId;
-                    displayName = data.name || displayName;
-                }
-            } catch (error) {
-                console.error('檢查註冊失敗:', error);
-                updateStatus(`❌ ${error.message}`, 'error');
-                isRegistered = false;
-            }
-        }
+async function checkUserRegistration(userId) {
+  try {
+    // 重點修正：確保userId正確編碼
+    const url = `${SCRIPT_URL}?action=checkRegistration&userId=${encodeURIComponent(userId)}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+
+    if (!response.ok) throw new Error('網路錯誤');
+    
+    const data = await response.json();
+    
+    // 除錯用日誌
+    console.log('後端回應:', data);
+    
+    if (data.registered) {
+      // 顯示主界面
+      document.getElementById('displayName').textContent = data.name;
+      document.getElementById('displayEmpId').textContent = data.empId;
+      document.getElementById('mainContainer').classList.remove('hidden');
+    } else {
+      // 顯示註冊提示
+      document.getElementById('lineUserId').textContent = userId;
+      document.getElementById('noAccessContainer').classList.remove('hidden');
+    }
+  } catch (error) {
+    console.error('檢查註冊失敗:', error);
+    // 顯示錯誤訊息
+    document.getElementById('statusMessage').innerHTML = `❌ 錯誤: ${error.message}`;
+  }
+}
+
 
         // 打卡功能
         document.getElementById('checkInBtn').addEventListener('click', () => handleCheckIn('checkIn'));
