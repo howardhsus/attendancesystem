@@ -214,47 +214,41 @@
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // 全局變量
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec';
-        let userId = '';
-        let displayName = '';
+       // 全局變量 - 請替換為您的實際腳本ID
+const SCRIPT_ID = 'AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw';
+const SCRIPT_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec`;
 
-        // 初始化應用
-        async function initializeApp() {
-            try {
-                updateStatus('⏳ 正在連接系統，請稍候...', 'info');
-               
-                // 測試網路連線
-                if (!await testNetworkConnection()) {
-                    throw new Error('無法連接到網路，請檢查您的網路連線');
-                }
-               
-                // 初始化LIFF
-                await liff.init({ liffId: '2007700262-da76ZbYE' });
-               
-                if (!liff.isLoggedIn()) {
-                    updateStatus('⏳ 正在登入LINE帳號...', 'info');
-                    liff.login();
-                    return;
-                }
-               
-                // 獲取用戶資料
-                const profile = await liff.getProfile();
-                userId = profile.userId.trim();
-                displayName = profile.displayName;
-               
-                console.log('獲取的LINE User ID:', userId);
-               
-                // 檢查用戶是否已註冊
-                await checkUserRegistration(userId);
-               
-                document.getElementById('loading').classList.add('hidden');
-               
-            } catch (error) {
-                console.error('初始化失敗:', error);
-                showFatalError(`系統初始化失敗: ${error.message}`, error);
-            }
-        }
+        // 初始化函數
+async function initializeApp() {
+  try {
+    // 初始化LIFF
+    await liff.init({ liffId: '2007700262-da76ZbYE' });
+    
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+    
+    // 獲取用戶資料
+    const profile = await liff.getProfile();
+    const userId = profile.userId;
+    
+    // 檢查註冊狀態
+    const result = await checkUserRegistration(userId);
+    
+    if (result.registered) {
+      console.log('用戶已註冊');
+      // 顯示主界面
+    } else {
+      console.log('用戶未註冊');
+      // 顯示註冊提示
+    }
+    
+  } catch (error) {
+    console.error('初始化失敗:', error);
+    // 顯示錯誤訊息
+  }
+}
         // 測試網路連線
         async function testNetworkConnection() {
             try {
@@ -268,34 +262,43 @@
                 return false;
             }
         }
-        async function checkUserRegistration(userId) {
+async function checkUserRegistration(userId) {
   try {
-    // 改用完整URL構造方式
-    const url = new URL('https://script.google.com');
-    url.pathname = `/macros/s/${YOUR_SCRIPT_ID}/exec`;
+    console.log('開始檢查註冊狀態...');
+    
+    // 構建請求URL
+    const url = new URL(SCRIPT_URL);
     url.searchParams.append('action', 'checkRegistration');
     url.searchParams.append('userId', userId);
     url.searchParams.append('t', Date.now());
-
-    console.log('最終請求URL:', url.toString());
-
-    // 關鍵修正：添加 {redirect: 'follow'}
-    const response = await fetch(url.toString(), {
+    
+    console.log('請求URL:', url.toString());
+    
+    // 發送請求 - 關鍵修正參數
+    const response = await fetch(url, {
       method: 'GET',
-      redirect: 'follow', // 必須添加這行
+      redirect: 'follow',  // 必須包含
       headers: {
-        'Content-Type': 'text/plain' // GAS需要text/plain
+        'Content-Type': 'text/plain'  // GAS需要此header
       }
     });
-
-    if (!response.ok) throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
     
-    // 手動解析響應（因GAS會執行重定向）
-    const text = await response.text();
-    console.log('原始響應:', text);
-    const data = JSON.parse(text);
-
-    // 後續處理...
+    console.log('收到回應，狀態碼:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP錯誤! 狀態碼: ${response.status}`);
+    }
+    
+    // 解析回應
+    const result = await response.json();
+    console.log('API回應:', result);
+    
+    if (result.success === false) {
+      throw new Error(result.error || '註冊檢查失敗');
+    }
+    
+    return result;
+    
   } catch (error) {
     console.error('完整錯誤詳情:', {
       message: error.message,
@@ -366,8 +369,8 @@
             document.getElementById('lineUserId').textContent = userId;
         }
 
-         // 啟動應用
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        // 啟動應用
+document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
