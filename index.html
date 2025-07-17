@@ -360,31 +360,44 @@
             retryCount: 0
         };
 
-        // 主初始化函數
         async function initializeApp() {
             try {
-                showLoading('正在初始化系統...');
+                updateStatus('⏳ 正在連接系統，請稍候...', 'info');
                 
-                // 初始化LIFF
-                await initLiff();
+                // 1. 初始化 LIFF (帶重試機制)
+                await retry(() => liff.init({ liffId: '2007700262-da76ZbYE' }), 3, 1000);
                 
-                // 檢查登入狀態
-                if (!await checkLogin()) return;
+                if (!liff.isLoggedIn()) {
+                    updateStatus('⏳ 正在登入LINE帳號...', 'info');
+                    liff.login();
+                    return;
+                }
                 
-                // 獲取用戶資料
-                await fetchUserProfile();
+                // 2. 獲取用戶資料 (嚴格錯誤處理)
+                const profile = await retry(() => liff.getProfile(), 3, 1000);
+                const userId = profile.userId.trim();
+                const displayName = profile.displayName;
                 
-                // 檢查註冊狀態
-                await checkRegistration();
+                // 3. 檢查註冊狀態 (使用JSONP繞過CORS)
+                await checkUserRegistration(userId, displayName);
                 
-                // 初始化完成
-                hideLoading();
+                document.getElementById('loading').classList.add('hidden');
                 
             } catch (error) {
-                handleFatalError('系統初始化失敗', error);
+                console.error('初始化失敗:', error);
+                showFatalError(`系統初始化失敗: ${error.message}`, error);
             }
         }
-
+        // 帶重試機制的函數
+        async function retry(fn, retries = 3, delayMs = 1000) {
+            try {
+                return await fn();
+            } catch (error) {
+                if (retries <= 0) throw error;
+                await new Promise(resolve => setTimeout(resolve, delayMs));
+                return retry(fn, retries - 1, delayMs);
+            }
+        }
         // 初始化LIFF
         async function initLiff() {
             try {
@@ -419,35 +432,45 @@
             }
         }
 
-        // 檢查註冊狀態
-        async function checkRegistration() {
-            try {
-                showLoading('正在檢查註冊狀態...');
+        // 強化版註冊檢查 (使用JSONP)
+        async function checkUserRegistration(userId, displayName) {
+            return new Promise((resolve, reject) => {
+                updateStatus('⏳ 正在檢查註冊狀態...', 'info');
                 
-                const response = await fetchWithRetry(
-                    `${CONFIG.GAS_ENDPOINT}?action=checkRegistration&userId=${encodeURIComponent(appState.userId)}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-LIFF-Client': 'true'
-                        }
+                // 創建全局回調函數
+                window.handleRegistrationResponse = (data) => {
+                    delete window.handleRegistrationResponse;
+                    
+                    if (data.success === false) {
+                        reject(new Error(data.error || '註冊檢查失敗'));
+                        return;
                     }
-                );
+                    
+                    if (data.registered) {
+                        // 已註冊用戶
+                        document.getElementById('displayName').textContent = data.name || displayName;
+                        document.getElementById('displayEmpId').textContent = data.empId || '';
+                        showMainContainer();
+                        updateStatus('✅ 系統準備就緒', 'success');
+                    } else {
+                        // 未註冊用戶
+                        showNoAccessContainer();
+                    }
+                    resolve();
+                };
                 
-                const data = await parseResponse(response);
+                // 創建JSONP請求
+                const script = document.createElement('script');
+                script.src = `https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec?action=checkRegistration&userId=${encodeURIComponent(userId)}&callback=handleRegistrationResponse`;
                 
-                if (data.registered) {
-                    appState.isRegistered = true;
-                    appState.empId = data.empId || '';
-                    appState.displayName = data.name || appState.displayName;
-                    showMainUI();
-                } else {
-                    showNoAccessUI();
-                }
-            } catch (error) {
-                throw new Error(`註冊檢查失敗: ${error.message}`);
-            }
+                script.onerror = () => {
+                    document.body.removeChild(script);
+                    delete window.handleRegistrationResponse;
+                    reject(new Error('無法連接到伺服器'));
+                };
+                
+                document.body.appendChild(script);
+            });
         }
 
         // 帶重試機制的fetch
