@@ -218,13 +218,16 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec';
         let userId = '';
         let displayName = '';
-        let empId = '';
-        let isRegistered = false;
 
         // 初始化應用
         async function initializeApp() {
             try {
                 updateStatus('⏳ 正在連接系統，請稍候...', 'info');
+               
+                // 測試網路連線
+                if (!await testNetworkConnection()) {
+                    throw new Error('無法連接到網路，請檢查您的網路連線');
+                }
                
                 // 初始化LIFF
                 await liff.init({ liffId: '2007700262-da76ZbYE' });
@@ -235,12 +238,12 @@
                     return;
                 }
                
-                // 獲取用戶資料 (嚴格處理)
+                // 獲取用戶資料
                 const profile = await liff.getProfile();
-                userId = profile.userId.trim(); // 關鍵修正：去除空白
+                userId = profile.userId.trim();
                 displayName = profile.displayName;
                
-                console.log('獲取的LINE User ID:', JSON.stringify(userId)); // 除錯用
+                console.log('獲取的LINE User ID:', userId);
                
                 // 檢查用戶是否已註冊
                 await checkUserRegistration(userId);
@@ -252,54 +255,76 @@
                 showFatalError(`系統初始化失敗: ${error.message}`, error);
             }
         }
-
-        // 檢查用戶是否已註冊 (強化版)
+        // 測試網路連線
+        async function testNetworkConnection() {
+            try {
+                const response = await fetch('https://httpbin.org/get', {
+                    method: 'GET',
+                    cache: 'no-store'
+                });
+                return response.ok;
+            } catch (error) {
+                console.error('網路連線測試失敗:', error);
+                return false;
+            }
+        }
         async function checkUserRegistration(userId) {
             try {
                 updateStatus('⏳ 正在檢查註冊狀態...', 'info');
                
-                // 強制加入時間戳避免快取
-                const url = `${SCRIPT_URL}?action=checkRegistration&userId=${encodeURIComponent(userId)}&t=${Date.now()}`;
+                // 構建請求URL
+                const url = new URL(SCRIPT_URL);
+                url.searchParams.append('action', 'checkRegistration');
+                url.searchParams.append('userId', userId);
+                url.searchParams.append('t', Date.now()); // 防止快取
                
-                console.log('發送請求至:', url); // 除錯用
+                console.log('準備發送請求至:', url.toString());
                
-                const response = await fetch(url, {
+                // 使用更嚴格的fetch設定
+                const response = await fetch(url.toString(), {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Type': 'application/json',
                         'Cache-Control': 'no-cache'
                     },
-                    cache: 'no-store'
+                    mode: 'cors', // 明確設定CORS模式
+                    cache: 'no-store',
+                    credentials: 'omit'
                 });
                
-                console.log('回應狀態:', response.status); // 除錯用
+                console.log('收到回應，狀態碼:', response.status);
                
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => null);
-                    throw new Error(errorData?.error || `伺服器錯誤: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('伺服器回應錯誤:', errorText);
+                    throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}`);
                 }
                
                 const data = await response.json();
-                console.log('後端回應數據:', data); // 除錯用
+                console.log('解析後的回應數據:', data);
                
                 if (data.success === false) {
                     throw new Error(data.error || '檢查註冊失敗');
                 }
                
                 if (data.registered) {
-                    isRegistered = true;
-                    empId = data.empId || '';
-                    displayName = data.name || displayName;
                     showMainContainer();
-                    updateStatus('✅ 系統準備就緒，您已成功登入', 'success');
+                    updateStatus('✅ 您已成功登入系統', 'success');
                 } else {
                     showNoAccessContainer();
                 }
             } catch (error) {
                 console.error('檢查註冊失敗:', error);
-                showFatalError(`檢查註冊失敗: ${error.message}`, error);
+                
+                // 特別處理網路錯誤
+                if (error.message.includes('Failed to fetch')) {
+                    showFatalError('無法連接到伺服器，請檢查您的網路連線後重新載入頁面', error);
+                } else {
+                    showFatalError(`檢查註冊失敗: ${error.message}`, error);
+                }
             }
         }
+
 
         // 顯示致命錯誤
         function showFatalError(message, error) {
@@ -360,7 +385,7 @@
             document.getElementById('lineUserId').textContent = userId;
         }
 
-        // 啟動應用
+         // 啟動應用
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
