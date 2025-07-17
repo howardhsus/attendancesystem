@@ -65,37 +65,6 @@
             padding: 24px 20px;
         }
        
-        .section {
-            margin-bottom: 24px;
-        }
-       
-        .section-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-       
-        .info-grid {
-            display: grid;
-            grid-template-columns: 100px 1fr;
-            gap: 12px 8px;
-            font-size: 0.9375rem;
-        }
-       
-        .info-label {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-       
-        .info-value {
-            font-weight: 500;
-            word-break: break-word;
-        }
-       
         .status-container {
             background-color: rgba(26, 54, 93, 0.05);
             border-radius: 8px;
@@ -127,54 +96,6 @@
             font-weight: 500;
         }
        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 12px;
-        }
-       
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-       
-        .btn-primary:hover {
-            background-color: var(--primary-light);
-        }
-       
-        .btn-success {
-            background-color: var(--success-color);
-            color: white;
-        }
-       
-        .btn-success:hover {
-            background-color: #2f855a;
-        }
-       
-        .btn-error {
-            background-color: var(--error-color);
-            color: white;
-        }
-       
-        .btn-error:hover {
-            background-color: #c53030;
-        }
-       
-        .btn:disabled {
-            background-color: #e2e8f0;
-            color: #a0aec0;
-            cursor: not-allowed;
-        }
-       
         .loading {
             display: inline-block;
             width: 16px;
@@ -187,24 +108,6 @@
        
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-       
-        .records-container {
-            margin-top: 24px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 16px;
-        }
-       
-        .record-item {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border-color);
-        }
-       
-        .record-item p {
-            margin: 4px 0;
         }
        
         .no-access {
@@ -282,38 +185,11 @@
         </div>
        
         <div class="app-body">
-            <div class="section">
-                <h2 class="section-title">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                    </svg>
-                    員工資訊
-                </h2>
-                <div class="info-grid">
-                    <div class="info-label">員工姓名</div>
-                    <div class="info-value" id="displayName"></div>
-                    <div class="info-label">員工編號</div>
-                    <div class="info-value" id="displayEmpId"></div>
-                </div>
-            </div>
-           
             <div class="status-container" id="statusContainer">
                 <div class="status-message" id="statusMessage">
-                    <span>⏳ 請選擇上班或下班打卡</span>
+                    <span>✅ 您已成功登入系統</span>
                 </div>
             </div>
-           
-            <button id="checkInBtn" class="btn btn-success">
-                上班打卡
-            </button>
-            <button id="checkOutBtn" class="btn btn-error">
-                下班打卡
-            </button>
-            <button id="showRecordsBtn" class="btn btn-primary">
-                查看打卡記錄
-            </button>
-           
-            <div id="recordsContainer" class="records-container hidden"></div>
         </div>
     </div>
 
@@ -338,243 +214,99 @@
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // 配置設定
-        const CONFIG = {
-            LIFF_ID: '2007700262-da76ZbYE',
-            GAS_ENDPOINT: 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec',
-            MAX_RETRIES: 3,
-            RETRY_DELAY: 1000,
-            TAIPEI_101_LOCATION: {
-                lat: 25.0330,
-                lng: 121.5654
-            },
-            MAX_DISTANCE: 500 // 公尺
-        };
+        // 全局變量
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec';
+        let userId = '';
+        let displayName = '';
+        let empId = '';
+        let isRegistered = false;
 
-        // 應用狀態
-        const appState = {
-            userId: '',
-            displayName: '',
-            empId: '',
-            isRegistered: false,
-            retryCount: 0
-        };
-
+        // 初始化應用
         async function initializeApp() {
             try {
                 updateStatus('⏳ 正在連接系統，請稍候...', 'info');
-                
-                // 1. 初始化 LIFF (帶重試機制)
-                await retry(() => liff.init({ liffId: '2007700262-da76ZbYE' }), 3, 1000);
-                
+               
+                // 初始化LIFF
+                await liff.init({ liffId: '2007700262-da76ZbYE' });
+               
                 if (!liff.isLoggedIn()) {
                     updateStatus('⏳ 正在登入LINE帳號...', 'info');
                     liff.login();
                     return;
                 }
-                
-                // 2. 獲取用戶資料 (嚴格錯誤處理)
-                const profile = await retry(() => liff.getProfile(), 3, 1000);
-                const userId = profile.userId.trim();
-                const displayName = profile.displayName;
-                
-                // 3. 檢查註冊狀態 (使用JSONP繞過CORS)
-                await checkUserRegistration(userId, displayName);
-                
+               
+                // 獲取用戶資料 (嚴格處理)
+                const profile = await liff.getProfile();
+                userId = profile.userId.trim(); // 關鍵修正：去除空白
+                displayName = profile.displayName;
+               
+                console.log('獲取的LINE User ID:', JSON.stringify(userId)); // 除錯用
+               
+                // 檢查用戶是否已註冊
+                await checkUserRegistration(userId);
+               
                 document.getElementById('loading').classList.add('hidden');
-                
+               
             } catch (error) {
                 console.error('初始化失敗:', error);
                 showFatalError(`系統初始化失敗: ${error.message}`, error);
             }
         }
-        // 帶重試機制的函數
-        async function retry(fn, retries = 3, delayMs = 1000) {
-            try {
-                return await fn();
-            } catch (error) {
-                if (retries <= 0) throw error;
-                await new Promise(resolve => setTimeout(resolve, delayMs));
-                return retry(fn, retries - 1, delayMs);
-            }
-        }
-        // 初始化LIFF
-        async function initLiff() {
-            try {
-                await liff.init({ liffId: CONFIG.LIFF_ID });
-                
-                if (!liff.isInClient()) {
-                    console.warn('請在LINE應用內開啟此服務以獲得最佳體驗');
-                }
-            } catch (error) {
-                throw new Error(`LIFF初始化失敗: ${error.message}`);
-            }
-        }
 
-        // 檢查登入狀態
-        async function checkLogin() {
-            if (!liff.isLoggedIn()) {
-                showLoading('正在登入LINE帳號...');
-                liff.login();
-                return false;
-            }
-            return true;
-        }
-
-        // 獲取用戶資料
-        async function fetchUserProfile() {
+        // 檢查用戶是否已註冊 (強化版)
+        async function checkUserRegistration(userId) {
             try {
-                const profile = await liff.getProfile();
-                appState.userId = profile.userId.trim();
-                appState.displayName = profile.displayName;
-            } catch (error) {
-                throw new Error(`獲取用戶資料失敗: ${error.message}`);
-            }
-        }
-
-        // 強化版註冊檢查 (使用JSONP)
-        async function checkUserRegistration(userId, displayName) {
-            return new Promise((resolve, reject) => {
                 updateStatus('⏳ 正在檢查註冊狀態...', 'info');
-                
-                // 創建全局回調函數
-                window.handleRegistrationResponse = (data) => {
-                    delete window.handleRegistrationResponse;
-                    
-                    if (data.success === false) {
-                        reject(new Error(data.error || '註冊檢查失敗'));
-                        return;
-                    }
-                    
-                    if (data.registered) {
-                        // 已註冊用戶
-                        document.getElementById('displayName').textContent = data.name || displayName;
-                        document.getElementById('displayEmpId').textContent = data.empId || '';
-                        showMainContainer();
-                        updateStatus('✅ 系統準備就緒', 'success');
-                    } else {
-                        // 未註冊用戶
-                        showNoAccessContainer();
-                    }
-                    resolve();
-                };
-                
-                // 創建JSONP請求
-                const script = document.createElement('script');
-                script.src = `https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec?action=checkRegistration&userId=${encodeURIComponent(userId)}&callback=handleRegistrationResponse`;
-                
-                script.onerror = () => {
-                    document.body.removeChild(script);
-                    delete window.handleRegistrationResponse;
-                    reject(new Error('無法連接到伺服器'));
-                };
-                
-                document.body.appendChild(script);
-            });
-        }
-
-        // 帶重試機制的fetch
-        async function fetchWithRetry(url, options, retries = CONFIG.MAX_RETRIES) {
-            try {
-                const response = await fetch(url, options);
-                
+               
+                // 強制加入時間戳避免快取
+                const url = `${SCRIPT_URL}?action=checkRegistration&userId=${encodeURIComponent(userId)}&t=${Date.now()}`;
+               
+                console.log('發送請求至:', url); // 除錯用
+               
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Cache-Control': 'no-cache'
+                    },
+                    cache: 'no-store'
+                });
+               
+                console.log('回應狀態:', response.status); // 除錯用
+               
                 if (!response.ok) {
-                    if (retries > 0) {
-                        await delay(CONFIG.RETRY_DELAY);
-                        return fetchWithRetry(url, options, retries - 1);
-                    }
-                    throw new Error(`HTTP錯誤: ${response.status}`);
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.error || `伺服器錯誤: ${response.status}`);
                 }
-                
-                return response;
-            } catch (error) {
-                if (retries > 0) {
-                    await delay(CONFIG.RETRY_DELAY);
-                    return fetchWithRetry(url, options, retries - 1);
-                }
-                throw error;
-            }
-        }
-
-        // 解析回應
-        async function parseResponse(response) {
-            try {
+               
                 const data = await response.json();
-                
+                console.log('後端回應數據:', data); // 除錯用
+               
                 if (data.success === false) {
-                    throw new Error(data.error || '請求處理失敗');
+                    throw new Error(data.error || '檢查註冊失敗');
                 }
-                
-                return data;
+               
+                if (data.registered) {
+                    isRegistered = true;
+                    empId = data.empId || '';
+                    displayName = data.name || displayName;
+                    showMainContainer();
+                    updateStatus('✅ 系統準備就緒，您已成功登入', 'success');
+                } else {
+                    showNoAccessContainer();
+                }
             } catch (error) {
-                throw new Error(`無效的伺服器回應: ${error.message}`);
+                console.error('檢查註冊失敗:', error);
+                showFatalError(`檢查註冊失敗: ${error.message}`, error);
             }
         }
 
-        // 顯示主界面
-        function showMainUI() {
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('mainContainer').classList.remove('hidden');
-            document.getElementById('noAccessContainer').classList.add('hidden');
-            
-            document.getElementById('displayName').textContent = appState.displayName;
-            document.getElementById('displayEmpId').textContent = appState.empId;
-            
-            updateStatus('系統準備就緒，請選擇打卡類型', 'success');
-        }
-
-        // 顯示無權限界面
-        function showNoAccessUI() {
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('mainContainer').classList.add('hidden');
-            document.getElementById('noAccessContainer').classList.remove('hidden');
-            
-            document.getElementById('lineUserId').textContent = appState.userId;
-        }
-
-        // 更新狀態訊息
-        function updateStatus(message, type = 'info') {
-            const statusContainer = document.getElementById('statusContainer');
-            const statusMessage = document.getElementById('statusMessage');
-            
-            statusMessage.innerHTML = message;
-            statusContainer.className = 'status-container';
-            
-            switch (type) {
-                case 'success':
-                    statusContainer.classList.add('success');
-                    break;
-                case 'error':
-                    statusContainer.classList.add('error');
-                    break;
-                case 'warning':
-                    statusContainer.classList.add('warning');
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        // 顯示加載狀態
-        function showLoading(message) {
-            const loadingElement = document.getElementById('loading');
-            loadingElement.querySelector('.status-message span:last-child').textContent = message;
-            loadingElement.classList.remove('hidden');
-        }
-
-        // 隱藏加載狀態
-        function hideLoading() {
-            document.getElementById('loading').classList.add('hidden');
-        }
-
-        // 處理致命錯誤
-        function handleFatalError(title, error) {
-            console.error(`${title}:`, error);
-            
+        // 顯示致命錯誤
+        function showFatalError(message, error) {
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('mainContainer').classList.add('hidden');
             document.getElementById('noAccessContainer').classList.add('hidden');
-            
+           
             const errorContainer = document.createElement('div');
             errorContainer.className = 'app-container';
             errorContainer.innerHTML = `
@@ -584,199 +316,48 @@
                 <div class="app-body">
                     <div class="status-container error">
                         <div class="status-message">
-                            <span>❌ ${title}</span>
+                            <span>❌ ${message}</span>
                         </div>
-                        <div class="error-detail">${error.message}</div>
+                        <div class="error-detail">${error.stack || error.message}</div>
                         <button class="retry-btn" onclick="location.reload()">重新載入</button>
                     </div>
                 </div>
             `;
-            
+           
             document.body.appendChild(errorContainer);
         }
 
-        // 輔助函數
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // 事件監聽器
-        document.getElementById('checkInBtn').addEventListener('click', () => handleCheckIn('checkIn'));
-        document.getElementById('checkOutBtn').addEventListener('click', () => handleCheckIn('checkOut'));
-        document.getElementById('showRecordsBtn').addEventListener('click', toggleRecords);
-
-        // 打卡處理
-        async function handleCheckIn(type) {
-            try {
-                updateStatus(`${type === 'checkIn' ? '上班' : '下班'}打卡處理中...`, 'info');
-                
-                // 獲取位置
-                const position = await getLocation();
-                const { latitude, longitude, accuracy } = position.coords;
-                
-                // 計算距離
-                const distance = calculateDistance(
-                    latitude,
-                    longitude,
-                    CONFIG.TAIPEI_101_LOCATION.lat,
-                    CONFIG.TAIPEI_101_LOCATION.lng
-                );
-                
-                // 驗證距離
-                if (distance > CONFIG.MAX_DISTANCE) {
-                    throw new Error(`您不在台北101大樓範圍內（距離 ${distance.toFixed(0)} 公尺）`);
-                }
-                
-                // 提交打卡
-                const formData = new URLSearchParams();
-                formData.append('action', 'checkIn');
-                formData.append('type', type);
-                formData.append('userId', appState.userId);
-                formData.append('empId', appState.empId);
-                formData.append('latitude', latitude);
-                formData.append('longitude', longitude);
-                formData.append('accuracy', accuracy);
-                
-                const response = await fetchWithRetry(CONFIG.GAS_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-LIFF-Client': 'true'
-                    },
-                    body: formData
-                });
-                
-                const data = await parseResponse(response);
-                
-                updateStatus(`${type === 'checkIn' ? '上班' : '下班'}打卡成功！時間: ${data.time}`, 'success');
-                
-                // 刷新記錄
-                if (!document.getElementById('recordsContainer').classList.contains('hidden')) {
-                    await fetchRecords();
-                }
-            } catch (error) {
-                updateStatus(`打卡失敗: ${error.message}`, 'error');
+        // 更新狀態訊息
+        function updateStatus(message, type) {
+            const statusContainer = document.getElementById('statusContainer');
+            const statusMessage = document.getElementById('statusMessage');
+           
+            statusMessage.innerHTML = message;
+           
+            // 移除所有狀態類別
+            statusContainer.className = 'status-container';
+           
+            // 添加對應的狀態類別
+            if (type === 'success') {
+                statusContainer.classList.add('success');
+            } else if (type === 'error') {
+                statusContainer.classList.add('error');
+            } else if (type === 'warning') {
+                statusContainer.classList.add('warning');
             }
         }
 
-        // 獲取位置
-        function getLocation() {
-            return new Promise((resolve, reject) => {
-                if (!navigator.geolocation) {
-                    reject(new Error('您的瀏覽器不支持地理位置功能'));
-                    return;
-                }
-                
-                navigator.geolocation.getCurrentPosition(
-                    position => resolve(position),
-                    error => {
-                        let message = '獲取位置失敗: ';
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                message += '您拒絕了位置權限請求';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                message += '位置資訊不可用';
-                                break;
-                            case error.TIMEOUT:
-                                message += '獲取位置超時';
-                                break;
-                            default:
-                                message += '未知錯誤';
-                        }
-                        reject(new Error(message));
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    }
-                );
-            });
+        // 顯示主畫面
+        function showMainContainer() {
+            document.getElementById('mainContainer').classList.remove('hidden');
+            document.getElementById('noAccessContainer').classList.add('hidden');
         }
 
-        // 計算距離
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // 地球半徑(公尺)
-            const φ1 = lat1 * Math.PI/180;
-            const φ2 = lat2 * Math.PI/180;
-            const Δφ = (lat2-lat1) * Math.PI/180;
-            const Δλ = (lon2-lon1) * Math.PI/180;
-
-            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                      Math.cos(φ1) * Math.cos(φ2) *
-                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-            return R * c;
-        }
-
-        // 切換記錄顯示
-        async function toggleRecords() {
-            const recordsContainer = document.getElementById('recordsContainer');
-            if (recordsContainer.classList.contains('hidden')) {
-                recordsContainer.classList.remove('hidden');
-                document.getElementById('showRecordsBtn').textContent = '隱藏記錄';
-                await fetchRecords();
-            } else {
-                recordsContainer.classList.add('hidden');
-                document.getElementById('showRecordsBtn').textContent = '查看打卡記錄';
-            }
-        }
-
-        // 獲取打卡記錄
-        async function fetchRecords() {
-            try {
-                updateStatus('正在載入打卡記錄...', 'info');
-                
-                const response = await fetchWithRetry(
-                    `${CONFIG.GAS_ENDPOINT}?action=getMyRecords&userId=${encodeURIComponent(appState.userId)}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-LIFF-Client': 'true'
-                        }
-                    }
-                );
-                
-                const data = await parseResponse(response);
-                
-                if (data.records && data.records.length > 0) {
-                    displayRecords(data.records);
-                    updateStatus('已載入打卡記錄', 'success');
-                } else {
-                    updateStatus('尚無打卡記錄', 'info');
-                    document.getElementById('recordsContainer').innerHTML = '';
-                }
-            } catch (error) {
-                updateStatus(`載入記錄失敗: ${error.message}`, 'error');
-            }
-        }
-
-        // 顯示記錄
-        function displayRecords(records) {
-            const container = document.getElementById('recordsContainer');
-            
-            // 按時間排序
-            records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            let html = '';
-            records.forEach(record => {
-                const typeColor = record.type === 'checkIn' ? 'var(--success-color)' : 'var(--error-color)';
-                const typeText = record.type === 'checkIn' ? '上班打卡' : '下班打卡';
-                
-                html += `
-                    <div class="record-item">
-                        <p><strong style="color:${typeColor}">${typeText}</strong></p>
-                        <p>時間: ${record.time}</p>
-                        <p>位置: ${record.address || '未知位置'}</p>
-                        <p>距離: ${record.distance || '--'} 公尺</p>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
+        // 顯示無權限畫面
+        function showNoAccessContainer() {
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('noAccessContainer').classList.remove('hidden');
+            document.getElementById('lineUserId').textContent = userId;
         }
 
         // 啟動應用
