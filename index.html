@@ -5,276 +5,416 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>台北101 | 員工打卡系統</title>
     <style>
-        /* 保持原有的樣式不變 */
+        :root {
+            --primary-color: #1a365d;
+            --primary-light: #2c5282;
+            --success-color: #38a169;
+            --error-color: #e53e3e;
+            --background-color: #f8fafc;
+            --card-color: #ffffff;
+            --text-color: #2d3748;
+            --text-secondary: #718096;
+            --border-color: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+       
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+       
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px;
+        }
+       
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--card-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+       
+        .app-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+        }
+       
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+       
+        .app-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+       
+        .app-body {
+            padding: 24px 20px;
+        }
+       
+        .section {
+            margin-bottom: 24px;
+        }
+       
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+       
+        .info-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 12px 8px;
+            font-size: 0.9375rem;
+        }
+       
+        .info-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+       
+        .info-value {
+            font-weight: 500;
+            word-break: break-word;
+        }
+       
+        .status-container {
+            background-color: rgba(26, 54, 93, 0.05);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+       
+        .status-container.success {
+            background-color: rgba(56, 161, 105, 0.05);
+            border-left-color: var(--success-color);
+        }
+       
+        .status-container.error {
+            background-color: rgba(229, 62, 62, 0.05);
+            border-left-color: var(--error-color);
+        }
+       
+        .status-message {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+       
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+       
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+       
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+       
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+       
+        .btn-success:hover {
+            background-color: #2f855a;
+        }
+       
+        .btn-error {
+            background-color: var(--error-color);
+            color: white;
+        }
+       
+        .btn-error:hover {
+            background-color: #c53030;
+        }
+       
+        .btn:disabled {
+            background-color: #e2e8f0;
+            color: #a0aec0;
+            cursor: not-allowed;
+        }
+       
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+       
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+       
+        .records-container {
+            margin-top: 24px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+       
+        .record-item {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+        }
+       
+        .record-item p {
+            margin: 4px 0;
+        }
+       
+        .no-access {
+            text-align: center;
+            padding: 40px 20px;
+        }
+       
+        .no-access-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+        }
+       
+        .no-access-text {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+       
+        .user-id-box {
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            font-family: monospace;
+            word-break: break-all;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+       
+        .hidden {
+            display: none;
+        }
+       
+        .error-detail {
+            font-family: monospace;
+            font-size: 12px;
+            color: #d93025;
+            margin-top: 8px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+       
+        .retry-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <!-- 保持原有的HTML結構不變 -->
+    <div id="loading" class="app-container">
+        <div class="app-header">
+            <h1 class="app-title">台北101員工打卡系統</h1>
+            <p class="app-subtitle">系統載入中</p>
+        </div>
+        <div class="app-body">
+            <div class="status-container">
+                <div class="status-message">
+                    <span class="loading"></span>
+                    <span>正在初始化系統，請稍候...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainContainer" class="app-container hidden">
+        <div class="app-header">
+            <h1 class="app-title">台北101員工打卡系統</h1>
+            <p class="app-subtitle">精準定位打卡</p>
+        </div>
+       
+        <div class="app-body">
+            <div class="section">
+                <h2 class="section-title">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                    </svg>
+                    員工資訊
+                </h2>
+                <div class="info-grid">
+                    <div class="info-label">員工姓名</div>
+                    <div class="info-value" id="displayName">許軒豪</div>
+                    <div class="info-label">員工編號</div>
+                    <div class="info-value" id="displayEmpId">522899</div>
+                </div>
+            </div>
+           
+            <div class="status-container" id="statusContainer">
+                <div class="status-message" id="statusMessage">
+                    <span>✅ 系統準備就緒，請選擇打卡類型</span>
+                </div>
+            </div>
+           
+            <button id="checkInBtn" class="btn btn-success">
+                上班打卡
+            </button>
+            <button id="checkOutBtn" class="btn btn-error">
+                下班打卡
+            </button>
+            <button id="showRecordsBtn" class="btn btn-primary">
+                查看打卡記錄
+            </button>
+        </div>
+    </div>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // 配置設定
-        const CONFIG = {
-            SCRIPT_ID: 'AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw',
-            LIFF_ID: '2007700262-da76ZbYE',
-            API_TIMEOUT: 15000,
-            DEBUG_MODE: true
-        };
-
-        // 狀態管理 - 修正版
-        const appState = {
-            userId: null,
-            profile: null,
-            debugLog: [],
-            elements: null,
-            
-            // 初始化方法
-            init: function() {
-                this.elements = {
-                    loading: document.getElementById('loading'),
-                    statusMessage: document.getElementById('statusMessage'),
-                    unregisteredContainer: document.getElementById('unregisteredContainer'),
-                    registeredContainer: document.getElementById('registeredContainer'),
-                    userIdDisplay: document.getElementById('userIdDisplay'),
-                    employeeName: document.getElementById('employeeName'),
-                    employeeId: document.getElementById('employeeId'),
-                    copyButton: document.getElementById('copyButton'),
-                    retryButton: document.getElementById('retryButton'),
-                    startWorkBtn: document.getElementById('startWorkBtn'),
-                    debugInfo: document.getElementById('debugInfo'),
-                    forceContinue: document.getElementById('forceContinue')
-                };
-                
-                // 綁定事件
-                if (this.elements.copyButton) {
-                    this.elements.copyButton.addEventListener('click', () => this.copyUserId());
-                }
-                if (this.elements.retryButton) {
-                    this.elements.retryButton.addEventListener('click', () => this.retryCheck());
-                }
-                if (this.elements.forceContinue) {
-                    this.elements.forceContinue.addEventListener('click', () => this.forceContinue());
-                }
-                if (this.elements.startWorkBtn) {
-                    this.elements.startWorkBtn.addEventListener('click', () => this.startWork());
-                }
-            },
-            
-            // 複製用戶ID
-            copyUserId: function() {
-                navigator.clipboard.writeText(this.userId).then(() => {
-                    alert('已複製用戶ID到剪貼簿');
-                }).catch(err => {
-                    console.error('複製失敗:', err);
-                    alert('複製失敗，請手動複製');
-                });
-            },
-            
-            // 重新檢查
-            retryCheck: function() {
-                this.showLoading();
-                initializeApp();
-            },
-            
-            // 強制繼續
-            forceContinue: function() {
-                this.logDebug('用戶手動跳過檢查');
-                if (this.profile?.userId) {
-                    this.showUnregistered(this.profile.userId);
-                } else {
-                    this.showUnregistered('無法取得用戶ID');
-                }
-            },
-            
-            // 開始工作
-            startWork: function() {
-                alert('打卡功能將在此實現');
-            },
-            
-            // 顯示載入狀態
-            showLoading: function() {
-                this.elements.loading.classList.remove('hidden');
-                this.elements.unregisteredContainer.classList.add('hidden');
-                this.elements.registeredContainer.classList.add('hidden');
-            },
-            
-            // 顯示未註冊狀態 - 修正版
-            showUnregistered: function(userId) {
-                this.userId = userId;
-                if (this.elements.userIdDisplay) {
-                    this.elements.userIdDisplay.textContent = userId;
-                }
-                this.elements.loading.classList.add('hidden');
-                this.elements.unregisteredContainer.classList.remove('hidden');
-                this.elements.registeredContainer.classList.add('hidden');
-            },
-            
-            // 顯示已註冊狀態 - 修正版
-            showRegistered: function(userData) {
-                if (this.elements.employeeName) {
-                    this.elements.employeeName.textContent = userData.name || '未提供';
-                }
-                if (this.elements.employeeId) {
-                    this.elements.employeeId.textContent = userData.empId || '未提供';
-                }
-                this.elements.loading.classList.add('hidden');
-                this.elements.unregisteredContainer.classList.add('hidden');
-                this.elements.registeredContainer.classList.remove('hidden');
-            },
-            
-            // 記錄除錯資訊
-            logDebug: function(message) {
-                if (!CONFIG.DEBUG_MODE) return;
-                
-                const timestamp = new Date().toLocaleTimeString();
-                const logEntry = `[${timestamp}] ${message}`;
-                this.debugLog.push(logEntry);
-                
-                if (this.elements.debugInfo) {
-                    this.elements.debugInfo.textContent = this.debugLog.join('\n');
-                    this.elements.debugInfo.scrollTop = this.elements.debugInfo.scrollHeight;
-                }
-                
-                // 確保除錯面板可見
-                if (CONFIG.DEBUG_MODE && this.elements.debugInfo) {
-                    this.elements.debugInfo.classList.remove('hidden');
-                }
-            }
-        };
-
-        // 更新狀態訊息
-        function updateStatus(message) {
-            if (appState.elements.statusMessage) {
-                appState.elements.statusMessage.innerHTML = `
-                    <span class="loading"></span>
-                    <span>${message}</span>
-                `;
-            }
-            appState.logDebug(message);
-        }
-
-        // 強化版註冊檢查
-        async function checkUserRegistration(userId) {
-            try {
-                updateStatus('正在驗證員工資格...');
-                appState.logDebug(`開始註冊檢查: ${userId}`);
-                
-                // 正規化用戶ID
-                const normalizedUserId = userId.trim().toLowerCase();
-                appState.logDebug(`正規化後用戶ID: ${normalizedUserId}`);
-                
-                const url = new URL(`https://script.google.com/macros/s/${CONFIG.SCRIPT_ID}/exec`);
-                url.searchParams.append('action', 'checkRegistration');
-                url.searchParams.append('userId', normalizedUserId);
-                url.searchParams.append('t', Date.now());
-                
-                appState.logDebug(`API請求: ${url.toString()}`);
-                
-                // 添加超時控制
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    redirect: 'follow',
-                    headers: { 'Content-Type': 'text/plain' },
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                appState.logDebug(`回應狀態: ${response.status}`);
-                
-                if (!response.ok) {
-                    throw new Error(`伺服器錯誤: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                appState.logDebug(`API回應: ${JSON.stringify(data)}`);
-                
-                if (!data.success) {
-                    throw new Error(data.error || '註冊檢查失敗');
-                }
-                
-                return data;
-            } catch (error) {
-                appState.logDebug(`嚴格檢查失敗: ${error.message}`);
-                
-                // 超時時顯示強制繼續按鈕
-                if (error.name === 'AbortError' && appState.elements.forceContinue) {
-                    appState.elements.forceContinue.classList.remove('hidden');
-                    updateStatus('伺服器回應超時，請稍後重試');
-                    throw new Error('API請求超時');
-                }
-                
-                throw error;
-            }
-        }
-
-        // 主初始化函數
+        // 全局變量
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw/exec';
+        
+        // 初始化應用
         async function initializeApp() {
             try {
-                // 初始化狀態管理
-                appState.init();
-                updateStatus('正在啟動LINE環境...');
-                
-                // 初始化LIFF（10秒超時）
-                const liffInitPromise = liff.init({ liffId: CONFIG.LIFF_ID });
-                const liffTimeout = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('LIFF初始化超時')), 10000)
-                );
-                
-                await Promise.race([liffInitPromise, liffTimeout]);
-                appState.logDebug('LIFF初始化完成');
-                
+                // 初始化LIFF
+                await liff.init({ liffId: '2007700262-da76ZbYE' });
+               
                 if (!liff.isLoggedIn()) {
-                    updateStatus('導向LINE登入頁面...');
                     liff.login();
                     return;
                 }
+               
+                // 顯示主界面
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('mainContainer').classList.remove('hidden');
                 
-                updateStatus('獲取用戶資訊中...');
-                const profile = await liff.getProfile();
-                appState.logDebug(`用戶原始ID: ${profile.userId}`);
-                appState.profile = profile;
-                
-                updateStatus('驗證員工資料中...');
-                const result = await checkUserRegistration(profile.userId);
-                
-                if (result.registered) {
-                    updateStatus('驗證成功！');
-                    appState.showRegistered({
-                        name: result.data.name,
-                        empId: result.data.empId
-                    });
-                } else {
-                    appState.showUnregistered(profile.userId);
-                }
+                // 打卡功能事件綁定
+                document.getElementById('checkInBtn').addEventListener('click', handleCheckIn);
+                document.getElementById('checkOutBtn').addEventListener('click', handleCheckOut);
+                document.getElementById('showRecordsBtn').addEventListener('click', showRecords);
+               
             } catch (error) {
-                appState.logDebug(`初始化失敗: ${error.message}`);
-                updateStatus(`系統錯誤: ${error.message}`);
-                
-                // 顯示強制繼續按鈕
-                if (appState.elements.forceContinue) {
-                    appState.elements.forceContinue.classList.remove('hidden');
-                }
-                
-                // 如果有用戶ID但檢查失敗，顯示未註冊畫面
-                if (appState.profile?.userId) {
-                    appState.logDebug('使用緩存用戶ID顯示未註冊畫面');
-                    appState.showUnregistered(appState.profile.userId);
-                }
+                console.error('初始化失敗:', error);
+                showFatalError(`系統初始化失敗: ${error.message}`);
             }
+        }
+        
+        // 更新狀態訊息
+        function updateStatus(message, type) {
+            const statusContainer = document.getElementById('statusContainer');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            statusMessage.innerHTML = message;
+            
+            // 更新狀態樣式
+            statusContainer.className = 'status-container';
+            if (type === 'success') statusContainer.classList.add('success');
+            if (type === 'error') statusContainer.classList.add('error');
+        }
+        
+        // 上班打卡處理
+        async function handleCheckIn() {
+            try {
+                updateStatus('⏳ 正在處理上班打卡...', 'info');
+                // 這裡添加打卡邏輯
+                setTimeout(() => {
+                    updateStatus('✅ 上班打卡成功！時間: 08:00:00', 'success');
+                }, 1500);
+            } catch (error) {
+                updateStatus('❌ 打卡失敗: ' + error.message, 'error');
+            }
+        }
+        
+        // 下班打卡處理
+        async function handleCheckOut() {
+            try {
+                updateStatus('⏳ 正在處理下班打卡...', 'info');
+                // 這裡添加打卡邏輯
+                setTimeout(() => {
+                    updateStatus('✅ 下班打卡成功！時間: 17:30:00', 'success');
+                }, 1500);
+            } catch (error) {
+                updateStatus('❌ 打卡失敗: ' + error.message, 'error');
+            }
+        }
+        
+        // 顯示打卡記錄
+        function showRecords() {
+            updateStatus('ℹ️ 正在載入打卡記錄...', 'info');
+            // 這裡添加記錄載入邏輯
+            setTimeout(() => {
+                updateStatus('✅ 已載入今日打卡記錄', 'success');
+            }, 1500);
+        }
+        
+        // 顯示致命錯誤
+        function showFatalError(message) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('mainContainer').classList.add('hidden');
+            
+            const errorContainer = document.createElement('div');
+            errorContainer.className = 'app-container';
+            errorContainer.innerHTML = `
+                <div class="app-header">
+                    <h1 class="app-title">系統錯誤</h1>
+                </div>
+                <div class="app-body">
+                    <div class="status-container error">
+                        <div class="status-message">
+                            <span>❌ ${message}</span>
+                        </div>
+                        <button class="retry-btn" onclick="location.reload()">重新載入</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(errorContainer);
         }
 
         // 啟動應用
-        document.addEventListener('DOMContentLoaded', () => {
-            // 先顯示除錯模式狀態
-            appState.logDebug('除錯模式已啟用');
-            initializeApp().catch(error => {
-                appState.logDebug(`啟動失敗: ${error.message}`);
-            });
-        });
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
+
