@@ -9,6 +9,7 @@
             --primary-color: #1a365d;
             --success-color: #38a169;
             --error-color: #e53e3e;
+            --warning-color: #dd6b20;
             --background-color: #f8fafc;
             --card-color: #ffffff;
         }
@@ -56,23 +57,41 @@
             to { transform: rotate(360deg); }
         }
         .hidden { display: none; }
-        .error-message {
-            color: var(--error-color);
-            margin-top: 10px;
+        .user-id-box {
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            font-family: monospace;
+            word-break: break-all;
+            text-align: center;
         }
-        .retry-btn {
-            margin-top: 10px;
-            padding: 8px 16px;
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            flex: 1;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-primary {
             background-color: var(--primary-color);
             color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: var(--primary-color);
         }
     </style>
 </head>
 <body>
     <div id="app">
+        <!-- 載入狀態 -->
         <div id="loading" class="app-container">
             <div class="app-header">
                 <h1>台北101員工打卡系統</h1>
@@ -83,8 +102,22 @@
                     <span class="loading"></span>
                     <span>正在初始化系統，請稍候...</span>
                 </div>
-                <div id="errorMessage" class="error-message hidden"></div>
-                <button id="retryButton" class="retry-btn hidden">重新載入</button>
+            </div>
+        </div>
+
+        <!-- 未註冊狀態 -->
+        <div id="unregisteredContainer" class="app-container hidden">
+            <div class="app-header">
+                <h1>台北101員工打卡系統</h1>
+            </div>
+            <div style="padding: 24px; text-align: center;">
+                <h2 style="color: var(--error-color); margin-bottom: 16px;">您尚未註冊為員工</h2>
+                <p>請聯繫管理員並提供以下用戶ID：</p>
+                <div class="user-id-box" id="userIdDisplay"></div>
+                <div class="action-buttons">
+                    <button id="copyButton" class="btn btn-primary">複製用戶ID</button>
+                    <button id="retryButton" class="btn btn-secondary">重新檢查</button>
+                </div>
             </div>
         </div>
     </div>
@@ -97,66 +130,67 @@
             LIFF_ID: '2007700262-da76ZbYE'
         };
 
-        // DOM 元素安全獲取
-        function getSafeElement(id) {
-            const el = document.getElementById(id);
-            if (!el) {
-                console.error(`找不到元素: #${id}`);
-                throw new Error(`系統元素缺失: ${id}`);
-            }
-            return el;
-        }
-
         // 狀態管理
-        const state = {
+        const appState = {
+            userId: null,
             elements: {
                 loading: null,
                 statusMessage: null,
-                errorMessage: null,
+                unregisteredContainer: null,
+                userIdDisplay: null,
+                copyButton: null,
                 retryButton: null
             },
             init: function() {
-                this.elements.loading = getSafeElement('loading');
-                this.elements.statusMessage = getSafeElement('statusMessage');
-                this.elements.errorMessage = getSafeElement('errorMessage');
-                this.elements.retryButton = getSafeElement('retryButton');
-                
-                this.elements.retryButton.addEventListener('click', () => {
-                    location.reload();
+                // 初始化DOM元素
+                this.elements.loading = document.getElementById('loading');
+                this.elements.statusMessage = document.getElementById('statusMessage');
+                this.elements.unregisteredContainer = document.getElementById('unregisteredContainer');
+                this.elements.userIdDisplay = document.getElementById('userIdDisplay');
+                this.elements.copyButton = document.getElementById('copyButton');
+                this.elements.retryButton = document.getElementById('retryButton');
+
+                // 綁定事件
+                this.elements.copyButton.addEventListener('click', this.copyUserId.bind(this));
+                this.elements.retryButton.addEventListener('click', this.retryCheck.bind(this));
+            },
+            copyUserId: function() {
+                navigator.clipboard.writeText(this.userId).then(() => {
+                    alert('已複製用戶ID到剪貼簿');
+                }).catch(err => {
+                    console.error('複製失敗:', err);
+                    alert('複製失敗，請手動複製');
                 });
+            },
+            retryCheck: function() {
+                this.showLoading();
+                initializeApp();
+            },
+            showLoading: function() {
+                this.elements.loading.classList.remove('hidden');
+                this.elements.unregisteredContainer.classList.add('hidden');
+            },
+            showUnregistered: function(userId) {
+                this.userId = userId;
+                this.elements.userIdDisplay.textContent = userId;
+                this.elements.loading.classList.add('hidden');
+                this.elements.unregisteredContainer.classList.remove('hidden');
             }
         };
 
-        // 更新狀態顯示
-        function updateStatus(message, type = 'info') {
-            try {
-                const icons = {
-                    info: '<span class="loading"></span>',
-                    success: '✅',
-                    error: '❌'
-                };
-                
-                state.elements.statusMessage.innerHTML = `${icons[type]} ${message}`;
-                
-                if (type === 'error') {
-                    state.elements.errorMessage.textContent = message;
-                    state.elements.errorMessage.classList.remove('hidden');
-                    state.elements.retryButton.classList.remove('hidden');
-                } else {
-                    state.elements.errorMessage.classList.add('hidden');
-                    state.elements.retryButton.classList.add('hidden');
-                }
-                
-                console.log(`[STATUS] ${message}`);
-            } catch (error) {
-                console.error('更新狀態失敗:', error);
-            }
+        // 更新狀態訊息
+        function updateStatus(message) {
+            appState.elements.statusMessage.innerHTML = `
+                <span class="loading"></span>
+                <span>${message}</span>
+            `;
+            console.log(`[STATUS] ${message}`);
         }
 
         // 檢查註冊狀態
         async function checkUserRegistration(userId) {
             try {
-                updateStatus('正在與伺服器通訊...');
+                updateStatus('正在驗證員工資格...');
                 
                 const url = new URL(`https://script.google.com/macros/s/${CONFIG.SCRIPT_ID}/exec`);
                 url.searchParams.append('action', 'checkRegistration');
@@ -174,7 +208,7 @@
                 console.log('回應狀態:', response.status);
                 
                 if (!response.ok) {
-                    throw new Error(`伺服器回應錯誤: ${response.status}`);
+                    throw new Error(`伺服器錯誤: ${response.status}`);
                 }
                 
                 const data = await response.json();
@@ -194,15 +228,11 @@
         // 主初始化函數
         async function initializeApp() {
             try {
-                state.init(); // 初始化DOM元素
+                appState.init();
                 updateStatus('正在啟動LINE環境...');
                 
-                // 初始化LIFF（10秒超時）
-                await Promise.race([
-                    liff.init({ liffId: CONFIG.LIFF_ID }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('LIFF初始化超時')), 10000))
-                ]);
-                
+                // 初始化LIFF
+                await liff.init({ liffId: CONFIG.LIFF_ID });
                 console.log('LIFF初始化完成');
                 
                 if (!liff.isLoggedIn()) {
@@ -215,28 +245,27 @@
                 const profile = await liff.getProfile();
                 console.log('用戶資料:', profile);
                 
-                updateStatus('正在驗證員工權限...');
+                updateStatus('正在檢查註冊狀態...');
                 const result = await checkUserRegistration(profile.userId);
                 
                 if (result.registered) {
-                    updateStatus('驗證成功，正在進入系統...', 'success');
-                    // 這裡添加跳轉到主系統的代碼
+                    updateStatus('驗證成功，正在進入系統...');
+                    // 這裡添加進入主系統的代碼
                 } else {
-                    updateStatus('您尚未註冊為員工', 'error');
+                    appState.showUnregistered(profile.userId);
                 }
             } catch (error) {
                 console.error('初始化失敗:', error);
-                updateStatus(`系統錯誤: ${error.message}`, 'error');
+                updateStatus(`系統錯誤: ${error.message}`);
+                // 錯誤時也顯示未註冊畫面
+                if (appState.userId) {
+                    appState.showUnregistered(appState.userId);
+                }
             }
         }
 
         // 啟動應用
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM載入完成，開始初始化');
-            initializeApp().catch(error => {
-                console.error('應用啟動失敗:', error);
-            });
-        });
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
