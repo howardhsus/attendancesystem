@@ -3,311 +3,496 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北101 | 員工打卡系統</title>
+    <title>台北101打卡系統</title>
+    <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 最精簡的必要樣式 */
-        body {
-            font-family: 'Microsoft JhengHei', sans-serif;
-            background-color: #f0f4f8;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            min-height: 100vh;
             padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
         }
         
-        .app-container {
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             width: 100%;
             max-width: 500px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+            position: relative;
             overflow: hidden;
         }
         
-        .app-header {
-            background: #1a365d;
+        .taipei101-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="45" y="20" width="10" height="80" fill="%23007bff"/><rect x="40" y="10" width="20" height="10" fill="%23007bff"/><circle cx="50" cy="5" r="5" fill="%23ff6b6b"/></svg>');
+            background-repeat: repeat-x;
+            background-size: 100px 100px;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        header {
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        h1 {
+            color: #1a2a6c;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            color: #fdbb2d;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #1a2a6c;
+            flex: 1;
+            text-align: left;
+        }
+        
+        .info-value {
+            flex: 1;
+            text-align: right;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .distance {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 15px 0;
+            color: #e74c3c;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .status {
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        .status.far {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status.near {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
             color: white;
-            padding: 24px;
-            text-align: center;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
         }
         
-        .app-body {
-            padding: 24px;
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
         
-        .status-box {
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-            border-left: 4px solid #1a365d;
-            text-align: center;
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn i {
+            margin-right: 10px;
+        }
+        
+        .checkins-container {
+            text-align: left;
+            margin-top: 25px;
+        }
+        
+        .checkins-title {
+            font-size: 1.3rem;
+            color: #1a2a6c;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #fdbb2d;
+            display: inline-block;
+        }
+        
+        .checkins-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .checkin-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .checkin-time {
+            font-weight: 600;
+            color: #1a2a6c;
+        }
+        
+        .checkin-distance {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
         }
         
         .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(26, 54, 93, 0.2);
-            border-top-color: #1a365d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-left-color: #1a2a6c;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 10px;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        .error-box {
-            background: #ffebee;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 24px 0;
-            border-left: 4px solid #e53e3e;
-            color: #c53030;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: #1a365d;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .success-message {
+            background: #4CAF50;
             color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
         }
         
-        .btn:hover {
-            background: #2c5282;
+        footer {
+            margin-top: 30px;
+            color: #fff;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 2;
         }
         
-        .user-id {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 16px;
-            margin: 20px 0;
-            font-family: monospace;
-            word-break: break-all;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .hidden {
-            display: none;
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card {
+                padding: 20px 15px;
+            }
+            
+            .distance {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 簡單的應用容器 -->
-    <div class="app-container">
-        <div class="app-header">
-            <h1>台北101員工打卡系統</h1>
-            <p>精準定位打卡</p>
+    <div class="container">
+        <div class="taipei101-bg"></div>
+        
+        <header>
+            <h1><i class="fas fa-location-dot"></i> 台北101打卡系統</h1>
+            <p class="subtitle">獲取您的位置，完成台北101打卡挑戰！</p>
+        </header>
+        
+        <div class="card">
+            <div class="info-row">
+                <span class="info-label">當前位置：</span>
+                <span id="location" class="info-value">定位中...</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">台北101位置：</span>
+                <span id="taipei101-location" class="info-value">25.0338°N, 121.5645°E</span>
+            </div>
+            
+            <div id="distance-container">
+                <div class="distance">--</div>
+                <div id="status" class="status far">請獲取位置資訊</div>
+            </div>
+            
+            <button id="getLocationBtn" class="btn pulse">
+                <i class="fas fa-map-marker-alt"></i> 獲取我的位置
+            </button>
+            
+            <button id="checkinBtn" class="btn" disabled>
+                <i class="fas fa-camera"></i> 打卡台北101
+            </button>
+            
+            <div id="successMessage" class="success-message" style="display:none;">
+                <i class="fas fa-check-circle"></i> 打卡成功！您已完成台北101挑戰！
+            </div>
         </div>
         
-        <div class="app-body" id="appBody">
-            <!-- 狀態會動態更新 -->
+        <div class="checkins-container">
+            <h3 class="checkins-title"><i class="fas fa-history"></i> 打卡記錄</h3>
+            <div id="checkinsList" class="checkins-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
         </div>
+        
+        <footer>
+            <p>LINE LIFF 台北101定位打卡功能 | © 2023</p>
+        </footer>
     </div>
 
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // 極簡化配置
-        const CONFIG = {
-            SCRIPT_ID: 'AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw',
-            LIFF_ID: '2007700262-da76ZbYE'
-        };
+        // 台北101的坐标
+        const TAIPEI_101_LAT = 25.0338;
+        const TAIPEI_101_LNG = 121.5645;
         
-        // 狀態變量
-        let currentState = 'loading';
-        let userId = '';
-        let userName = '';
+        // 允许打卡的最大距离（单位：米）
+        const MAX_CHECKIN_DISTANCE = 1000;
         
-        // 渲染UI - 避免複雜的狀態管理
-        function renderUI() {
-            const appBody = document.getElementById('appBody');
-            if (!appBody) return;
+        // 初始化LIFF应用
+        liff.init({
+            liffId: 'YOUR_LIFF_ID' // 替换为您的LIFF ID
+        })
+        .then(() => {
+            console.log('LIFF初始化成功');
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            }
+        })
+        .catch((err) => {
+            console.error('LIFF初始化失败:', err);
+            document.getElementById('location').textContent = 'LIFF初始化失败';
+        });
+        
+        // 获取DOM元素
+        const getLocationBtn = document.getElementById('getLocationBtn');
+        const checkinBtn = document.getElementById('checkinBtn');
+        const locationDisplay = document.getElementById('location');
+        const distanceDisplay = document.querySelector('.distance');
+        const statusDisplay = document.getElementById('status');
+        const checkinsList = document.getElementById('checkinsList');
+        const successMessage = document.getElementById('successMessage');
+        
+        // 存储打卡记录
+        let checkins = [];
+        
+        // 获取地理位置
+        getLocationBtn.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                locationDisplay.textContent = "您的瀏覽器不支援地理定位功能";
+                return;
+            }
             
-            switch(currentState) {
-                case 'loading':
-                    appBody.innerHTML = `
-                        <div class="status-box">
-                            <span class="loading"></span>
-                            <span>系統啟動中，請稍候...</span>
-                        </div>
-                    `;
-                    break;
+            locationDisplay.textContent = "定位中...";
+            getLocationBtn.disabled = true;
+            getLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 定位中...';
+            
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const { latitude, longitude } = position.coords;
+                    locationDisplay.textContent = `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`;
                     
-                case 'login':
-                    appBody.innerHTML = `
-                        <div class="status-box">
-                            <span class="loading"></span>
-                            <span>正在登入LINE帳號...</span>
-                        </div>
-                    `;
-                    break;
+                    // 计算距离
+                    const distance = calculateDistance(
+                        latitude, longitude, 
+                        TAIPEI_101_LAT, TAIPEI_101_LNG
+                    );
                     
-                case 'checking':
-                    appBody.innerHTML = `
-                        <div class="status-box">
-                            <span class="loading"></span>
-                            <span>正在驗證員工資料...</span>
-                        </div>
-                    `;
-                    break;
+                    // 更新UI
+                    distanceDisplay.textContent = `${distance.toFixed(0)} 公尺`;
                     
-                case 'registered':
-                    appBody.innerHTML = `
-                        <div class="status-box">
-                            <h3>歡迎回來，${userName}</h3>
-                            <p>系統已準備就緒</p>
-                            <button class="btn" onclick="showMainScreen()">進入打卡系統</button>
-                        </div>
-                    `;
-                    break;
+                    if (distance <= MAX_CHECKIN_DISTANCE) {
+                        statusDisplay.textContent = `在打卡範圍內 (${MAX_CHECKIN_DISTANCE}公尺)`;
+                        statusDisplay.className = "status near";
+                        checkinBtn.disabled = false;
+                        checkinBtn.classList.add('pulse');
+                    } else {
+                        statusDisplay.textContent = `距離太遠，請靠近台北101 (${MAX_CHECKIN_DISTANCE}公尺內)`;
+                        statusDisplay.className = "status far";
+                        checkinBtn.disabled = true;
+                        checkinBtn.classList.remove('pulse');
+                    }
                     
-                case 'unregistered':
-                    appBody.innerHTML = `
-                        <div class="status-box">
-                            <h3 style="color: #c53030;">您尚未註冊為員工</h3>
-                            <p>請聯繫管理員並提供以下用戶ID：</p>
-                            <div class="user-id">${userId}</div>
-                            <button class="btn" onclick="copyUserId()">複製用戶ID</button>
-                            <button class="btn" style="background: #e2e8f0; color: #1a365d;" onclick="retryCheck()">重新檢查</button>
-                        </div>
-                    `;
-                    break;
+                    getLocationBtn.disabled = false;
+                    getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> 更新位置';
+                },
+                error => {
+                    console.error("獲取位置失敗:", error);
+                    locationDisplay.textContent = "位置獲取失敗";
                     
-                case 'error':
-                    appBody.innerHTML = `
-                        <div class="error-box">
-                            <h3>系統發生錯誤</h3>
-                            <p id="errorMessage"></p>
-                            <button class="btn" onclick="location.reload()">重新載入頁面</button>
-                        </div>
-                    `;
-                    break;
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            locationDisplay.textContent = "用戶拒絕位置請求";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            locationDisplay.textContent = "位置信息不可用";
+                            break;
+                        case error.TIMEOUT:
+                            locationDisplay.textContent = "獲取位置超時";
+                            break;
+                    }
                     
-                default:
-                    appBody.innerHTML = `
-                        <div class="status-box">
-                            <h3>系統狀態未知</h3>
-                            <button class="btn" onclick="location.reload()">重新載入頁面</button>
-                        </div>
-                    `;
-            }
-        }
-        
-        // 顯示錯誤
-        function showError(message) {
-            currentState = 'error';
-            renderUI();
-            const errorMessage = document.getElementById('errorMessage');
-            if (errorMessage) errorMessage.textContent = message;
-            console.error('系統錯誤:', message);
-        }
-        
-        // 複製用戶ID
-        function copyUserId() {
-            navigator.clipboard.writeText(userId)
-                .then(() => alert('已複製用戶ID到剪貼簿'))
-                .catch(() => alert('複製失敗，請手動複製'));
-        }
-        
-        // 重新檢查
-        function retryCheck() {
-            currentState = 'checking';
-            renderUI();
-            checkUserRegistration(userId);
-        }
-        
-        // 顯示主畫面 (簡化版)
-        function showMainScreen() {
-            document.body.innerHTML = `
-                <div class="app-container">
-                    <div class="app-header">
-                        <h1>台北101員工打卡系統</h1>
-                        <p>歡迎 ${userName}</p>
-                    </div>
-                    <div class="app-body">
-                        <div class="status-box">
-                            <h3>打卡功能</h3>
-                            <p>系統準備就緒</p>
-                            <button class="btn">上班打卡</button>
-                            <button class="btn">下班打卡</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // 檢查用戶註冊狀態
-        async function checkUserRegistration(userId) {
-            try {
-                const url = `https://script.google.com/macros/s/${CONFIG.SCRIPT_ID}/exec?action=checkRegistration&userId=${encodeURIComponent(userId)}&t=${Date.now()}`;
-                console.log('API請求:', url);
-                
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`伺服器錯誤: ${response.status}`);
+                    getLocationBtn.disabled = false;
+                    getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> 獲取我的位置';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
                 }
-                
-                const data = await response.json();
-                console.log('API回應:', data);
-                
-                if (data.success && data.data.registered) {
-                    userName = data.data.name || '員工';
-                    currentState = 'registered';
-                } else {
-                    currentState = 'unregistered';
-                }
-                
-                renderUI();
-            } catch (error) {
-                showError(`註冊檢查失敗: ${error.message}`);
+            );
+        });
+        
+        // 打卡按钮事件
+        checkinBtn.addEventListener('click', () => {
+            // 添加打卡记录
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-TW');
+            const dateString = now.toLocaleDateString('zh-TW');
+            
+            const distanceText = distanceDisplay.textContent;
+            
+            const newCheckin = {
+                time: `${dateString} ${timeString}`,
+                distance: distanceText
+            };
+            
+            checkins.unshift(newCheckin);
+            updateCheckinsList();
+            
+            // 显示成功消息
+            successMessage.style.display = 'block';
+            
+            // 重置按钮状态
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        });
+        
+        // 更新打卡记录列表
+        function updateCheckinsList() {
+            if (checkins.length === 0) {
+                checkinsList.innerHTML = '<div class="no-checkins">暫無打卡記錄</div>';
+                return;
             }
+            
+            checkinsList.innerHTML = '';
+            checkins.forEach(checkin => {
+                const checkinElement = document.createElement('div');
+                checkinElement.className = 'checkin-item';
+                checkinElement.innerHTML = `
+                    <div class="checkin-time">${checkin.time}</div>
+                    <div class="checkin-distance">${checkin.distance}</div>
+                `;
+                checkinsList.appendChild(checkinElement);
+            });
         }
         
-        // 主初始化函數
-        async function initializeApp() {
-            try {
-                // 初始渲染
-                renderUI();
-                
-                // 初始化LIFF
-                currentState = 'login';
-                renderUI();
-                await liff.init({ liffId: CONFIG.LIFF_ID });
-                
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
-                
-                // 獲取用戶資料
-                const profile = await liff.getProfile();
-                userId = profile.userId;
-                
-                // 檢查註冊狀態
-                currentState = 'checking';
-                renderUI();
-                await checkUserRegistration(userId);
-                
-            } catch (error) {
-                showError(`初始化失敗: ${error.message}`);
-            }
+        // 计算两个坐标之间的距离（Haversine公式）
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // 地球半径（米）
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+            
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            
+            return R * c; // 返回距离（米）
         }
         
-        // 啟動應用
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        // 初始化打卡记录
+        updateCheckinsList();
     </script>
 </body>
 </html>
+
