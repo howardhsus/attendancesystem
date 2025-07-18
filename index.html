@@ -188,42 +188,7 @@
         }
 
         // 檢查註冊狀態
-        async function checkUserRegistration(userId) {
-            try {
-                updateStatus('正在驗證員工資格...');
-                
-                const url = new URL(`https://script.google.com/macros/s/${CONFIG.SCRIPT_ID}/exec`);
-                url.searchParams.append('action', 'checkRegistration');
-                url.searchParams.append('userId', userId);
-                url.searchParams.append('t', Date.now());
-                
-                console.log('請求URL:', url.toString());
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    redirect: 'follow',
-                    headers: { 'Content-Type': 'text/plain' }
-                });
-                
-                console.log('回應狀態:', response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`伺服器錯誤: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('回應數據:', data);
-                
-                if (!data.success) {
-                    throw new Error(data.error || '註冊檢查失敗');
-                }
-                
-                return data;
-            } catch (error) {
-                console.error('檢查註冊失敗:', error);
-                throw error;
-            }
-        }
+        async function checkUserRegistration(userId) { try { updateStatus('正在嚴格驗證員工資格...'); // 正規化用戶ID（去除空白+轉小寫） const normalizedUserId = userId.trim().toLowerCase(); const url = new URL(`https://script.google.com/macros/s/${CONFIG.SCRIPT_ID}/exec`); url.searchParams.append('action', 'checkRegistration'); url.searchParams.append('userId', normalizedUserId); // 傳送正規化後的ID url.searchParams.append('strictCheck', 'true'); // 新增嚴格模式標記 console.log('嚴格檢查請求:', url.toString()); const response = await fetch(url, { method: 'GET', redirect: 'follow', headers: { 'Content-Type': 'text/plain', 'X-Debug-Mode': 'true' // 新增除錯標頭 } }); // ...保持其他邏輯不變 } catch (error) { console.error('嚴格檢查失敗:', { error: error.message, userId: userId, normalizedUserId: normalizedUserId }); throw error; } }
 
         // 主初始化函數
         async function initializeApp() {
