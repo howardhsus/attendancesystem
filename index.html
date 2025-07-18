@@ -3,423 +3,540 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北101打卡系統</title>
-    <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>台北101 | 員工打卡系統</title>
     <style>
+        /* 整體樣式 */
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e6f0ff 100%);
             color: #333;
-            min-height: 100vh;
+            line-height: 1.6;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            min-height: 100vh;
         }
         
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            width: 100%;
+        .app-container {
             max-width: 500px;
-            padding: 30px;
-            text-align: center;
-            position: relative;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
         
-        .taipei101-bg {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 150px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="45" y="20" width="10" height="80" fill="%23007bff"/><rect x="40" y="10" width="20" height="10" fill="%23007bff"/><circle cx="50" cy="5" r="5" fill="%23ff6b6b"/></svg>');
-            background-repeat: repeat-x;
-            background-size: 100px 100px;
-            opacity: 0.1;
-            z-index: 0;
-        }
-        
-        header {
-            margin-bottom: 25px;
+        .app-header {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
             position: relative;
-            z-index: 2;
         }
         
-        h1 {
-            color: #1a2a6c;
-            font-size: 2.2rem;
+        .app-header h1 {
+            font-size: 1.8rem;
             margin-bottom: 5px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         
-        .subtitle {
-            color: #fdbb2d;
-            font-weight: 600;
-            margin-bottom: 25px;
+        .app-header p {
+            opacity: 0.9;
         }
         
-        .card {
-            background: white;
+        .taipei101-icon {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .taipei101-icon::before {
+            content: "▲";
+            color: #1a365d;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .app-body {
+            padding: 25px;
+        }
+        
+        .status-box {
+            background: #f8fafc;
             border-radius: 15px;
             padding: 25px;
             margin-bottom: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            position: relative;
-            z-index: 2;
+            border-left: 4px solid #1a365d;
+            text-align: center;
         }
         
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+        .status-box.error {
+            background: #fff5f5;
+            border-left-color: #e53e3e;
         }
         
-        .info-label {
-            font-weight: 600;
-            color: #1a2a6c;
-            flex: 1;
-            text-align: left;
-        }
-        
-        .info-value {
-            flex: 1;
-            text-align: right;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .distance {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 15px 0;
-            color: #e74c3c;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-        
-        .status {
-            font-size: 1.2rem;
-            font-weight: 600;
-            padding: 8px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            margin: 10px 0;
-        }
-        
-        .status.far {
-            background: #ffebee;
-            color: #c62828;
-        }
-        
-        .status.near {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .btn {
-            background: linear-gradient(to right, #1a2a6c, #b21f1f);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: pointer;
-            width: 100%;
-            max-width: 300px;
-            margin: 15px 0;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .btn:active {
-            transform: translateY(1px);
-        }
-        
-        .btn i {
-            margin-right: 10px;
-        }
-        
-        .checkins-container {
-            text-align: left;
-            margin-top: 25px;
-        }
-        
-        .checkins-title {
-            font-size: 1.3rem;
-            color: #1a2a6c;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #fdbb2d;
-            display: inline-block;
-        }
-        
-        .checkins-list {
-            max-height: 200px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        
-        .checkin-item {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .checkin-time {
-            font-weight: 600;
-            color: #1a2a6c;
-        }
-        
-        .checkin-distance {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-size: 0.9rem;
+        .status-box.success {
+            background: #f0fff4;
+            border-left-color: #38a169;
         }
         
         .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100px;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(0,0,0,0.1);
-            border-left-color: #1a2a6c;
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(26, 54, 93, 0.2);
+            border-top-color: #1a365d;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-right: 12px;
+            vertical-align: middle;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .user-id {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 18px;
+            margin: 25px 0;
+            font-family: monospace;
+            word-break: break-all;
+            text-align: center;
+            border: 1px dashed #cbd5e0;
+            font-size: 0.95rem;
         }
         
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: #1a365d;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 20px;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(25deg);
+            transition: all 0.5s;
+        }
+        
+        .btn:hover {
+            background: #2c5282;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:hover::after {
+            left: 120%;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1a365d;
+        }
+        
+        .btn-success {
+            background: #38a169;
+        }
+        
+        .btn-error {
+            background: #e53e3e;
+        }
+        
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn:disabled::after {
+            display: none;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 15px;
+            margin: 25px 0;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #4a5568;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            color: #1a365d;
+        }
+        
+        .location-info {
+            background: #ebf8ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #3182ce;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .map-container {
+            height: 200px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-placeholder {
+            text-align: center;
+            color: #4a5568;
+        }
+        
+        .map-placeholder .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #718096;
+        }
+        
+        .check-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+            font-size: 0.9rem;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 20px;
         }
         
         .pulse {
-            animation: pulse 2s infinite;
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #38a169;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
         }
         
-        .success-message {
-            background: #4CAF50;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            animation: fadeIn 0.5s ease;
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.7; }
         }
         
-        footer {
-            margin-top: 30px;
-            color: #fff;
-            font-size: 0.9rem;
-            position: relative;
-            z-index: 2;
-        }
-        
-        /* 响应式设计 */
+        /* 響應式設計 */
         @media (max-width: 600px) {
-            .container {
+            .app-container {
+                border-radius: 15px;
+            }
+            
+            .app-header {
                 padding: 20px 15px;
             }
             
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            .card {
+            .app-body {
                 padding: 20px 15px;
             }
             
-            .distance {
-                font-size: 2rem;
+            .check-buttons {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="taipei101-bg"></div>
-        
-        <header>
-            <h1><i class="fas fa-location-dot"></i> 台北101打卡系統</h1>
-            <p class="subtitle">獲取您的位置，完成台北101打卡挑戰！</p>
-        </header>
-        
-        <div class="card">
-            <div class="info-row">
-                <span class="info-label">當前位置：</span>
-                <span id="location" class="info-value">定位中...</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="info-label">台北101位置：</span>
-                <span id="taipei101-location" class="info-value">25.0338°N, 121.5645°E</span>
-            </div>
-            
-            <div id="distance-container">
-                <div class="distance">--</div>
-                <div id="status" class="status far">請獲取位置資訊</div>
-            </div>
-            
-            <button id="getLocationBtn" class="btn pulse">
-                <i class="fas fa-map-marker-alt"></i> 獲取我的位置
-            </button>
-            
-            <button id="checkinBtn" class="btn" disabled>
-                <i class="fas fa-camera"></i> 打卡台北101
-            </button>
-            
-            <div id="successMessage" class="success-message" style="display:none;">
-                <i class="fas fa-check-circle"></i> 打卡成功！您已完成台北101挑戰！
-            </div>
+    <div class="app-container">
+        <div class="app-header">
+            <div class="taipei101-icon"></div>
+            <h1>台北101員工打卡系統</h1>
+            <p>精準定位打卡</p>
         </div>
         
-        <div class="checkins-container">
-            <h3 class="checkins-title"><i class="fas fa-history"></i> 打卡記錄</h3>
-            <div id="checkinsList" class="checkins-list">
-                <div class="loading">
-                    <div class="spinner"></div>
-                </div>
-            </div>
+        <div class="app-body" id="appBody">
+            <!-- 狀態會動態更新 -->
         </div>
         
-        <footer>
-            <p>LINE LIFF 台北101定位打卡功能 | © 2023</p>
-        </footer>
+        <div class="footer">
+            <p>© 2025 台北101大樓管理處 | 安全打卡系統</p>
+        </div>
     </div>
 
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // 台北101的坐标
-        const TAIPEI_101_LAT = 25.0338;
-        const TAIPEI_101_LNG = 121.5645;
+        // 配置設定
+        const CONFIG = {
+            SCRIPT_ID: 'AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw',
+            LIFF_ID: '2007700262-da76ZbYE',
+            TAIPEI_101: {
+                LAT: 25.0330,
+                LNG: 121.5654
+            },
+            MAX_DISTANCE: 500 // 允許的最大打卡距離(公尺)
+        };
         
-        // 允许打卡的最大距离（单位：米）
-        const MAX_CHECKIN_DISTANCE = 1000;
+        // 狀態變量
+        let currentState = 'loading';
+        let userId = '';
+        let userName = '';
+        let employeeId = '';
+        let location = null;
         
-        // 初始化LIFF应用
-        liff.init({
-            liffId: 'YOUR_LIFF_ID' // 替换为您的LIFF ID
-        })
-        .then(() => {
-            console.log('LIFF初始化成功');
-            if (!liff.isLoggedIn()) {
-                liff.login();
+        // 渲染UI
+        function renderUI() {
+            const appBody = document.getElementById('appBody');
+            if (!appBody) return;
+            
+            switch(currentState) {
+                case 'loading':
+                    appBody.innerHTML = `
+                        <div class="status-box">
+                            <span class="loading"></span>
+                            <span>系統啟動中，請稍候...</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'login':
+                    appBody.innerHTML = `
+                        <div class="status-box">
+                            <span class="loading"></span>
+                            <span>正在登入LINE帳號...</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'checking':
+                    appBody.innerHTML = `
+                        <div class="status-box">
+                            <span class="loading"></span>
+                            <span>正在驗證員工資料...</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'registered':
+                    appBody.innerHTML = `
+                        <div class="status-box">
+                            <h2>歡迎回來，${userName}</h2>
+                            <div class="info-grid">
+                                <div class="info-label">員工編號</div>
+                                <div class="info-value">${employeeId}</div>
+                                <div class="info-label">打卡狀態</div>
+                                <div class="info-value"><span class="pulse"></span>準備打卡</div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-info">
+                            <h3>定位打卡</h3>
+                            <p>請點擊下方按鈕獲取您的位置</p>
+                            <div class="map-container">
+                                <div class="map-placeholder">
+                                    <div class="icon">📍</div>
+                                    <p>等待位置資訊</p>
+                                </div>
+                            </div>
+                            <button id="getLocationBtn" class="btn">獲取我的位置</button>
+                        </div>
+                        
+                        <div class="check-buttons">
+                            <button id="checkInBtn" class="btn btn-success" disabled>上班打卡</button>
+                            <button id="checkOutBtn" class="btn btn-error" disabled>下班打卡</button>
+                        </div>
+                    `;
+                    
+                    // 綁定按鈕事件
+                    document.getElementById('getLocationBtn').addEventListener('click', getLocation);
+                    document.getElementById('checkInBtn').addEventListener('click', () => checkIn('checkIn'));
+                    document.getElementById('checkOutBtn').addEventListener('click', () => checkIn('checkOut'));
+                    break;
+                    
+                case 'unregistered':
+                    appBody.innerHTML = `
+                        <div class="status-box">
+                            <h3 style="color: #c53030;">您尚未註冊為員工</h3>
+                            <p>請聯繫管理員並提供以下用戶ID：</p>
+                            <div class="user-id">${userId}</div>
+                            <button class="btn" onclick="copyUserId()">複製用戶ID</button>
+                            <button class="btn btn-secondary" onclick="retryCheck()">重新檢查</button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'error':
+                    appBody.innerHTML = `
+                        <div class="status-box error">
+                            <h3>系統發生錯誤</h3>
+                            <p id="errorMessage"></p>
+                            <button class="btn" onclick="location.reload()">重新載入頁面</button>
+                        </div>
+                    `;
+                    break;
+                    
+                default:
+                    appBody.innerHTML = `
+                        <div class="status-box">
+                            <h3>系統狀態未知</h3>
+                            <button class="btn" onclick="location.reload()">重新載入頁面</button>
+                        </div>
+                    `;
             }
-        })
-        .catch((err) => {
-            console.error('LIFF初始化失败:', err);
-            document.getElementById('location').textContent = 'LIFF初始化失败';
-        });
+        }
         
-        // 获取DOM元素
-        const getLocationBtn = document.getElementById('getLocationBtn');
-        const checkinBtn = document.getElementById('checkinBtn');
-        const locationDisplay = document.getElementById('location');
-        const distanceDisplay = document.querySelector('.distance');
-        const statusDisplay = document.getElementById('status');
-        const checkinsList = document.getElementById('checkinsList');
-        const successMessage = document.getElementById('successMessage');
+        // 顯示錯誤
+        function showError(message) {
+            currentState = 'error';
+            renderUI();
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage) errorMessage.textContent = message;
+            console.error('系統錯誤:', message);
+        }
         
-        // 存储打卡记录
-        let checkins = [];
+        // 複製用戶ID
+        function copyUserId() {
+            navigator.clipboard.writeText(userId)
+                .then(() => alert('已複製用戶ID到剪貼簿'))
+                .catch(() => alert('複製失敗，請手動複製'));
+        }
         
-        // 获取地理位置
-        getLocationBtn.addEventListener('click', () => {
+        // 重新檢查
+        function retryCheck() {
+            currentState = 'checking';
+            renderUI();
+            checkUserRegistration(userId);
+        }
+        
+        // 獲取位置
+        function getLocation() {
             if (!navigator.geolocation) {
-                locationDisplay.textContent = "您的瀏覽器不支援地理定位功能";
+                showError('您的瀏覽器不支持地理位置功能');
                 return;
             }
             
-            locationDisplay.textContent = "定位中...";
-            getLocationBtn.disabled = true;
-            getLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 定位中...';
+            const btn = document.getElementById('getLocationBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '定位中...';
+            }
             
             navigator.geolocation.getCurrentPosition(
                 position => {
-                    const { latitude, longitude } = position.coords;
-                    locationDisplay.textContent = `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`;
+                    location = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
                     
-                    // 计算距离
+                    // 計算距離台北101的距離
                     const distance = calculateDistance(
-                        latitude, longitude, 
-                        TAIPEI_101_LAT, TAIPEI_101_LNG
+                        location.lat, 
+                        location.lng, 
+                        CONFIG.TAIPEI_101.LAT, 
+                        CONFIG.TAIPEI_101.LNG
                     );
                     
                     // 更新UI
-                    distanceDisplay.textContent = `${distance.toFixed(0)} 公尺`;
-                    
-                    if (distance <= MAX_CHECKIN_DISTANCE) {
-                        statusDisplay.textContent = `在打卡範圍內 (${MAX_CHECKIN_DISTANCE}公尺)`;
-                        statusDisplay.className = "status near";
-                        checkinBtn.disabled = false;
-                        checkinBtn.classList.add('pulse');
-                    } else {
-                        statusDisplay.textContent = `距離太遠，請靠近台北101 (${MAX_CHECKIN_DISTANCE}公尺內)`;
-                        statusDisplay.className = "status far";
-                        checkinBtn.disabled = true;
-                        checkinBtn.classList.remove('pulse');
+                    const mapContainer = document.querySelector('.map-container');
+                    if (mapContainer) {
+                        mapContainer.innerHTML = `
+                            <div style="padding: 15px; text-align: center;">
+                                <h3>位置資訊</h3>
+                                <p>緯度: ${location.lat.toFixed(6)}</p>
+                                <p>經度: ${location.lng.toFixed(6)}</p>
+                                <p>精確度: ±${Math.round(location.accuracy)}公尺</p>
+                                <p style="margin-top: 15px; font-weight: bold; color: ${distance <= CONFIG.MAX_DISTANCE ? '#38a169' : '#e53e3e'}">
+                                    距離台北101: ${Math.round(distance)}公尺
+                                </p>
+                            </div>
+                        `;
                     }
                     
-                    getLocationBtn.disabled = false;
-                    getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> 更新位置';
+                    // 啟用打卡按鈕
+                    const checkInBtn = document.getElementById('checkInBtn');
+                    const checkOutBtn = document.getElementById('checkOutBtn');
+                    
+                    if (distance <= CONFIG.MAX_DISTANCE) {
+                        if (checkInBtn) checkInBtn.disabled = false;
+                        if (checkOutBtn) checkOutBtn.disabled = false;
+                        
+                        if (btn) {
+                            btn.textContent = '位置已獲取 (可打卡)';
+                            btn.style.background = '#38a169';
+                        }
+                    } else {
+                        showError(`您距離台北101大樓 ${Math.round(distance)} 公尺，超出允許範圍`);
+                        if (btn) {
+                            btn.textContent = '重新獲取位置';
+                            btn.disabled = false;
+                        }
+                    }
                 },
                 error => {
-                    console.error("獲取位置失敗:", error);
-                    locationDisplay.textContent = "位置獲取失敗";
-                    
+                    let errorMsg = '獲取位置失敗: ';
                     switch(error.code) {
                         case error.PERMISSION_DENIED:
-                            locationDisplay.textContent = "用戶拒絕位置請求";
+                            errorMsg += '您拒絕了位置權限請求';
                             break;
                         case error.POSITION_UNAVAILABLE:
-                            locationDisplay.textContent = "位置信息不可用";
+                            errorMsg += '位置資訊不可用';
                             break;
                         case error.TIMEOUT:
-                            locationDisplay.textContent = "獲取位置超時";
+                            errorMsg += '獲取位置超時';
                             break;
+                        default:
+                            errorMsg += '未知錯誤';
                     }
                     
-                    getLocationBtn.disabled = false;
-                    getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> 獲取我的位置';
+                    showError(errorMsg);
+                    
+                    if (btn) {
+                        btn.textContent = '獲取位置';
+                        btn.disabled = false;
+                    }
                 },
                 {
                     enableHighAccuracy: true,
@@ -427,72 +544,177 @@
                     maximumAge: 0
                 }
             );
-        });
+        }
         
-        // 打卡按钮事件
-        checkinBtn.addEventListener('click', () => {
-            // 添加打卡记录
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('zh-TW');
-            const dateString = now.toLocaleDateString('zh-TW');
+        // 計算距離 (Haversine公式)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // 地球半徑(公尺)
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2 - lat1) * Math.PI/180;
+            const Δλ = (lon2 - lon1) * Math.PI/180;
             
-            const distanceText = distanceDisplay.textContent;
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             
-            const newCheckin = {
-                time: `${dateString} ${timeString}`,
-                distance: distanceText
-            };
-            
-            checkins.unshift(newCheckin);
-            updateCheckinsList();
-            
-            // 显示成功消息
-            successMessage.style.display = 'block';
-            
-            // 重置按钮状态
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 5000);
-        });
+            return R * c;
+        }
         
-        // 更新打卡记录列表
-        function updateCheckinsList() {
-            if (checkins.length === 0) {
-                checkinsList.innerHTML = '<div class="no-checkins">暫無打卡記錄</div>';
+        // 打卡處理
+        async function checkIn(type) {
+            if (!location) {
+                showError('請先獲取位置資訊');
                 return;
             }
             
-            checkinsList.innerHTML = '';
-            checkins.forEach(checkin => {
-                const checkinElement = document.createElement('div');
-                checkinElement.className = 'checkin-item';
-                checkinElement.innerHTML = `
-                    <div class="checkin-time">${checkin.time}</div>
-                    <div class="checkin-distance">${checkin.distance}</div>
-                `;
-                checkinsList.appendChild(checkinElement);
-            });
+            // 再次確認距離
+            const distance = calculateDistance(
+                location.lat, 
+                location.lng, 
+                CONFIG.TAIPEI_101.LAT, 
+                CONFIG.TAIPEI_101.LNG
+            );
+            
+            if (distance > CONFIG.MAX_DISTANCE) {
+                showError(`您距離台北101大樓 ${Math.round(distance)} 公尺，超出允許範圍`);
+                return;
+            }
+            
+            // 禁用按鈕
+            const checkInBtn = document.getElementById('checkInBtn');
+            const checkOutBtn = document.getElementById('checkOutBtn');
+            const getLocationBtn = document.getElementById('getLocationBtn');
+            
+            if (checkInBtn) checkInBtn.disabled = true;
+            if (checkOutBtn) checkOutBtn.disabled = true;
+            if (getLocationBtn) getLocationBtn.disabled = true;
+            
+            // 更新按鈕狀態
+            if (type === 'checkIn' && checkInBtn) {
+                checkInBtn.textContent = '打卡中...';
+            }
+            if (type === 'checkOut' && checkOutBtn) {
+                checkOutBtn.textContent = '打卡中...';
+            }
+            
+            try {
+                // 發送打卡請求
+                const response = await fetch(`https://script.google.com/macros/s/${CONFIG.SCRIPT_ID}/exec`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        action: 'checkIn',
+                        type: type,
+                        userId: userId,
+                        empId: employeeId,
+                        latitude: location.lat,
+                        longitude: location.lng,
+                        accuracy: location.accuracy,
+                        distance: Math.round(distance)
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`打卡失敗: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 顯示成功訊息
+                    const statusBox = document.querySelector('.status-box');
+                    if (statusBox) {
+                        statusBox.innerHTML = `
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="font-size: 48px; color: #38a169; margin-bottom: 15px;">✓</div>
+                                <h2>打卡成功！</h2>
+                                <p>${type === 'checkIn' ? '上班' : '下班'}打卡時間: ${data.time}</p>
+                                <p>位置: ${data.address || '台北101附近'}</p>
+                                <button class="btn" style="margin-top: 25px;" onclick="location.reload()">完成</button>
+                            </div>
+                        `;
+                    }
+                } else {
+                    throw new Error(data.message || '打卡失敗');
+                }
+            } catch (error) {
+                showError(error.message);
+                
+                // 重新啟用按鈕
+                if (checkInBtn) {
+                    checkInBtn.disabled = false;
+                    checkInBtn.textContent = '上班打卡';
+                }
+                if (checkOutBtn) {
+                    checkOutBtn.disabled = false;
+                    checkOutBtn.textContent = '下班打卡';
+                }
+                if (getLocationBtn) getLocationBtn.disabled = false;
+            }
         }
         
-        // 计算两个坐标之间的距离（Haversine公式）
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // 地球半径（米）
-            const φ1 = lat1 * Math.PI / 180;
-            const φ2 = lat2 * Math.PI / 180;
-            const Δφ = (lat2 - lat1) * Math.PI / 180;
-            const Δλ = (lon2 - lon1) * Math.PI / 180;
-            
-            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                      Math.cos(φ1) * Math.cos(φ2) *
-                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            
-            return R * c; // 返回距离（米）
+        // 檢查用戶註冊狀態
+        async function checkUserRegistration(userId) {
+            try {
+                const url = `https://script.google.com/macros/s/${CONFIG.SCRIPT_ID}/exec?action=checkRegistration&userId=${encodeURIComponent(userId)}&t=${Date.now()}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`伺服器錯誤: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.data.registered) {
+                    userName = data.data.name || '員工';
+                    employeeId = data.data.empId || '未提供';
+                    currentState = 'registered';
+                } else {
+                    currentState = 'unregistered';
+                }
+                
+                renderUI();
+            } catch (error) {
+                showError(`註冊檢查失敗: ${error.message}`);
+            }
         }
         
-        // 初始化打卡记录
-        updateCheckinsList();
+        // 主初始化函數
+        async function initializeApp() {
+            try {
+                // 初始渲染
+                renderUI();
+                
+                // 初始化LIFF
+                currentState = 'login';
+                renderUI();
+                await liff.init({ liffId: CONFIG.LIFF_ID });
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                
+                // 獲取用戶資料
+                const profile = await liff.getProfile();
+                userId = profile.userId;
+                
+                // 檢查註冊狀態
+                currentState = 'checking';
+                renderUI();
+                await checkUserRegistration(userId);
+                
+            } catch (error) {
+                showError(`初始化失敗: ${error.message}`);
+            }
+        }
+        
+        // 啟動應用
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
-
