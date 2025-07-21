@@ -5,18 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>台北101 | 員工打卡系統</title>
     <style>
-        /* 整體樣式 */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
+        /* 簡化後的樣式 */
         body {
-            font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #f0f4f8 0%, #e6f0ff 100%);
-            color: #333;
-            line-height: 1.6;
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: #f0f4f8;
+            margin: 0;
             padding: 20px;
             min-height: 100vh;
         }
@@ -25,81 +18,40 @@
             max-width: 500px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         
         .app-header {
-            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            background: #1a365d;
             color: white;
-            padding: 25px 20px;
+            padding: 20px;
             text-align: center;
-            position: relative;
-        }
-        
-        .app-header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
-        
-        .app-header p {
-            opacity: 0.9;
-        }
-        
-        .taipei101-icon {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        .taipei101-icon::before {
-            content: "▲";
-            color: #1a365d;
-            font-size: 20px;
-            font-weight: bold;
         }
         
         .app-body {
-            padding: 25px;
+            padding: 20px;
         }
         
         .status-box {
             background: #f8fafc;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
             border-left: 4px solid #1a365d;
             text-align: center;
         }
         
-        .status-box.error {
-            background: #fff5f5;
-            border-left-color: #e53e3e;
-        }
-        
-        .status-box.success {
-            background: #f0fff4;
-            border-left-color: #38a169;
-        }
-        
         .loading {
             display: inline-block;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border: 3px solid rgba(26, 54, 93, 0.2);
             border-top-color: #1a365d;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 12px;
+            margin-right: 10px;
             vertical-align: middle;
         }
         
@@ -107,192 +59,92 @@
             to { transform: rotate(360deg); }
         }
         
-        .user-id {
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 18px;
-            margin: 25px 0;
-            font-family: monospace;
-            word-break: break-all;
-            text-align: center;
-            border: 1px dashed #cbd5e0;
-            font-size: 0.95rem;
-        }
-        
         .btn {
             display: block;
             width: 100%;
-            padding: 18px;
+            padding: 16px;
             background: #1a365d;
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
+            border-radius: 8px;
+            font-size: 16px;
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn::after {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -60%;
-            width: 20px;
-            height: 200%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: rotate(25deg);
-            transition: all 0.5s;
+            transition: background 0.3s;
         }
         
         .btn:hover {
             background: #2c5282;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn:hover::after {
-            left: 120%;
-        }
-        
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #1a365d;
-        }
-        
-        .btn-success {
-            background: #38a169;
-        }
-        
-        .btn-error {
-            background: #e53e3e;
         }
         
         .btn:disabled {
             background: #cbd5e0;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
         
-        .btn:disabled::after {
-            display: none;
+        .user-id {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            word-break: break-all;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .error-box {
+            background: #ffebee;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #e53e3e;
+            color: #c53030;
         }
         
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 2fr;
-            gap: 15px;
-            margin: 25px 0;
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 15px;
-        }
-        
-        .info-label {
-            font-weight: bold;
-            color: #4a5568;
-        }
-        
-        .info-value {
-            font-weight: 500;
-            color: #1a365d;
+            gap: 12px;
+            margin: 20px 0;
         }
         
         .location-info {
             background: #ebf8ff;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px 0;
-            border-left: 4px solid #3182ce;
-        }
-        
-        .hidden {
-            display: none;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
         }
         
         .map-container {
-            height: 200px;
+            height: 150px;
             background: #e2e8f0;
-            border-radius: 12px;
-            margin: 20px 0;
+            border-radius: 8px;
+            margin: 16px 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .map-placeholder {
-            text-align: center;
-            color: #4a5568;
-        }
-        
-        .map-placeholder .icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-            color: #718096;
         }
         
         .check-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 25px;
+            gap: 12px;
+            margin-top: 16px;
         }
         
         .footer {
             text-align: center;
-            padding: 20px;
+            padding: 16px;
             color: #718096;
             font-size: 0.9rem;
-            border-top: 1px solid #e2e8f0;
-            margin-top: 20px;
-        }
-        
-        .pulse {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            background: #38a169;
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.7; }
-        }
-        
-        /* 響應式設計 */
-        @media (max-width: 600px) {
-            .app-container {
-                border-radius: 15px;
-            }
-            
-            .app-header {
-                padding: 20px 15px;
-            }
-            
-            .app-body {
-                padding: 20px 15px;
-            }
-            
-            .check-buttons {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
         <div class="app-header">
-            <div class="taipei101-icon"></div>
             <h1>台北101員工打卡系統</h1>
             <p>精準定位打卡</p>
         </div>
@@ -364,10 +216,10 @@
                         <div class="status-box">
                             <h2>歡迎回來，${userName}</h2>
                             <div class="info-grid">
-                                <div class="info-label">員工編號</div>
-                                <div class="info-value">${employeeId}</div>
-                                <div class="info-label">打卡狀態</div>
-                                <div class="info-value"><span class="pulse"></span>準備打卡</div>
+                                <div>員工編號</div>
+                                <div>${employeeId}</div>
+                                <div>打卡狀態</div>
+                                <div>準備打卡</div>
                             </div>
                         </div>
                         
@@ -375,17 +227,14 @@
                             <h3>定位打卡</h3>
                             <p>請點擊下方按鈕獲取您的位置</p>
                             <div class="map-container">
-                                <div class="map-placeholder">
-                                    <div class="icon">📍</div>
-                                    <p>等待位置資訊</p>
-                                </div>
+                                <p>等待位置資訊</p>
                             </div>
                             <button id="getLocationBtn" class="btn">獲取我的位置</button>
                         </div>
                         
                         <div class="check-buttons">
-                            <button id="checkInBtn" class="btn btn-success" disabled>上班打卡</button>
-                            <button id="checkOutBtn" class="btn btn-error" disabled>下班打卡</button>
+                            <button id="checkInBtn" class="btn" disabled>上班打卡</button>
+                            <button id="checkOutBtn" class="btn" disabled>下班打卡</button>
                         </div>
                     `;
                     
@@ -398,32 +247,24 @@
                 case 'unregistered':
                     appBody.innerHTML = `
                         <div class="status-box">
-                            <h3 style="color: #c53030;">您尚未註冊為員工</h3>
+                            <h3>您尚未註冊為員工</h3>
                             <p>請聯繫管理員並提供以下用戶ID：</p>
                             <div class="user-id">${userId}</div>
                             <button class="btn" onclick="copyUserId()">複製用戶ID</button>
-                            <button class="btn btn-secondary" onclick="retryCheck()">重新檢查</button>
+                            <button class="btn" onclick="retryCheck()">重新檢查</button>
                         </div>
                     `;
                     break;
                     
                 case 'error':
                     appBody.innerHTML = `
-                        <div class="status-box error">
+                        <div class="error-box">
                             <h3>系統發生錯誤</h3>
                             <p id="errorMessage"></p>
                             <button class="btn" onclick="location.reload()">重新載入頁面</button>
                         </div>
                     `;
                     break;
-                    
-                default:
-                    appBody.innerHTML = `
-                        <div class="status-box">
-                            <h3>系統狀態未知</h3>
-                            <button class="btn" onclick="location.reload()">重新載入頁面</button>
-                        </div>
-                    `;
             }
         }
         
@@ -483,14 +324,10 @@
                     const mapContainer = document.querySelector('.map-container');
                     if (mapContainer) {
                         mapContainer.innerHTML = `
-                            <div style="padding: 15px; text-align: center;">
-                                <h3>位置資訊</h3>
+                            <div style="text-align: center;">
                                 <p>緯度: ${location.lat.toFixed(6)}</p>
                                 <p>經度: ${location.lng.toFixed(6)}</p>
-                                <p>精確度: ±${Math.round(location.accuracy)}公尺</p>
-                                <p style="margin-top: 15px; font-weight: bold; color: ${distance <= CONFIG.MAX_DISTANCE ? '#38a169' : '#e53e3e'}">
-                                    距離台北101: ${Math.round(distance)}公尺
-                                </p>
+                                <p>距離台北101: ${Math.round(distance)}公尺</p>
                             </div>
                         `;
                     }
@@ -505,7 +342,6 @@
                         
                         if (btn) {
                             btn.textContent = '位置已獲取 (可打卡)';
-                            btn.style.background = '#38a169';
                         }
                     } else {
                         showError(`您距離台北101大樓 ${Math.round(distance)} 公尺，超出允許範圍`);
@@ -540,13 +376,12 @@
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
+                    timeout: 10000
                 }
             );
         }
         
-        // 計算距離 (Haversine公式)
+        // 計算距離
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3; // 地球半徑(公尺)
             const φ1 = lat1 * Math.PI/180;
@@ -566,19 +401,6 @@
         async function checkIn(type) {
             if (!location) {
                 showError('請先獲取位置資訊');
-                return;
-            }
-            
-            // 再次確認距離
-            const distance = calculateDistance(
-                location.lat, 
-                location.lng, 
-                CONFIG.TAIPEI_101.LAT, 
-                CONFIG.TAIPEI_101.LNG
-            );
-            
-            if (distance > CONFIG.MAX_DISTANCE) {
-                showError(`您距離台北101大樓 ${Math.round(distance)} 公尺，超出允許範圍`);
                 return;
             }
             
@@ -604,17 +426,16 @@
                 const response = await fetch(`https://script.google.com/macros/s/${CONFIG.SCRIPT_ID}/exec`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/json'
                     },
-                    body: new URLSearchParams({
+                    body: JSON.stringify({
                         action: 'checkIn',
                         type: type,
                         userId: userId,
                         empId: employeeId,
                         latitude: location.lat,
                         longitude: location.lng,
-                        accuracy: location.accuracy,
-                        distance: Math.round(distance)
+                        accuracy: location.accuracy
                     })
                 });
                 
@@ -629,12 +450,10 @@
                     const statusBox = document.querySelector('.status-box');
                     if (statusBox) {
                         statusBox.innerHTML = `
-                            <div style="text-align: center; padding: 20px;">
-                                <div style="font-size: 48px; color: #38a169; margin-bottom: 15px;">✓</div>
+                            <div style="text-align: center;">
                                 <h2>打卡成功！</h2>
                                 <p>${type === 'checkIn' ? '上班' : '下班'}打卡時間: ${data.time}</p>
-                                <p>位置: ${data.address || '台北101附近'}</p>
-                                <button class="btn" style="margin-top: 25px;" onclick="location.reload()">完成</button>
+                                <button class="btn" onclick="location.reload()">完成</button>
                             </div>
                         `;
                     }
@@ -671,7 +490,7 @@
                 
                 if (data.success && data.data.registered) {
                     userName = data.data.name || '員工';
-                    employeeId = data.data.empId || '未提供';
+                    employeeId = data.data.empId || '';
                     currentState = 'registered';
                 } else {
                     currentState = 'unregistered';
