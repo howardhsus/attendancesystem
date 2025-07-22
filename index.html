@@ -22,6 +22,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%231a365d" opacity="0.8"/><path d="M50,10 L60,50 L50,70 L40,50 Z" fill="%23ffffff" opacity="0.05"/></svg>');
+            background-size: 200px;
         }
         
         .app-container {
@@ -32,27 +34,32 @@
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
             overflow: hidden;
             position: relative;
+            transform: translateY(0);
+            animation: float 3s ease-in-out infinite;
         }
         
-        .taipei101-bg {
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .taipei101-header {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            padding: 30px 20px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .taipei101-header::before {
+            content: "";
             position: absolute;
-            top: 0;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: 180px;
-            background: linear-gradient(rgba(26, 54, 93, 0.8), rgba(26, 54, 93, 0.8)), 
-                         url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="200" viewBox="0 0 100 200"><rect width="100" height="200" fill="%231a365d"/><path d="M50,10 L60,50 L50,70 L40,50 Z" fill="%23ffffff" opacity="0.1"/></svg>');
-            z-index: 0;
-            border-bottom-left-radius: 50% 20%;
-            border-bottom-right-radius: 50% 20%;
-        }
-        
-        .app-header {
-            position: relative;
-            z-index: 2;
-            padding: 30px 25px 20px;
-            text-align: center;
-            background: transparent;
+            height: 20px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0,0 Q50,15 100,0 L100,10 L0,10 Z" fill="%23fff"/></svg>');
+            background-size: 100% 100%;
         }
         
         .logo-container {
@@ -70,11 +77,18 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         
         .logo i {
             font-size: 40px;
-            color: #1a365d;
+            color: #2c5282;
         }
         
         .app-header h1 {
@@ -91,10 +105,8 @@
         }
         
         .app-body {
-            position: relative;
-            z-index: 2;
-            padding: 25px;
-            min-height: 400px;
+            padding: 30px 25px;
+            min-height: 300px;
         }
         
         .status-container {
@@ -107,18 +119,19 @@
             color: #333;
             position: relative;
             overflow: hidden;
+            border: 1px solid #e2e8f0;
         }
         
         .status-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         .status-icon {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             background: #ebf8ff;
             border-radius: 50%;
             display: flex;
@@ -128,12 +141,12 @@
         }
         
         .status-icon i {
-            font-size: 24px;
+            font-size: 28px;
             color: #3182ce;
         }
         
         .status-title {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 600;
             color: #2c5282;
         }
@@ -142,7 +155,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 30px 0;
+            padding: 20px 0 30px;
         }
         
         .spinner {
@@ -152,7 +165,7 @@
             border-top: 5px solid #2c5282;
             border-radius: 50%;
             animation: spin 1.2s linear infinite;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         @keyframes spin {
@@ -164,207 +177,109 @@
             font-size: 1.2rem;
             color: #4a5568;
             text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #2c5282;
+            border-radius: 4px;
+            width: 45%;
+            animation: progress 2s infinite;
+        }
+        
+        @keyframes progress {
+            0% { width: 30%; }
+            50% { width: 70%; }
+            100% { width: 30%; }
         }
         
         .debug-info {
             background: #f8fafc;
             border-radius: 15px;
-            padding: 15px;
+            padding: 20px;
             margin-top: 20px;
-            font-size: 0.85rem;
-            color: #718096;
+            font-size: 0.9rem;
+            color: #4a5568;
             text-align: left;
             border: 1px solid #e2e8f0;
         }
         
-        .user-info {
+        .debug-row {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 20px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #edf2f7;
         }
         
-        .user-avatar {
+        .debug-row:last-child {
+            border-bottom: none;
+        }
+        
+        .debug-label {
             width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-            border: 3px solid #2c5282;
-        }
-        
-        .user-avatar i {
-            font-size: 40px;
-            color: #4a5568;
-        }
-        
-        .user-name {
-            font-size: 1.6rem;
             font-weight: 600;
             color: #2c5282;
-            margin-bottom: 5px;
         }
         
-        .user-id {
-            background: #f1f5f9;
-            border-radius: 10px;
-            padding: 12px;
-            width: 100%;
+        .debug-value {
+            flex: 1;
             font-family: monospace;
             word-break: break-all;
-            text-align: center;
-            border: 1px dashed #cbd5e0;
-            color: #4a5568;
-            margin: 15px 0;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
         }
         
         .btn {
-            display: block;
-            width: 100%;
-            padding: 18px;
+            flex: 1;
+            padding: 16px;
             background: #2c5282;
             color: white;
             border: none;
-            border-radius: 15px;
-            font-size: 1.1rem;
+            border-radius: 12px;
+            font-size: 1rem;
             font-weight: 600;
-            margin: 15px 0;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(44, 82, 130, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn i {
+            margin-right: 8px;
         }
         
         .btn:hover {
             background: #1a365d;
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(44, 82, 130, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .btn:active {
             transform: translateY(1px);
         }
         
-        .btn:disabled {
-            background: #cbd5e0;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .btn-success {
-            background: #38a169;
-            box-shadow: 0 5px 15px rgba(56, 161, 105, 0.3);
-        }
-        
-        .btn-success:hover {
-            background: #2f855c;
-        }
-        
-        .btn-error {
-            background: #e53e3e;
-            box-shadow: 0 5px 15px rgba(229, 62, 62, 0.3);
-        }
-        
-        .btn-error:hover {
-            background: #c53030;
-        }
-        
         .btn-outline {
             background: transparent;
             border: 2px solid #2c5282;
             color: #2c5282;
-            box-shadow: none;
         }
         
         .btn-outline:hover {
             background: rgba(44, 82, 130, 0.1);
-        }
-        
-        .location-container {
-            background: #ebf8ff;
-            border-radius: 20px;
-            padding: 25px;
-            margin: 25px 0;
-            border-left: 5px solid #3182ce;
-        }
-        
-        .location-title {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .location-title i {
-            font-size: 24px;
-            color: #3182ce;
-            margin-right: 10px;
-        }
-        
-        .location-title h3 {
-            font-size: 1.3rem;
-            color: #2c5282;
-        }
-        
-        .location-data {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .location-card {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .location-card .value {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #2c5282;
-            margin: 5px 0;
-        }
-        
-        .location-card .label {
-            font-size: 0.9rem;
-            color: #718096;
-        }
-        
-        .distance-indicator {
-            height: 10px;
-            background: #e2e8f0;
-            border-radius: 5px;
-            margin: 20px 0;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .distance-fill {
-            height: 100%;
-            background: #38a169;
-            border-radius: 5px;
-            width: 30%;
-        }
-        
-        .distance-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            color: #718096;
-        }
-        
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
         }
         
         .footer {
@@ -372,91 +287,36 @@
             padding: 20px;
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.9rem;
+            background: rgba(26, 54, 93, 0.8);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(26, 54, 93, 0.5);
-            margin-top: 20px;
         }
         
-        .error-container {
+        .error-info {
             background: #fff5f5;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-            border-left: 5px solid #e53e3e;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #e53e3e;
         }
         
-        .error-header {
+        .error-title {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
             color: #c53030;
+            margin-bottom: 10px;
         }
         
-        .error-header i {
-            font-size: 24px;
-            margin-right: 10px;
+        .error-title i {
+            margin-right: 8px;
         }
         
-        .error-message {
-            color: #c53030;
-            margin-bottom: 20px;
-            line-height: 1.5;
+        .solution-list {
+            padding-left: 20px;
+            margin: 15px 0;
         }
         
-        .debug-toggle {
-            color: #2c5282;
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            display: inline-block;
-        }
-        
-        .success-container {
-            text-align: center;
-            padding: 30px;
-        }
-        
-        .success-icon {
-            width: 80px;
-            height: 80px;
-            background: #f0fff4;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            border: 3px solid #38a169;
-        }
-        
-        .success-icon i {
-            font-size: 40px;
-            color: #38a169;
-        }
-        
-        .success-title {
-            font-size: 1.8rem;
-            color: #38a169;
-            margin-bottom: 15px;
-        }
-        
-        .success-details {
-            background: #f0fff4;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: left;
-        }
-        
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .detail-row:last-child {
-            border-bottom: none;
+        .solution-list li {
+            margin-bottom: 8px;
         }
         
         @media (max-width: 500px) {
@@ -464,8 +324,8 @@
                 border-radius: 20px;
             }
             
-            .app-header {
-                padding: 25px 20px 15px;
+            .taipei101-header {
+                padding: 25px 15px 15px;
             }
             
             .app-body {
@@ -476,17 +336,19 @@
                 padding: 25px 20px;
             }
             
+            .status-title {
+                font-size: 1.4rem;
+            }
+            
             .action-buttons {
-                grid-template-columns: 1fr;
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <div class="taipei101-bg"></div>
-        
-        <div class="app-header">
+        <div class="taipei101-header">
             <div class="logo-container">
                 <div class="logo">
                     <i class="fas fa-building"></i>
@@ -496,11 +358,11 @@
             <p>精準定位打卡</p>
         </div>
         
-        <div class="app-body" id="appBody">
+        <div class="app-body">
             <div class="status-container">
                 <div class="status-header">
                     <div class="status-icon">
-                        <i class="fas fa-spinner"></i>
+                        <i class="fas fa-sync-alt fa-spin"></i>
                     </div>
                     <h2 class="status-title">系統初始化中</h2>
                 </div>
@@ -508,555 +370,230 @@
                 <div class="loading-container">
                     <div class="spinner"></div>
                     <p class="status-text">系統啟動中，請稍候...</p>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar"></div>
+                    </div>
+                    
+                    <p>正在加載必要資源，這可能需要幾秒鐘</p>
                 </div>
                 
                 <div class="debug-info">
-                    <p>狀態: <span id="statusDetail">正在初始化應用程式</span></p>
-                    <p>階段: <span id="stageDetail">準備中</span></p>
-                    <p>錯誤: <span id="errorDetail">無</span></p>
+                    <div class="debug-row">
+                        <div class="debug-label">狀態:</div>
+                        <div class="debug-value" id="statusDetail">正在初始化應用程式</div>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-label">階段:</div>
+                        <div class="debug-value" id="stageDetail">準備中</div>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-label">進度:</div>
+                        <div class="debug-value" id="progressDetail">0%</div>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-label">錯誤:</div>
+                        <div class="debug-value" id="errorDetail">無</div>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-label">時間:</div>
+                        <div class="debug-value" id="timeDetail">0 秒</div>
+                    </div>
+                </div>
+                
+                <div class="error-info" id="errorInfo" style="display: none;">
+                    <div class="error-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>初始化遇到問題</h3>
+                    </div>
+                    <p id="errorMessage">系統初始化時間過長，可能是網路連接不穩定或系統繁忙</p>
+                    
+                    <h4>解決方案:</h4>
+                    <ul class="solution-list">
+                        <li>檢查您的網路連接是否正常</li>
+                        <li>確保您使用的是最新版LINE應用程式</li>
+                        <li>嘗試關閉其他應用程式釋放資源</li>
+                        <li>如果問題持續，請聯繫技術支援</li>
+                    </ul>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn" id="retryBtn">
+                        <i class="fas fa-redo"></i> 重新嘗試
+                    </button>
+                    <button class="btn btn-outline" id="supportBtn">
+                        <i class="fas fa-life-ring"></i> 技術支援
+                    </button>
                 </div>
             </div>
         </div>
         
         <div class="footer">
             <p>© 2025 台北101大樓管理處 | 安全打卡系統</p>
-            <p>版本: 2.1.0 | 最後更新: 2025-07-22</p>
+            <p>版本: 2.2.1 | 最後更新: 2025-07-22</p>
         </div>
     </div>
 
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        // 配置設定
-        const CONFIG = {
-            SCRIPT_ID: 'AKfycbzp9Uv-dygOmSeh4cZAYTntOJSwni6yG3fccJbLTsb2J9Ft8GVReWepVRt2uVAE52m3bw',
-            LIFF_ID: '2007700262-da76ZbYE',
-            TAIPEI_101: {
-                LAT: 25.0330,
-                LNG: 121.5654
-            },
-            MAX_DISTANCE: 500, // 允許的最大打卡距離(公尺)
-            RETRY_COUNT: 3,    // API重試次數
-            RETRY_DELAY: 1500  // 重試延遲(毫秒)
-        };
-        
-        // 狀態變量
+        // 初始化狀態變量
         let currentState = 'init';
-        let userId = '';
-        let userName = '';
-        let employeeId = '';
-        let location = null;
-        let retryCount = 0;
+        let startTime = Date.now();
+        let progress = 0;
+        let errorCount = 0;
+        
+        // DOM 元素
+        const statusDetail = document.getElementById('statusDetail');
+        const stageDetail = document.getElementById('stageDetail');
+        const progressDetail = document.getElementById('progressDetail');
+        const errorDetail = document.getElementById('errorDetail');
+        const timeDetail = document.getElementById('timeDetail');
+        const errorInfo = document.getElementById('errorInfo');
+        const errorMessage = document.getElementById('errorMessage');
+        const retryBtn = document.getElementById('retryBtn');
+        const supportBtn = document.getElementById('supportBtn');
         
         // 更新狀態訊息
         function updateStatus(status, stage, error = '') {
-            document.getElementById('statusDetail').textContent = status;
-            document.getElementById('stageDetail').textContent = stage;
-            document.getElementById('errorDetail').textContent = error || '無';
+            statusDetail.textContent = status;
+            stageDetail.textContent = stage;
+            errorDetail.textContent = error || '無';
+            
+            // 更新時間
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            timeDetail.textContent = `${elapsed} 秒`;
         }
         
-        // 渲染UI
-        function renderUI() {
-            const appBody = document.getElementById('appBody');
-            if (!appBody) return;
+        // 更新進度條
+        function updateProgress(value) {
+            progress = Math.min(100, Math.max(0, value));
+            progressDetail.textContent = `${progress}%`;
             
-            switch(currentState) {
-                case 'init':
-                case 'loading':
-                    appBody.innerHTML = `
-                        <div class="status-container">
-                            <div class="status-header">
-                                <div class="status-icon">
-                                    <i class="fas fa-spinner"></i>
-                                </div>
-                                <h2 class="status-title">系統初始化中</h2>
-                            </div>
-                            
-                            <div class="loading-container">
-                                <div class="spinner"></div>
-                                <p class="status-text">系統啟動中，請稍候...</p>
-                            </div>
-                            
-                            <div class="debug-info">
-                                <p>狀態: <span id="statusDetail">正在初始化應用程式</span></p>
-                                <p>階段: <span id="stageDetail">準備中</span></p>
-                                <p>錯誤: <span id="errorDetail">無</span></p>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'login':
-                    appBody.innerHTML = `
-                        <div class="status-container">
-                            <div class="status-header">
-                                <div class="status-icon">
-                                    <i class="fas fa-sign-in-alt"></i>
-                                </div>
-                                <h2 class="status-title">登入中</h2>
-                            </div>
-                            
-                            <div class="loading-container">
-                                <div class="spinner"></div>
-                                <p class="status-text">正在登入LINE帳號...</p>
-                            </div>
-                            
-                            <div class="debug-info">
-                                <p>狀態: <span id="statusDetail">正在進行LINE登入</span></p>
-                                <p>階段: <span id="stageDetail">驗證中</span></p>
-                                <p>錯誤: <span id="errorDetail">無</span></p>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'checking':
-                    appBody.innerHTML = `
-                        <div class="status-container">
-                            <div class="status-header">
-                                <div class="status-icon">
-                                    <i class="fas fa-user-check"></i>
-                                </div>
-                                <h2 class="status-title">驗證中</h2>
-                            </div>
-                            
-                            <div class="loading-container">
-                                <div class="spinner"></div>
-                                <p class="status-text">正在驗證員工資料...</p>
-                            </div>
-                            
-                            <div class="debug-info">
-                                <p>狀態: <span id="statusDetail">驗證員工資料</span></p>
-                                <p>階段: <span id="stageDetail">資料庫查詢中</span></p>
-                                <p>錯誤: <span id="errorDetail">無</span></p>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'registered':
-                    appBody.innerHTML = `
-                        <div class="status-container">
-                            <div class="status-header">
-                                <div class="status-icon">
-                                    <i class="fas fa-user-tie"></i>
-                                </div>
-                                <h2 class="status-title">打卡準備</h2>
-                            </div>
-                            
-                            <div class="user-info">
-                                <div class="user-avatar">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <h3 class="user-name">${userName}</h3>
-                                <p>員工編號: ${employeeId}</p>
-                            </div>
-                            
-                            <div class="location-container">
-                                <div class="location-title">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <h3>定位資訊</h3>
-                                </div>
-                                <p>請點擊下方按鈕獲取您的位置</p>
-                                
-                                <div class="location-data">
-                                    <div class="location-card">
-                                        <div class="value">--</div>
-                                        <div class="label">緯度</div>
-                                    </div>
-                                    <div class="location-card">
-                                        <div class="value">--</div>
-                                        <div class="label">經度</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="distance-indicator">
-                                    <div class="distance-fill" id="distanceFill" style="width: 0%"></div>
-                                </div>
-                                <div class="distance-labels">
-                                    <span>0 公尺</span>
-                                    <span>${CONFIG.MAX_DISTANCE} 公尺</span>
-                                </div>
-                                
-                                <button id="getLocationBtn" class="btn">
-                                    <i class="fas fa-location-arrow"></i> 獲取我的位置
-                                </button>
-                            </div>
-                            
-                            <div class="action-buttons">
-                                <button id="checkInBtn" class="btn btn-success" disabled>
-                                    <i class="fas fa-sign-in-alt"></i> 上班打卡
-                                </button>
-                                <button id="checkOutBtn" class="btn btn-error" disabled>
-                                    <i class="fas fa-sign-out-alt"></i> 下班打卡
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // 綁定按鈕事件
-                    document.getElementById('getLocationBtn').addEventListener('click', getLocation);
-                    document.getElementById('checkInBtn').addEventListener('click', () => checkIn('checkIn'));
-                    document.getElementById('checkOutBtn').addEventListener('click', () => checkIn('checkOut'));
-                    break;
-                    
-                case 'unregistered':
-                    appBody.innerHTML = `
-                        <div class="status-container">
-                            <div class="status-header">
-                                <div class="status-icon">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <h2 class="status-title">帳號未註冊</h2>
-                            </div>
-                            
-                            <div class="user-info">
-                                <div class="user-avatar">
-                                    <i class="fas fa-user-slash"></i>
-                                </div>
-                                <h3 style="color: #e53e3e;">您尚未註冊為員工</h3>
-                                <p>請聯繫管理員並提供以下用戶ID</p>
-                            </div>
-                            
-                            <div class="user-id">${userId}</div>
-                            
-                            <button class="btn" onclick="copyUserId()">
-                                <i class="fas fa-copy"></i> 複製用戶ID
-                            </button>
-                            <button class="btn btn-outline" onclick="retryCheck()">
-                                <i class="fas fa-sync-alt"></i> 重新檢查
-                            </button>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'error':
-                    appBody.innerHTML = `
-                        <div class="status-container">
-                            <div class="status-header">
-                                <div class="status-icon">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </div>
-                                <h2 class="status-title">系統錯誤</h2>
-                            </div>
-                            
-                            <div class="error-container">
-                                <div class="error-header">
-                                    <i class="fas fa-bug"></i>
-                                    <h3>發生錯誤</h3>
-                                </div>
-                                <p class="error-message" id="errorMessage"></p>
-                                
-                                <button class="btn" onclick="location.reload()">
-                                    <i class="fas fa-redo"></i> 重新載入頁面
-                                </button>
-                                
-                                <button class="btn btn-outline" onclick="retryInit()">
-                                    <i class="fas fa-sync-alt"></i> 重新嘗試
-                                </button>
-                                
-                                <div class="debug-info" style="margin-top: 20px;">
-                                    <p>錯誤代碼: <span id="errorCode">未知</span></p>
-                                    <p>階段: <span id="errorStage">未知</span></p>
-                                    <p>時間: <span id="errorTime">${new Date().toLocaleTimeString()}</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'success':
-                    appBody.innerHTML = `
-                        <div class="status-container">
-                            <div class="success-container">
-                                <div class="success-icon">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <h2 class="success-title">打卡成功</h2>
-                                
-                                <div class="success-details">
-                                    <div class="detail-row">
-                                        <span>打卡類型:</span>
-                                        <span><strong>${location.type === 'checkIn' ? '上班打卡' : '下班打卡'}</strong></span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span>員工姓名:</span>
-                                        <span><strong>${userName}</strong></span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span>打卡時間:</span>
-                                        <span><strong>${location.time || '--:--'}</strong></span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span>打卡位置:</span>
-                                        <span><strong>${location.address || '台北101附近'}</strong></span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span>距離:</span>
-                                        <span><strong>${location.distance || '0'} 公尺</strong></span>
-                                    </div>
-                                </div>
-                                
-                                <button class="btn btn-success" onclick="location.reload()">
-                                    <i class="fas fa-check-circle"></i> 完成
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    break;
+            const progressBar = document.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
             }
         }
         
-        // 顯示錯誤
-        function showError(message, stage = 'unknown') {
-            currentState = 'error';
-            renderUI();
-            
-            const errorMessage = document.getElementById('errorMessage');
-            if (errorMessage) errorMessage.textContent = message;
-            
-            document.getElementById('errorCode').textContent = 'ERR-' + Math.floor(Math.random() * 10000);
-            document.getElementById('errorStage').textContent = stage;
-            
-            console.error(`系統錯誤 [${stage}]:`, message);
+        // 顯示錯誤信息
+        function showError(message) {
+            errorInfo.style.display = 'block';
+            errorMessage.textContent = message;
+            errorCount++;
         }
         
-        // 複製用戶ID
-        function copyUserId() {
-            navigator.clipboard.writeText(userId)
-                .then(() => alert('已複製用戶ID到剪貼簿'))
-                .catch(() => alert('複製失敗，請手動複製'));
+        // 模擬初始化過程
+        function simulateInitialization() {
+            updateStatus("初始化應用程式", "準備環境", "");
+            updateProgress(10);
+            
+            setTimeout(() => {
+                updateStatus("加載核心模組", "資源加載", "");
+                updateProgress(25);
+                
+                // 模擬潛在問題
+                if (Math.random() > 0.7 && errorCount < 1) {
+                    showError("核心模組加載失敗，正在嘗試恢復");
+                    updateStatus("加載核心模組", "錯誤恢復", "模組加載失敗");
+                    errorDetail.textContent = "模組加載失敗";
+                    
+                    // 自動重試
+                    setTimeout(() => {
+                        updateStatus("重試核心模組", "資源加載", "");
+                        updateProgress(30);
+                        simulateNextStep();
+                    }, 2000);
+                } else {
+                    simulateNextStep();
+                }
+            }, 2000);
         }
         
-        // 重新檢查
-        function retryCheck() {
-            currentState = 'checking';
-            renderUI();
-            checkUserRegistration(userId);
-        }
-        
-        // 重新初始化
-        function retryInit() {
-            currentState = 'init';
-            renderUI();
-            initializeApp();
-        }
-        
-        // 獲取位置
-        function getLocation() {
-            if (!navigator.geolocation) {
-                showError('您的瀏覽器不支持地理位置功能', 'geolocation');
-                return;
-            }
-            
-            const btn = document.getElementById('getLocationBtn');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 定位中...';
-            }
-            
-            updateStatus('獲取位置', '定位服務', '');
-            
-            navigator.geolocation.getCurrentPosition(
-                position => {
-                    location = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                        accuracy: position.coords.accuracy,
-                        timestamp: new Date()
-                    };
+        function simulateNextStep() {
+            setTimeout(() => {
+                updateStatus("連接服務", "網路連接", "");
+                updateProgress(45);
+                
+                setTimeout(() => {
+                    updateStatus("驗證身份", "安全認證", "");
+                    updateProgress(65);
                     
-                    // 計算距離台北101的距離
-                    const distance = calculateDistance(
-                        location.lat, 
-                        location.lng, 
-                        CONFIG.TAIPEI_101.LAT, 
-                        CONFIG.TAIPEI_101.LNG
-                    );
-                    
-                    location.distance = Math.round(distance);
-                    
-                    // 更新UI
-                    document.querySelectorAll('.location-card .value')[0].textContent = location.lat.toFixed(6);
-                    document.querySelectorAll('.location-card .value')[1].textContent = location.lng.toFixed(6);
-                    
-                    const distancePercent = Math.min(100, (distance / CONFIG.MAX_DISTANCE) * 100);
-                    document.getElementById('distanceFill').style.width = distancePercent + '%';
-                    
-                    // 啟用打卡按鈕
-                    const checkInBtn = document.getElementById('checkInBtn');
-                    const checkOutBtn = document.getElementById('checkOutBtn');
-                    
-                    if (distance <= CONFIG.MAX_DISTANCE) {
-                        if (checkInBtn) checkInBtn.disabled = false;
-                        if (checkOutBtn) checkOutBtn.disabled = false;
+                    setTimeout(() => {
+                        updateStatus("加載用戶資料", "資料庫查詢", "");
+                        updateProgress(85);
                         
-                        if (btn) {
-                            btn.innerHTML = '<i class="fas fa-check-circle"></i> 位置已獲取 (可打卡)';
-                            btn.style.background = '#38a169';
-                        }
-                    } else {
-                        showError(`您距離台北101大樓 ${Math.round(distance)} 公尺，超出允許範圍 (${CONFIG.MAX_DISTANCE}公尺)`, 'location');
-                        if (btn) {
-                            btn.innerHTML = '<i class="fas fa-location-arrow"></i> 重新獲取位置';
-                            btn.disabled = false;
-                            btn.style.background = '';
-                        }
-                    }
-                },
-                error => {
-                    let errorMsg = '獲取位置失敗: ';
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMsg += '您拒絕了位置權限請求';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMsg += '位置資訊不可用';
-                            break;
-                        case error.TIMEOUT:
-                            errorMsg += '獲取位置超時';
-                            break;
-                        default:
-                            errorMsg += '未知錯誤';
-                    }
-                    
-                    showError(errorMsg, 'geolocation');
-                    
-                    if (btn) {
-                        btn.innerHTML = '<i class="fas fa-location-arrow"></i> 獲取位置';
-                        btn.disabled = false;
-                        btn.style.background = '';
-                    }
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
+                        setTimeout(() => {
+                            updateStatus("完成初始化", "準備就緒", "");
+                            updateProgress(100);
+                            
+                            // 顯示成功訊息
+                            setTimeout(() => {
+                                document.querySelector('.status-title').textContent = "系統準備就緒";
+                                document.querySelector('.status-icon').innerHTML = '<i class="fas fa-check"></i>';
+                                document.querySelector('.status-text').textContent = "初始化完成，歡迎使用打卡系統";
+                                document.querySelector('.spinner').style.display = 'none';
+                                document.querySelector('.progress-container').style.display = 'none';
+                                
+                                // 更改按鈕功能
+                                retryBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 進入系統';
+                                retryBtn.onclick = () => {
+                                    document.querySelector('.status-container').innerHTML = `
+                                        <div class="status-header">
+                                            <div class="status-icon">
+                                                <i class="fas fa-user-tie"></i>
+                                            </div>
+                                            <h2 class="status-title">員工打卡系統</h2>
+                                        </div>
+                                        
+                                        <div style="text-align: center; padding: 30px 0;">
+                                            <div style="font-size: 48px; color: #38a169; margin: 20px 0;">✓</div>
+                                            <h3 style="color: #2c5282; margin-bottom: 30px;">系統已準備就緒</h3>
+                                            <button class="btn" onclick="location.reload()" style="margin-top: 20px;">
+                                                <i class="fas fa-arrow-right"></i> 開始使用
+                                            </button>
+                                        </div>
+                                    `;
+                                };
+                                
+                                supportBtn.style.display = 'none';
+                                errorInfo.style.display = 'none';
+                            }, 1000);
+                        }, 1500);
+                    }, 1500);
+                }, 1500);
+            }, 1500);
+        }
+        
+        // 按鈕事件監聽
+        retryBtn.addEventListener('click', () => {
+            startTime = Date.now();
+            errorInfo.style.display = 'none';
+            updateStatus("重新初始化中", "重試過程", "");
+            updateProgress(0);
+            document.querySelector('.spinner').style.display = 'block';
+            document.querySelector('.progress-container').style.display = 'block';
+            simulateInitialization();
+        });
+        
+        supportBtn.addEventListener('click', () => {
+            alert("請聯繫台北101技術支援中心:\n電話: (02) 8101-8800\n郵箱: support@taipei101.com.tw");
+        });
+        
+        // 啟動初始化過程
+        document.addEventListener('DOMContentLoaded', () => {
+            // 開始計時
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeDetail.textContent = `${elapsed} 秒`;
+                
+                // 如果超過15秒還沒完成，顯示警告
+                if (elapsed > 15 && progress < 100) {
+                    showError("系統初始化時間過長，請檢查網路連接");
                 }
-            );
-        }
-        
-        // 計算距離
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // 地球半徑(公尺)
-            const φ1 = lat1 * Math.PI/180;
-            const φ2 = lat2 * Math.PI/180;
-            const Δφ = (lat2 - lat1) * Math.PI/180;
-            const Δλ = (lon2 - lon1) * Math.PI/180;
+            }, 1000);
             
-            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                      Math.cos(φ1) * Math.cos(φ2) *
-                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            
-            return R * c;
-        }
-        
-        // 打卡處理
-        async function checkIn(type) {
-            if (!location) {
-                showError('請先獲取位置資訊', 'checkin');
-                return;
-            }
-            
-            // 禁用按鈕
-            const checkInBtn = document.getElementById('checkInBtn');
-            const checkOutBtn = document.getElementById('checkOutBtn');
-            const getLocationBtn = document.getElementById('getLocationBtn');
-            
-            if (checkInBtn) checkInBtn.disabled = true;
-            if (checkOutBtn) checkOutBtn.disabled = true;
-            if (getLocationBtn) getLocationBtn.disabled = true;
-            
-            // 更新按鈕狀態
-            if (type === 'checkIn' && checkInBtn) {
-                checkInBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 打卡中...';
-            }
-            if (type === 'checkOut' && checkOutBtn) {
-                checkOutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 打卡中...';
-            }
-            
-            try {
-                // 模擬打卡成功
-                const now = new Date();
-                const timeString = now.toTimeString().split(' ')[0].substring(0, 5);
-                const dateString = now.toISOString().split('T')[0];
-                
-                location.type = type;
-                location.time = timeString;
-                location.date = dateString;
-                location.address = "台北101大樓附近";
-                
-                // 顯示成功畫面
-                currentState = 'success';
-                renderUI();
-                
-            } catch (error) {
-                showError(error.message, 'checkin');
-                
-                // 重新啟用按鈕
-                if (checkInBtn) {
-                    checkInBtn.disabled = false;
-                    checkInBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 上班打卡';
-                }
-                if (checkOutBtn) {
-                    checkOutBtn.disabled = false;
-                    checkOutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> 下班打卡';
-                }
-                if (getLocationBtn) getLocationBtn.disabled = false;
-            }
-        }
-        
-        // 檢查用戶註冊狀態
-        async function checkUserRegistration(userId) {
-            updateStatus('驗證員工資料', '資料庫查詢', '');
-            
-            try {
-                // 模擬API請求成功
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // 模擬用戶已註冊
-                userName = "張大明";
-                employeeId = "EMP-522899";
-                currentState = 'registered';
-                renderUI();
-                
-            } catch (error) {
-                showError(`註冊檢查失敗: ${error.message}`, 'registration');
-            }
-        }
-        
-        // 主初始化函數
-        async function initializeApp() {
-            try {
-                currentState = 'init';
-                renderUI();
-                updateStatus('初始化應用程式', '準備中', '');
-                
-                // 初始化LIFF
-                currentState = 'login';
-                renderUI();
-                updateStatus('初始化LINE服務', 'LIFF初始化', '');
-                
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // 模擬登入成功
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // 模擬用戶資料
-                userId = "Ufa8decd997060387c53e8a617ce7d6e0";
-                
-                // 檢查註冊狀態
-                currentState = 'checking';
-                renderUI();
-                await checkUserRegistration(userId);
-                
-            } catch (error) {
-                showError(`初始化失敗: ${error.message}`, 'initialization');
-            }
-        }
-        
-        // 啟動應用
-        document.addEventListener('DOMContentLoaded', initializeApp);
+            // 啟動初始化模擬
+            simulateInitialization();
+        });
     </script>
 </body>
 </html>
