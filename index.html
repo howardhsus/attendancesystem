@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>台北101智能服務通報系統</title>
+    <link rel="stylesheet" href="static/css/main.css">
+    <script src="static/js/jquery.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 頂部導航 - 添加立體陰影 -->
+        <header class="app-header">
+            <div class="logo" onclick="location.reload()" style="cursor: pointer;">
+                <div class="logo-icon">
+                    <img src="static/pic/logo.png" alt="Logo">
+                </div>
+                <div class="logo-text">台北101智能服務通報</div>
+            </div>
+            <div class="header-actions">
+                <!-- 修改查詢紀錄按鈕樣式 -->
+                <button class="header-btn-text history-btn" onclick="showHistoryModal()" title="查詢紀錄">
+                    查詢紀錄
+                </button>
+            </div>
+        </header>
+       
+        <!-- 聊天區域 -->
+        <main class="chat-container" id="chatContainer">
+            <!-- 訊息會由JavaScript動態添加 -->
+        </main>
+       
+        <!-- 輸入區域 -->
+        <footer class="input-area">
+            <div class="input-wrapper">
+                <textarea class="text-input" id="messageInput"
+                          placeholder="輸入訊息..."
+                          rows="1"
+                          onkeypress="handleKeyPress(event)"></textarea>
+                <button class="send-btn" onclick="sendMessage()" id="sendBtn">↵</button>
+            </div>
+        </footer>
+    </div>
+   
+    <!-- 查詢紀錄模態框 -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📋 查詢通報紀錄</div>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="caseSearch"
+                           placeholder="輸入案件編號 (如: WD1234)">
+                </div>
+                <button class="quick-reply-btn" onclick="searchCase()"
+                        style="width: 100%; margin-bottom: 20px; background: #4a90e2; color: white;">
+                    查詢紀錄
+                </button>
+                <div id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+   
+    <!-- 照片預覽模態框 -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📷 照片預覽</div>
+                <button class="modal-close" onclick="closeImageModal()">×</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 0;">
+                <img id="modalImage" src="" style="max-width: 100%; max-height: 70vh; border-radius: 10px;" alt="">
+            </div>
+        </div>
+    </div>
+   
+    <!-- 樓層選擇模態框 -->
+    <div class="modal" id="floorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="floorModalTitle">選擇樓層</div>
+                <button class="modal-close" onclick="closeFloorModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="floor-options" id="floorOptions">
+                    <!-- 樓層選項會由JavaScript動態添加 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/main.js"></script>
+</body>
+</html>
 
