@@ -15,13 +15,10 @@
                 <div class="logo-icon">
                     <img src="static/pic/logo.png" alt="Logo">
                 </div>
-                <!-- 移除文字部分 -->
-                <!-- <div class="logo-text">台北101智能服務通報</div> -->
             </div>
-            <div class="header-actions">
-                <button class="header-btn-text history-btn" onclick="showHistoryModal()" title="查詢紀錄">
-                    查詢紀錄
-                </button>
+            <!-- 智慧通報圖示 -->
+            <div class="report-label">
+                AI 智慧通報
             </div>
         </header>
        
@@ -30,37 +27,7 @@
             <!-- 訊息會由JavaScript動態添加 -->
         </main>
        
-        <!-- 輸入區域 -->
-        <footer class="input-area">
-            <div class="input-wrapper">
-                <textarea class="text-input" id="messageInput"
-                          placeholder="輸入訊息..."
-                          rows="1"
-                          onkeypress="handleKeyPress(event)"></textarea>
-                <button class="send-btn" onclick="sendMessage()" id="sendBtn">↵</button>
-            </div>
-        </footer>
-    </div>
-   
-    <!-- 查詢紀錄模態框 -->
-    <div class="modal" id="historyModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">📋 查詢通報紀錄</div>
-                <button class="modal-close" onclick="closeModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <input type="text" class="form-control" id="caseSearch"
-                           placeholder="請輸入4位數字的案件編號">
-                </div>
-                <button class="quick-reply-btn" onclick="searchCase()"
-                        style="width: 100%; margin-bottom: 20px; background: #4a90e2; color: white;">
-                    查詢紀錄
-                </button>
-                <div id="searchResults"></div>
-            </div>
-        </div>
+        <!-- 輸入區域 - 移除訊息輸入功能 -->
     </div>
    
     <!-- 照片預覽模態框 -->
@@ -109,4 +76,3 @@
     <script src="static/js/main.js"></script>
 </body>
 </html>
-
