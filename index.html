@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Referrer-Policy" content="No-referrer-when-downgrade" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'self';img-src 'self' data:;font-src 'self';connect-src 'self' https://script.google.com https://script.googleusercontent.com;form-action 'none';base-uri 'none';frame-src 'none';object-src 'none';frame-ancestors 'none';">
     <title>台北101智能服務通報系統</title>
     <link rel="stylesheet" href="static/css/main.css">
     <script src="static/js/jquery.min.js"></script>
@@ -11,7 +13,7 @@
     <div class="app-container">
         <!-- 頂部導航 -->
         <header class="app-header">
-            <div class="logo" onclick="location.reload()" style="cursor: pointer;">
+            <div class="logo" id="reloadLogo">
                 <div class="logo-icon">
                     <img src="static/pic/logo.png" alt="Logo">
                 </div>
@@ -27,7 +29,7 @@
             <!-- 訊息會由JavaScript動態添加 -->
         </main>
 
-        <!-- 輸入區域 - 只作為墊高使用，不包含輸入功能 -->
+        <!-- 輸入區域 -->
         <footer class="input-area-padding">
             <!-- 空的底部框架，只為了墊高 -->
         </footer>
@@ -38,10 +40,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">📷 照片預覽</div>
-                <button class="modal-close" onclick="closeImageModal()">×</button>
+                <button class="modal-close" id="closeImageModalBtn">×</button>
             </div>
-            <div class="modal-body" style="text-align: center; padding: 0;">
-                <img id="modalImage" src="" style="max-width: 100%; max-height: 70vh; border-radius: 10px;" alt="">
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="">
             </div>
         </div>
     </div>
@@ -51,7 +53,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title" id="floorModalTitle">選擇樓層</div>
-                <button class="modal-close" onclick="closeFloorModal()">×</button>
+                <button class="modal-close" id="closeFloorModalBtn">×</button>
             </div>
             <div class="modal-body">
                 <div class="floor-options" id="floorOptions">
@@ -66,7 +68,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title" id="locationModalTitle">選擇地點</div>
-                <button class="modal-close" onclick="closeLocationModal()">×</button>
+                <button class="modal-close" id="closeLocationModalBtn">×</button>
             </div>
             <div class="modal-body">
                 <div class="location-options" id="locationOptions">
