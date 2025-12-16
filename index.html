@@ -1,47 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>系統</title>
-<style id="s"></style>
-<script>
-function l(u,t){var e=document.createElement(t);if(t=='link'){e.rel='stylesheet';e.href=u;}else{e.src=u;}document.head.appendChild(e);}
-l('static/css/main.css','link');
-l('static/js/jquery.min.js','script');
-</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Referrer-Policy" content="No-referrer-when-downgrade" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'self';img-src 'self' data:;font-src 'self';connect-src 'self' https://script.google.com https://script.googleusercontent.com;form-action 'none';base-uri 'none';frame-src 'none';object-src 'none';frame-ancestors 'none';">
+    <title>台北101智能服務通報系統</title>
+    <link rel="stylesheet" href="static/css/main.css">
+    <script src="static/js/jquery.min.js"></script>
 </head>
 <body>
-<script>
-var h=document.createElement('div');h.className='app-container';
-var hd=document.createElement('header');hd.className='app-header';
-var lg=document.createElement('div');lg.className='logo';lg.id='reloadLogo';
-var lgi=document.createElement('div');lgi.className='logo-icon';
-var img=document.createElement('img');img.src='static/pic/logo.png';img.alt='Logo';
-lgi.appendChild(img);lg.appendChild(lgi);
-var rl=document.createElement('div');rl.className='report-label';rl.textContent='English';
-hd.appendChild(lg);hd.appendChild(rl);
-h.appendChild(hd);
-var mc=document.createElement('main');mc.className='chat-container';mc.id='chatContainer';
-h.appendChild(mc);
-var ft=document.createElement('footer');ft.className='input-area-padding';
-h.appendChild(ft);
-document.body.appendChild(h);
-function md(i,t,b){var m=document.createElement('div');m.className='modal';m.id=i;m.style.display='none';
-var c=document.createElement('div');c.className='modal-content';
-var h=document.createElement('div');h.className='modal-header';
-var t=document.createElement('div');t.className='modal-title';if(i=='floorModal')t.id='floorModalTitle';if(i=='locationModal')t.id='locationModalTitle';t.textContent=b;
-var b=document.createElement('button');b.className='modal-close';b.id='close'+i.charAt(0).toUpperCase()+i.slice(1)+'Btn';b.textContent='×';
-h.appendChild(t);h.appendChild(b);c.appendChild(h);
-var bd=document.createElement('div');bd.className='modal-body';
-if(i=='imageModal'){var i=document.createElement('img');i.id='modalImage';i.alt='';bd.appendChild(i);}
-else{var o=document.createElement('div');o.className=(i=='floorModal'?'floor':'location')+'-options';o.id=i.replace('Modal','Options');bd.appendChild(o);}
-c.appendChild(bd);m.appendChild(c);document.body.appendChild(m);}
-md('imageModal','','📷 照片預覽');
-md('floorModal','floorModalTitle','選擇樓層');
-md('locationModal','locationModalTitle','選擇地點');
-// 加載主JS
-setTimeout(function(){var s=document.createElement('script');s.src='static/js/main.js';document.body.appendChild(s);},100);
-</script>
+    <div class="app-container">
+        <!-- 頂部導航 -->
+        <header class="app-header">
+            <div class="logo" id="reloadLogo">
+                <div class="logo-icon">
+                    <img src="static/pic/logo.png" alt="Logo">
+                </div>
+            </div>
+            <!-- 智慧通報圖示 -->
+            <div class="report-label">
+                English
+            </div>
+        </header>
+
+        <!-- 聊天區域 -->
+        <main class="chat-container" id="chatContainer">
+            <!-- 訊息會由JavaScript動態添加 -->
+        </main>
+
+        <!-- 輸入區域 -->
+        <footer class="input-area-padding">
+            <!-- 空的底部框架，只為了墊高 -->
+        </footer>
+    </div>
+
+    <!-- 照片預覽模態框 -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📷 照片預覽</div>
+                <button class="modal-close" id="closeImageModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="">
+            </div>
+        </div>
+    </div>
+
+    <!-- 樓層選擇模態框 -->
+    <div class="modal" id="floorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="floorModalTitle">選擇樓層</div>
+                <button class="modal-close" id="closeFloorModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="floor-options" id="floorOptions">
+                    <!-- 樓層選項會由JavaScript動態添加 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 地點選擇模態框 -->
+    <div class="modal" id="locationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="locationModalTitle">選擇地點</div>
+                <button class="modal-close" id="closeLocationModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="location-options" id="locationOptions">
+                    <!-- 地點選項會由JavaScript動態添加 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/main.js"></script>
 </body>
 </html>
