@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Referrer-Policy" content="No-referrer-when-downgrade" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none';script-src 'self';style-src 'self';img-src 'self' data:;font-src 'self';connect-src 'self' https://script.google.com https://script.googleusercontent.com;form-action 'none';base-uri 'none';frame-src 'none';object-src 'none';frame-ancestors 'none';">
+    <title>Taipei 101 Smart Service Reporting System</title>
+    <link rel="stylesheet" href="static/css/main.css">
+    <script src="static/js/jquery.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="app-header">
+            <div class="logo" id="reloadLogo">
+                <div class="logo-icon">
+                    <img src="static/pic/logo.png" alt="Logo">
+                </div>
+            </div>
+            <!-- Smart Reporting Label -->
+            <div class="report-label">
+                繁體中文
+            </div>
+        </header>
+
+        <!-- Chat Area -->
+        <main class="chat-container" id="chatContainer">
+            <!-- Messages will be dynamically added by JavaScript -->
+        </main>
+
+        <!-- Input Area Padding -->
+        <footer class="input-area-padding">
+            <!-- Empty bottom padding -->
+        </footer>
+    </div>
+
+    <!-- Photo Preview Modal -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📷 Photo Preview</div>
+                <button class="modal-close" id="closeImageModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="">
+            </div>
+        </div>
+    </div>
+
+    <!-- Floor Selection Modal -->
+    <div class="modal" id="floorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="floorModalTitle">Select Floor</div>
+                <button class="modal-close" id="closeFloorModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="floor-options" id="floorOptions">
+                    <!-- Floor options will be dynamically added by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Selection Modal -->
+    <div class="modal" id="locationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="locationModalTitle">Select Location</div>
+                <button class="modal-close" id="closeLocationModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="location-options" id="locationOptions">
+                    <!-- Location options will be dynamically added by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/mainEN.js"></script>
+</body>
+</html>
