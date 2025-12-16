@@ -6,23 +6,20 @@
 <title>系統</title>
 <style id="s"></style>
 <script>
-// 動態加載資源
 function l(u,t){var e=document.createElement(t);if(t=='link'){e.rel='stylesheet';e.href=u;}else{e.src=u;}document.head.appendChild(e);}
-// 加載CSS和jQuery
 l('static/css/main.css','link');
 l('static/js/jquery.min.js','script');
 </script>
 </head>
 <body>
 <script>
-// 動態生成HTML結構
 var h=document.createElement('div');h.className='app-container';
 var hd=document.createElement('header');hd.className='app-header';
 var lg=document.createElement('div');lg.className='logo';lg.id='reloadLogo';
 var lgi=document.createElement('div');lgi.className='logo-icon';
 var img=document.createElement('img');img.src='static/pic/logo.png';img.alt='Logo';
 lgi.appendChild(img);lg.appendChild(lgi);
-var rl=document.createElement('div');rl.className='report-label';rl.textContent='智慧通報';
+var rl=document.createElement('div');rl.className='report-label';rl.textContent='English';
 hd.appendChild(lg);hd.appendChild(rl);
 h.appendChild(hd);
 var mc=document.createElement('main');mc.className='chat-container';mc.id='chatContainer';
@@ -30,7 +27,6 @@ h.appendChild(mc);
 var ft=document.createElement('footer');ft.className='input-area-padding';
 h.appendChild(ft);
 document.body.appendChild(h);
-// 模態框
 function md(i,t,b){var m=document.createElement('div');m.className='modal';m.id=i;m.style.display='none';
 var c=document.createElement('div');c.className='modal-content';
 var h=document.createElement('div');h.className='modal-header';
