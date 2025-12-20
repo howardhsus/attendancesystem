@@ -474,7 +474,7 @@ function initChatWithUrlParams() {
         // Directly show reporting form, no service selection
         addBotMessage(`
             <div class="welcome-message">
-                <div class="welcome-title">TAIPEI 101 Service System</div>
+                <div class="welcome-title">TAIPEI 101 Smart Reporting System</div>
                 <div class="welcome-subtitle">Welcome to ${serviceName}</div>
             </div>
         `);
@@ -505,8 +505,8 @@ function initChat() {
     setTimeout(() => {
         addBotMessage(`
             <div class="welcome-message">
-                <div class="welcome-title">TAIPEI 101 Service System</div>
-                <div class="welcome-subtitle">Select your area to begin</div>
+                <div class="welcome-title">TAIPEI 101 Smart Reporting System</div>
+                <div class="welcome-subtitle">Please select your area to begin reporting</div>
             </div>
         `);
         setStep('select_service');
@@ -545,9 +545,9 @@ function showServiceButtons() {
     existingButtons.forEach(el => el.remove());
 
     const services = [
-        { icon: '🏢', title: 'Office Tower', desc: 'Office area service', value: 'office' },
-        { icon: '🛍️', title: 'Shopping Mall', desc: 'Shopping area service', value: 'shopping' },
-        { icon: '🏙️', title: 'Observatory', desc: 'Observatory area service', value: 'observatory' }
+        { icon: '🏢', title: 'Office Tower', desc: 'Office area reporting', value: 'office' },
+        { icon: '🛍️', title: 'Shopping Mall', desc: 'Shopping area reporting', value: 'shopping' },
+        { icon: '🏙️', title: 'Observatory', desc: 'Observatory area reporting', value: 'observatory' }
     ];
 
     const buttonsHTML = `
@@ -624,7 +624,7 @@ function selectService(serviceType) {
         };
 
         // Add user selected service message
-        const serviceName = SERVICE_TYPES[serviceType] || 'Service';
+        const serviceName = SERVICE_TYPES[serviceType] || 'Reporting';
         addUserMessage(serviceName);
 
         // Update current step
@@ -723,7 +723,7 @@ function showReportForm() {
     // Check if there's already a form of the same type
     const existingForms = $('.bot-message').filter(function () {
         const content = $(this).find('.message-content').html() || '';
-        return content.includes('form-title') || content.includes('Service Form');
+        return content.includes('form-title') || content.includes('Report Form');
     });
 
     if (existingForms.length > 0) {
@@ -734,7 +734,7 @@ function showReportForm() {
     // Check and remove any existing photo inquiry messages
     const existingPhotoMessages = $('.bot-message').filter(function () {
         const content = $(this).find('.message-content').text() || '';
-        return content.includes('Add photo for reference');
+        return content.includes('Do you need to upload photos for reference');
     });
 
     if (existingPhotoMessages.length > 0) {
@@ -776,12 +776,12 @@ function showReportForm() {
     }
 
     const formTitles = {
-        'office': '🏢 Office Tower Service',
-        'shopping': '🛍️ Shopping Mall Service',
-        'observatory': '🏙️ Observatory Service'
+        'office': '🏢 Office Tower Report Form',
+        'shopping': '🛍️ Shopping Mall Report Form',
+        'observatory': '🏙️ Observatory Report Form'
     };
 
-    const formTitle = formTitles[currentService] || 'Service Form';
+    const formTitle = formTitles[currentService] || 'Report Form';
 
     if (currentService === 'office') {
         let floorDisplayText = selectedFloor || 'Enter floor (1-88)';
@@ -797,11 +797,11 @@ function showReportForm() {
         let descriptionValue = '';
         let descriptionClass = 'form-control description-input-office';
 
-        if (problemDescription && problemDescription !== 'Check, clean, or repair needed') {
+        if (problemDescription && problemDescription !== 'Please check, clean, or repair equipment') {
             descriptionValue = problemDescription;
             descriptionClass += ' has-user-input';
         } else {
-            descriptionValue = 'Check, clean, or repair needed';
+            descriptionValue = 'Please check, clean, or repair equipment';
             descriptionClass += ' placeholder-active';
         }
 
@@ -812,7 +812,7 @@ function showReportForm() {
                 <label class="form-label">Floor <span>*</span></label>
                 <input type="number" class="form-control floor-input-office"
                        value="${selectedFloor || ''}"
-                       placeholder="Enter floor (1-88)"
+                       placeholder="Enter floor number (1-88)"
                        min="1" max="88">
             </div>
            
@@ -827,14 +827,14 @@ function showReportForm() {
             </div>
            
             <div class="form-group">
-                <label class="form-label">Details (Optional)</label>
+                <label class="form-label">Description (Optional)</label>
                 <textarea class="${descriptionClass}"
                           rows="3">${descriptionValue}</textarea>
             </div>
            
             <div class="quick-replies">
                 <button class="quick-reply-btn confirm-form-btn-office">
-                    Next
+                    Confirm
                 </button>
             </div>
         `;
@@ -864,11 +864,11 @@ function showReportForm() {
         let descriptionValue = '';
         let descriptionClass = 'form-control description-input-dynamic';
 
-        if (problemDescription && problemDescription !== 'Check, clean, or repair needed') {
+        if (problemDescription && problemDescription !== 'Please check, clean, or repair equipment') {
             descriptionValue = problemDescription;
             descriptionClass += ' has-user-input';
         } else {
-            descriptionValue = 'Check, clean, or repair needed';
+            descriptionValue = 'Please check, clean, or repair equipment';
             descriptionClass += ' placeholder-active';
         }
 
@@ -896,14 +896,14 @@ function showReportForm() {
             </div>
            
             <div class="form-group">
-                <label class="form-label">Details (Optional)</label>
+                <label class="form-label">Description (Optional)</label>
                 <textarea class="${descriptionClass}"
                           rows="3">${descriptionValue}</textarea>
             </div>
            
             <div class="quick-replies">
                 <button class="quick-reply-btn confirm-form-btn-dynamic">
-                    Next
+                    Confirm
                 </button>
             </div>
         `;
@@ -966,10 +966,10 @@ function handleOfficeFloorInput() {
     } else {
         if (floorNum > 88) {
             floorInput.val('88');
-            showToast('Floor adjusted to 88', 'warning');
+            showToast('Floor automatically adjusted to 88', 'warning');
         } else if (floorNum < 1) {
             floorInput.val('1');
-            showToast('Floor adjusted to 1', 'warning');
+            showToast('Floor automatically adjusted to 1', 'warning');
         }
     }
 }
@@ -980,18 +980,18 @@ function handleOfficeFloorBlur() {
 
     if (!floorValue) {
         floorInput.addClass('placeholder-active');
-        floorInput.val('Enter floor (1-88)');
+        floorInput.val('Enter floor number (1-88)');
     } else {
         let floorNum = parseInt(floorValue);
         if (isNaN(floorNum)) {
             floorInput.val('');
-            showToast('Enter valid number', 'warning');
+            showToast('Please enter a valid number', 'warning');
         } else if (floorNum > 88) {
             floorInput.val('88');
-            showToast('Floor adjusted to 88', 'warning');
+            showToast('Floor automatically adjusted to 88', 'warning');
         } else if (floorNum < 1) {
             floorInput.val('1');
-            showToast('Floor adjusted to 1', 'warning');
+            showToast('Floor automatically adjusted to 1', 'warning');
         }
     }
 }
@@ -1020,7 +1020,7 @@ function handleDescriptionBlur() {
 
     if (!value) {
         descriptionInput.addClass('placeholder-active');
-        descriptionInput.val('Check, clean, or repair needed');
+        descriptionInput.val('Please check, clean, or repair equipment');
     }
 }
 
@@ -1054,23 +1054,23 @@ function confirmForm() {
         if (floorValue) {
             const floorNum = parseInt(floorValue);
             if (isNaN(floorNum) || floorNum < 1 || floorNum > 88) {
-                showToast('Enter valid floor (1-88)', 'warning');
+                showToast('Please enter a valid floor (1-88)', 'warning');
                 return;
             }
             selectedFloor = floorNum.toString();
         }
     } else {
         if (!selectedFloor) {
-            showToast('Select floor', 'warning');
+            showToast('Please select floor', 'warning');
             return;
         }
     }
 
     if (!selectedFloor) {
         if (currentService === 'office') {
-            showToast('Enter floor', 'warning');
+            showToast('Please enter floor', 'warning');
         } else {
-            showToast('Select floor', 'warning');
+            showToast('Please select floor', 'warning');
         }
         return;
     }
@@ -1080,12 +1080,12 @@ function confirmForm() {
 
     if (descriptionInput.hasClass('placeholder-active') ||
         !descriptionValue ||
-        descriptionValue === 'Check, clean, or repair needed') {
-        problemDescription = 'Check, clean, or repair needed';
+        descriptionValue === 'Please check, clean, or repair equipment') {
+        problemDescription = 'Please check, clean, or repair equipment';
     } else {
         // Frontend basic length check
         if (descriptionValue.length > 500) {
-            showToast('Max 500 characters', 'warning');
+            showToast('Description length exceeds 500 character limit', 'warning');
             return;
         }
 
@@ -1093,21 +1093,21 @@ function confirmForm() {
     }
 
     if (!selectedLocation && !customLocation) {
-        showToast('Select or enter location', 'warning');
+        showToast('Please select or enter location', 'warning');
         return;
     }
 
     if (customLocation && customLocation.length > 100) {
-        showToast('Max 100 characters', 'warning');
+        showToast('Custom location length exceeds 100 character limit', 'warning');
         return;
     }
 
     let userMessageContent = '';
 
-    if (problemDescription && problemDescription !== 'Check, clean, or repair needed') {
+    if (problemDescription && problemDescription !== 'Please check, clean, or repair equipment') {
         userMessageContent = problemDescription;
     } else {
-        userMessageContent = 'Check, clean, or repair needed';
+        userMessageContent = 'Please check, clean, or repair equipment';
     }
 
     // Remove all user messages after the form
@@ -1147,7 +1147,7 @@ function askForPhoto() {
     // Clear all old photo-related messages
     const photoMessages = $('.bot-message').filter(function () {
         const content = $(this).find('.message-content').html() || '';
-        return content.includes('Add photo for reference') ||
+        return content.includes('Do you need to upload photos for reference') ||
             content.includes('upload-area-dynamic') ||
             content.includes('upload-preview') ||
             content.includes('skip-photo-btn-dynamic');
@@ -1159,7 +1159,7 @@ function askForPhoto() {
     }
 
     // Add photo inquiry
-    addBotMessage('Add photo for reference? (Optional)');
+    addBotMessage('Do you need to upload photos for reference? (Optional)');
 
     let hasPhoto = uploadedFilePreview !== null;
     let photoHTML = '';
@@ -1171,10 +1171,10 @@ function askForPhoto() {
            
             <div class="quick-replies" style="margin-top: 18px;">
                 <button class="quick-reply-btn skip-photo-btn-dynamic">
-                    Remove
+                    Remove Photo
                 </button>
                 <button class="quick-reply-btn confirm-photo-btn-dynamic">
-                    Next
+                    Confirm Upload
                 </button>
             </div>
         `;
@@ -1183,14 +1183,14 @@ function askForPhoto() {
         photoHTML = `
             <div class="upload-area upload-area-dynamic">
                 <div class="upload-icon">📷</div>
-                <div style="font-weight: 600; margin-bottom: 8px; color: #2d3436;">Tap to add photo</div>
-                <div style="font-size: 13px; color: #868e96;">JPG, PNG supported</div>
+                <div style="font-weight: 600; margin-bottom: 8px; color: #2d3436;">Click to upload photo</div>
+                <div style="font-size: 13px; color: #868e96;">Supports JPG, PNG format</div>
             </div>
             <img class="upload-preview preview-image-dynamic" alt="" style="display: none;">
            
             <div class="quick-replies" style="margin-top: 18px;">
                 <button class="quick-reply-btn skip-photo-btn-dynamic">
-                    Skip
+                    Skip, do not upload
                 </button>
             </div>
         `;
@@ -1227,17 +1227,17 @@ function handleFileUpload(event) {
 
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-        showToast('JPG, PNG, GIF or WebP only', 'warning');
+        showToast('Please select JPG, PNG, GIF or WebP format image', 'warning');
         return;
     }
 
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-        showToast('Max 5MB', 'warning');
+        showToast('File size exceeds 5MB limit', 'warning');
         return;
     }
 
-    showToast('Processing...', 'info');
+    showToast('Processing image...', 'info');
 
     uploadedFile = file;
 
@@ -1245,19 +1245,19 @@ function handleFileUpload(event) {
     reader.onload = function (e) {
         const base64Data = e.target.result;
         if (!base64Data.startsWith('data:image/')) {
-            showToast('Invalid format', 'warning');
+            showToast('Invalid file format', 'warning');
             return;
         }
 
         uploadedFilePreview = base64Data;
-        showToast('Photo added', 'success');
+        showToast('Photo selected', 'success');
 
         // Re-show photo step
         goBackToStep('input_photo');
     };
 
     reader.onerror = function () {
-        showToast('Read failed', 'warning');
+        showToast('Failed to read file', 'warning');
     };
 
     reader.readAsDataURL(file);
@@ -1294,14 +1294,14 @@ function skipPhoto() {
         uploadedFile = null;
         uploadedFilePreview = null;
 
-        // Key fix: Check if there's already a "No photo upload" message
+        // Key fix: Check if there's already a "Do not upload photo" message
         const $existingSkipMessages = $('.user-message').filter(function () {
-            return $(this).find('.message-content').text() === 'No photo upload';
+            return $(this).find('.message-content').text() === 'Do not upload photo';
         });
 
-        // If there's already a "No photo upload" message, remove it first
+        // If there's already a "Do not upload photo" message, remove it first
         if ($existingSkipMessages.length > 0) {
-            console.log('Found duplicate "No photo upload" message, removing count:', $existingSkipMessages.length);
+            console.log('Found duplicate "Do not upload photo" message, removing count:', $existingSkipMessages.length);
             $existingSkipMessages.remove();
         }
 
@@ -1324,17 +1324,17 @@ function skipPhoto() {
                         <div class="avatar-placeholder">👤</div>
                     </div>
                     <div class="message-content-wrapper">
-                        <div class="message-content">No photo upload</div>
+                        <div class="message-content">Do not upload photo</div>
                         <div class="message-time">${getCurrentTime()}</div>
                     </div>
                 </div>
             `;
 
             $(userMessageHTML).insertAfter($lastPhotoAreaMessage);
-            console.log('Added "No photo upload" message after upload area, ID:', userMessageId);
+            console.log('Added "Do not upload photo" message after upload area, ID:', userMessageId);
         } else {
             // If can't find photo message, use original addUserMessage
-            addUserMessage('No photo upload');
+            addUserMessage('Do not upload photo');
         }
 
         // Short delay before showing confirmation page
@@ -1422,7 +1422,7 @@ function showConfirmation() {
     const successMessages = $('.bot-message').filter(function () {
         const content = $(this).find('.message-content').html() || '';
         return content.includes('success-container') ||
-            content.includes('Service Completed');
+            content.includes('Report Completed');
     });
 
     if (successMessages.length > 0) {
@@ -1459,7 +1459,7 @@ function showConfirmation() {
         emptyMessages.remove();
     }
 
-    const serviceTypeText = SERVICE_TYPES[currentService] || 'Service';
+    const serviceTypeText = SERVICE_TYPES[currentService] || 'Report';
 
     let locationText = '';
     if (selectedLocation) {
@@ -1474,15 +1474,15 @@ function showConfirmation() {
     let displayDescription = problemDescription;
     if (!problemDescription ||
         problemDescription === '' ||
-        problemDescription === 'Check, clean, or repair needed' ||
+        problemDescription === 'Please check, clean, or repair equipment' ||
         problemDescription.trim() === '') {
-        displayDescription = 'Check, clean, or repair needed';
+        displayDescription = 'Please check, clean, or repair equipment';
     }
 
     const hasPhoto = uploadedFilePreview ? 'Yes' : 'No';
     const photoClass = uploadedFilePreview ? 'has-photo' : 'photo-value';
 
-    // Create confirmation page HTML structure, leave description content empty
+    // Create confirmation page HTML structure, description content left empty
     const confirmationHTML = `
         <div class="horizontal-case-card">
             <div class="horizontal-details-list">
@@ -1525,7 +1525,7 @@ function showConfirmation() {
            
             <div class="description-row">
                 <div class="description-label-section">
-                    <span class="description-label-text">Details</span>
+                    <span class="description-label-text">Description</span>
                 </div>
                 <div class="description-content-section">
                     <div class="description-content-text"></div>
@@ -1535,10 +1535,10 @@ function showConfirmation() {
        
         <div class="quick-replies">
             <button class="quick-reply-btn edit-info-btn">
-                ✏️ Edit
+                ✏️ Edit Information
             </button>
             <button class="quick-reply-btn submit-report-btn" style="background: #4a90e2 !important; color: white !important;">
-                Submit
+                ✓ Confirm Submit
             </button>
         </div>
     `;
@@ -1550,8 +1550,8 @@ function showConfirmation() {
     const $lastMessage = $('.bot-message').last();
     const $descriptionText = $lastMessage.find('.description-content-text');
 
-    // Use text() method to set description content - Key fix: only show problem description, not user's "No photo upload" message
-    // Problem description should be problemDescription, not user's "No photo upload" message
+    // Use text() method to set description content - Key fix: only show problem description, not user's "Do not upload photo" message
+    // Problem description should be problemDescription, not user's "Do not upload photo" message
     $descriptionText.text(displayDescription);
 
     // Bind events
@@ -1613,19 +1613,19 @@ function submitReport() {
     const progressId = 'progress-' + Date.now();
     const progressHTML = `
         <div class="progress-indicator" id="${progressId}">
-            <div class="progress-title">Processing</div>
+            <div class="progress-title">Report Processing</div>
             <div class="progress-steps">
                 <div class="progress-step active" data-step="1">
                     <div class="step-icon">1</div>
-                    <div class="step-label">Validating</div>
+                    <div class="step-label">Data Validation</div>
                 </div>
                 <div class="progress-step" data-step="2">
                     <div class="step-icon">2</div>
-                    <div class="step-label">Processing</div>
+                    <div class="step-label">Photo Processing</div>
                 </div>
                 <div class="progress-step" data-step="3">
                     <div class="step-icon">3</div>
-                    <div class="step-label">Sending</div>
+                    <div class="step-label">Sending Report</div>
                 </div>
                 <div class="progress-step" data-step="4">
                     <div class="step-icon">4</div>
@@ -1635,7 +1635,7 @@ function submitReport() {
             <div class="progress-bar">
                 <div class="progress-fill"></div>
             </div>
-            <div class="progress-message">Processing your request...</div>
+            <div class="progress-message">Processing your report, please wait...</div>
         </div>
     `;
 
@@ -1661,7 +1661,7 @@ function submitReport() {
     }
 
     // Start processing flow
-    updateProgress(1, 'Validating data...');
+    updateProgress(1, 'Validating report data...');
 
     const today = new Date();
     const reportDate = today.getFullYear() + '/' +
@@ -1680,12 +1680,12 @@ function submitReport() {
     }
 
     const displayFloor = currentService === 'office' ? `${selectedFloor}F` : `${selectedFloor}F`;
-    const serviceTypeText = SERVICE_TYPES[currentService] || 'Service';
+    const serviceTypeText = SERVICE_TYPES[currentService] || 'Uncategorized';
 
     let lineDescription = problemDescription;
     if (!lineDescription || lineDescription === '' ||
-        lineDescription === 'Check, clean, or repair needed' || lineDescription.trim() === '') {
-        lineDescription = 'Check, clean, or repair needed';
+        lineDescription === 'Please check, clean, or repair equipment' || lineDescription.trim() === '') {
+        lineDescription = 'Please check, clean, or repair equipment';
     }
 
     // Prepare raw data to send
@@ -1721,11 +1721,11 @@ function submitReport() {
 
     processPromise
         .then(data => {
-            updateProgress(3, 'Sending to system...');
+            updateProgress(3, 'Sending report to system...');
             return sendReportToBackend(data);
         })
         .then(() => {
-            updateProgress(4, 'Complete!');
+            updateProgress(4, 'Report complete!');
             setTimeout(() => {
                 // Safely remove progress bar
                 const $progress = $(`#${progressId}`);
@@ -1737,7 +1737,7 @@ function submitReport() {
         })
         .catch(error => {
             console.error('Report failed:', error);
-            showToast('Error, try again', 'warning');
+            showToast('Error occurred during reporting, please try again later', 'warning');
 
             // Safely remove progress bar
             const $progress = $(`#${progressId}`);
@@ -1810,7 +1810,7 @@ function compressAndUploadImage() {
                     if (data && data.id) {
                         resolve(data.id);
                     } else {
-                        reject(new Error('Upload failed'));
+                        reject(new Error('Image upload failed'));
                     }
                 })
                 .catch(error => {
@@ -1819,7 +1819,7 @@ function compressAndUploadImage() {
         };
 
         reader.onerror = function () {
-            reject(new Error('Read failed'));
+            reject(new Error('Failed to read file'));
         };
 
         reader.readAsDataURL(uploadedFile);
@@ -1835,11 +1835,11 @@ function sendReportToBackend(formData) {
             method: 'POST',
             data: formData,
             success: function (response) {
-                console.log('Success:', response);
+                console.log('Report successful:', response);
                 resolve(response);
             },
             error: function (xhr, status, error) {
-                console.error('Failed:', error);
+                console.error('Report failed:', error);
                 reject(error);
             }
         });
@@ -1854,19 +1854,19 @@ function showSuccessPage() {
     // Ensure current step is completed
     currentStep = 'completed';
 
-    const serviceTypeText = SERVICE_TYPES[currentService] || 'Service';
+    const serviceTypeText = SERVICE_TYPES[currentService] || 'Report';
 
     const successHTML = `
         <div class="success-container">
             <div class="success-icon">✓</div>
            
             <div style="margin-bottom: 25px;">
-                <div class="success-title">${serviceTypeText} Service Submitted</div>
+                <div class="success-title">${serviceTypeText} Report Completed</div>
             </div>
            
             <div style="margin-bottom: 35px;">
-                <div class="success-message">Thank you for your report</div>
-                <div class="success-message">We'll improve our service</div>
+                <div class="success-message">Thank you for your notification</div>
+                <div class="success-message">Let us do better</div>
             </div>
            
             <div style="height: 1px; background: #e9ecef; margin: 30px 0;"></div>
@@ -1896,7 +1896,7 @@ function showFloorModal() {
     // Fix issue 3: Prevent background scrolling expansion
     preventBackgroundScroll();
 
-    const modalTitle = currentService === 'shopping' ? 'Select Floor' : 'Select Floor';
+    const modalTitle = currentService === 'shopping' ? 'Select Shopping Mall Floor' : 'Select Observatory Floor';
     $('#floorModalTitle').text(modalTitle);
 
     let floors = [];
@@ -1932,13 +1932,13 @@ function showLocationModal() {
     let modalTitle = '';
 
     if (currentService === 'office') {
-        modalTitle = 'Select Location';
+        modalTitle = 'Select Office Tower Location';
         locations = OFFICE_LOCATIONS;
     } else if (currentService === 'shopping') {
-        modalTitle = 'Select Location';
+        modalTitle = 'Select Shopping Mall Location';
         locations = MALL_LOCATIONS;
     } else if (currentService === 'observatory') {
-        modalTitle = 'Select Location';
+        modalTitle = 'Select Observatory Location';
         locations = OBSERVATORY_LOCATIONS;
     }
 
@@ -1951,11 +1951,11 @@ function showLocationModal() {
                 <div class="custom-location-icon">📍</div>
                 <input type="text" class="custom-location-input custom-location-input-dynamic ${customLocation ? '' : 'placeholder-active'}"
                        id="modalCustomLocationInput"
-                       placeholder="Enter location"
+                       placeholder="Enter custom location"
                        value="${customLocation || ''}">
             </div>
             <button class="custom-location-confirm-btn custom-location-confirm-btn-dynamic">
-                Confirm
+                Confirm Custom Location
             </button>
         </div>
     `;
@@ -1992,7 +1992,7 @@ function showLocationModal() {
         .on('blur', '.custom-location-input-dynamic', function () {
             if (!$(this).val().trim()) {
                 $(this).addClass('placeholder-active');
-                $(this).val('Enter location');
+                $(this).val('Enter custom location');
             }
         });
 
@@ -2022,7 +2022,7 @@ function selectFloor(floor) {
     ButtonStateManager.selectButton('floor-buttons', floor);
 
     closeFloorModal();
-    showToast(`Selected：${displayFloor}`, 'success');
+    showToast(`Selected: ${displayFloor}`, 'success');
 }
 
 // ==================== Select Location ====================
@@ -2064,20 +2064,20 @@ function selectLocation(locationId) {
     ButtonStateManager.selectButton('location-buttons', locationId);
 
     closeLocationModal();
-    showToast(`Selected：${locationLabel}`, 'success');
+    showToast(`Selected: ${locationLabel}`, 'success');
 }
 
 function confirmCustomLocation() {
     const customInput = $('#modalCustomLocationInput');
     let customValue = customInput.val().trim();
 
-    if (!customValue || customValue === 'Enter location') {
-        showToast('Enter location', 'warning');
+    if (!customValue || customValue === 'Enter custom location') {
+        showToast('Please enter custom location', 'warning');
         return;
     }
 
     if (customValue.length > 100) {
-        showToast('Max 100 characters', 'warning');
+        showToast('Custom location length exceeds 100 character limit', 'warning');
         return;
     }
 
@@ -2091,7 +2091,7 @@ function confirmCustomLocation() {
     }
 
     closeLocationModal();
-    showToast(`Set: ${customValue}`, 'success');
+    showToast(`Custom location set: ${customValue}`, 'success');
 }
 
 function closeFloorModal() {
@@ -2156,7 +2156,7 @@ function addBotMessage(content) {
     const messageHTML = `
         <div class="message bot-message" id="${messageId}">
             <div class="avatar bot-avatar">
-                <img src="static/pic/avatar.png" alt="Service">
+                <img src="static/pic/avatar.png" alt="Customer Service">
             </div>
             <div class="message-content-wrapper">
                 <div class="message-content">

@@ -5,10 +5,7 @@ const API_CONFIG = {
     UPLOAD_API: 'https://script.google.com/macros/s/AKfycbw8CLY-bYy3Q7eH1jRZ9FIfYZnDxNTVwXvvIVrWt46KjP-O_FITcDgUOFxYhCKlTQbYqg/exec'
 };
 
-// ==================== iOS 平台檢測 ====================
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-// ==================== 跨平台按鈕狀態管理器 - iOS 專用修復 ====================
+// ==================== 跨平台按鈕狀態管理器 ====================
 const ButtonStateManager = {
     // 追蹤所有按鈕組
     buttonGroups: {},
@@ -18,35 +15,21 @@ const ButtonStateManager = {
         this.buttonGroups[groupId] = {
             selector: selector,
             singleSelect: singleSelect,
-            selected: null,
-            // iOS 專用修復：追蹤按鈕狀態
-            iosSelected: null
+            selected: null
         };
 
-        // 綁定事件 - 使用捕獲階段確保事件執行
-        $(document).off('click touchstart', selector).on('click touchstart', selector, (e) => {
-            // iOS 專用修復：防止默認行為
-            if (isIOS) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
+        // 綁定事件
+        $(document).off('click', selector).on('click', selector, (e) => {
             this.handleButtonClick(groupId, $(e.currentTarget));
         });
 
-        // 初始化樣式 - iOS 專用修復
+        // 初始化樣式
         $(selector).each((index, btn) => {
-            $(btn).removeClass('selected active ios-selected');
-            // 確保按鈕有正確的初始狀態
-            if (isIOS) {
-                $(btn).css({
-                    '-webkit-tap-highlight-color': 'transparent',
-                    'touch-action': 'manipulation'
-                });
-            }
+            $(btn).removeClass('selected active');
         });
     },
 
-    // 處理按鈕點擊 - iOS 專用修復版本
+    // 處理按鈕點擊 - 跨平台修復版本
     handleButtonClick(groupId, $button) {
         const group = this.buttonGroups[groupId];
         if (!group) return;
@@ -55,176 +38,70 @@ const ButtonStateManager = {
 
         if (group.singleSelect) {
             // 單選模式：先清除所有，再選中當前
-            $(group.selector).removeClass('selected active ios-selected');
+            $(group.selector).removeClass('selected active');
 
-            // iOS 專用修復：確保按鈕狀態正確設置
+            // 跨平台修復：確保按鈕狀態正確設置
             $button.addClass('selected');
-            if (isIOS) {
-                $button.addClass('ios-selected');
-            }
             group.selected = buttonId;
-            group.iosSelected = buttonId;
 
-            // iOS 專用修復：立即移除可能的殘留狀態
+            // 立即移除可能存在的 :active 狀態
             $button.blur();
-
-            // iOS 專用修復：強制重新計算樣式
-            if (isIOS) {
-                $button.css('transform', 'translateZ(0)');
-                setTimeout(() => {
-                    $button.css('transform', '');
-                }, 50);
-            }
         } else {
             // 多選模式：切換狀態
             if ($button.hasClass('selected')) {
                 $button.removeClass('selected');
-                if (isIOS) {
-                    $button.removeClass('ios-selected');
-                }
                 group.selected = null;
-                group.iosSelected = null;
             } else {
                 $button.addClass('selected');
-                if (isIOS) {
-                    $button.addClass('ios-selected');
-                }
                 group.selected = buttonId;
-                group.iosSelected = buttonId;
             }
         }
 
-        // 短暫的 active 狀態（視覺反饋）- iOS 專用修復
+        // 短暫的 active 狀態（視覺反饋）
         $button.addClass('active');
         setTimeout(() => {
             $button.removeClass('active');
         }, 150);
-
-        // iOS 專用修復：確保狀態持久化
-        if (isIOS) {
-            this.saveIOSButtonState(groupId, buttonId);
-        }
     },
 
-    // iOS 專用修復：保存按鈕狀態
-    saveIOSButtonState(groupId, buttonId) {
-        try {
-            sessionStorage.setItem(`ios_btn_${groupId}`, buttonId);
-        } catch (e) {
-            console.log('無法保存 iOS 按鈕狀態');
-        }
-    },
-
-    // iOS 專用修復：加載按鈕狀態
-    loadIOSButtonState(groupId) {
-        try {
-            return sessionStorage.getItem(`ios_btn_${groupId}`);
-        } catch (e) {
-            return null;
-        }
-    },
-
-    // iOS 專用修復：清除按鈕狀態
-    clearIOSButtonState(groupId) {
-        try {
-            sessionStorage.removeItem(`ios_btn_${groupId}`);
-        } catch (e) {
-            // 忽略錯誤
-        }
-    },
-
-    // 程式化選擇按鈕 - iOS 專用修復
+    // 程式化選擇按鈕
     selectButton(groupId, buttonId) {
         const group = this.buttonGroups[groupId];
         if (!group) return;
 
         if (group.singleSelect) {
-            $(group.selector).removeClass('selected ios-selected');
+            $(group.selector).removeClass('selected');
         }
 
         const $button = $(group.selector).filter(`[data-id="${buttonId}"]`);
         if ($button.length) {
             $button.addClass('selected');
-            if (isIOS) {
-                $button.addClass('ios-selected');
-            }
             group.selected = buttonId;
-            group.iosSelected = buttonId;
-        }
-
-        // iOS 專用修復：保存狀態
-        if (isIOS) {
-            this.saveIOSButtonState(groupId, buttonId);
         }
     },
 
     // 獲取選中的按鈕
     getSelected(groupId) {
         const group = this.buttonGroups[groupId];
-        if (!group) return null;
-
-        // iOS 專用修復：優先使用 iOS 保存的狀態
-        if (isIOS && group.iosSelected) {
-            return group.iosSelected;
-        }
-
-        return group.selected;
-    },
-
-    // 重置所有按鈕狀態 - iOS 專用修復
-    resetAllButtons() {
-        Object.keys(this.buttonGroups).forEach(groupId => {
-            const group = this.buttonGroups[groupId];
-            $(group.selector).removeClass('selected active ios-selected');
-            group.selected = null;
-            group.iosSelected = null;
-
-            // iOS 專用修復：清除保存的狀態
-            if (isIOS) {
-                this.clearIOSButtonState(groupId);
-            }
-        });
+        return group ? group.selected : null;
     }
 };
 
-// ==================== 穩定的按鈕事件處理 - iOS 專用修復 ====================
+// ==================== 穩定的按鈕事件處理 ====================
 function setupStableButtonHandlers() {
-    // 移除所有舊的事件處理器
-    $(document).off('click touchstart', '.floor-option-btn');
-    $(document).off('click touchstart', '.location-option-btn');
-
-    // 樓層按鈕 - iOS 專用修復
-    $(document).on('click touchstart', '.floor-option-btn', function (e) {
-        // iOS 專用修復：防止默認行為
-        if (isIOS) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            // 防止快速多次點擊
-            if ($(this).hasClass('processing')) return;
-            $(this).addClass('processing');
-
-            setTimeout(() => {
-                $(this).removeClass('processing');
-            }, 300);
-        }
+    // 樓層按鈕
+    $(document).off('click', '.floor-option-btn').on('click', '.floor-option-btn', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
 
         const $btn = $(this);
         const floor = $btn.data('floor');
 
-        // 1. 清除所有同類按鈕的狀態 - iOS 專用修復
-        $('.floor-option-btn').removeClass('selected active ios-selected');
+        // 1. 清除所有同類按鈕的狀態
+        $('.floor-option-btn').removeClass('selected active');
 
-        // 2. 設置當前按鈕狀態 - iOS 專用修復
+        // 2. 設置當前按鈕狀態 - 跨平台修復
         $btn.addClass('selected');
-        if (isIOS) {
-            $btn.addClass('ios-selected');
-            // 強制樣式更新
-            $btn.css('transform', 'translateZ(0)');
-            setTimeout(() => {
-                $btn.css('transform', '');
-            }, 50);
-        }
 
         // 3. 短暫的 active 狀態（視覺反饋）
         $btn.addClass('active');
@@ -234,43 +111,21 @@ function setupStableButtonHandlers() {
 
         // 4. 執行業務邏輯
         selectFloor(floor);
-
-        // iOS 專用修復：防止事件冒泡
-        return false;
     });
 
-    // 地點按鈕 - iOS 專用修復
-    $(document).on('click touchstart', '.location-option-btn', function (e) {
-        // iOS 專用修復：防止默認行為
-        if (isIOS) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            // 防止快速多次點擊
-            if ($(this).hasClass('processing')) return;
-            $(this).addClass('processing');
-
-            setTimeout(() => {
-                $(this).removeClass('processing');
-            }, 300);
-        }
+    // 地點按鈕
+    $(document).off('click', '.location-option-btn').on('click', '.location-option-btn', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
 
         const $btn = $(this);
         const locationId = $btn.data('location');
 
-        // 1. 清除所有同類按鈕的狀態 - iOS 專用修復
-        $('.location-option-btn').removeClass('selected active ios-selected');
+        // 1. 清除所有同類按鈕的狀態
+        $('.location-option-btn').removeClass('selected active');
 
-        // 2. 設置當前按鈕狀態 - iOS 專用修復
+        // 2. 設置當前按鈕狀態 - 跨平台修復
         $btn.addClass('selected');
-        if (isIOS) {
-            $btn.addClass('ios-selected');
-            // 強制樣式更新
-            $btn.css('transform', 'translateZ(0)');
-            setTimeout(() => {
-                $btn.css('transform', '');
-            }, 50);
-        }
 
         // 3. 短暫的 active 狀態
         $btn.addClass('active');
@@ -280,16 +135,13 @@ function setupStableButtonHandlers() {
 
         // 4. 執行業務邏輯
         selectLocation(locationId);
-
-        // iOS 專用修復：防止事件冒泡
-        return false;
     });
 
-    // 防止快速雙擊 - iOS 專用修復
+    // 防止快速雙擊
     let lastClickTime = 0;
-    $(document).on('click touchstart', '.floor-option-btn, .location-option-btn', function (e) {
+    $(document).on('click', '.floor-option-btn, .location-option-btn', function (e) {
         const now = Date.now();
-        if (now - lastClickTime < 350) { // iOS 需要更長的防雙擊時間
+        if (now - lastClickTime < 300) { // 300ms 防雙擊
             e.preventDefault();
             e.stopImmediatePropagation();
             return false;
@@ -553,11 +405,6 @@ function resetApp() {
         'completed': -1
     };
 
-    // iOS 專用修復：重置按鈕狀態
-    if (isIOS) {
-        ButtonStateManager.resetAllButtons();
-    }
-
     parseUrlParams();
 }
 
@@ -583,11 +430,7 @@ function bindEvents() {
         const currentParams = window.location.search;
         window.location.href = 'indexEN.html' + currentParams;
     });
-
-    // iOS 專用修復：延遲設置按鈕處理器
-    setTimeout(() => {
-        setupStableButtonHandlers();
-    }, 100);
+    setupStableButtonHandlers();
 }
 
 // ==================== 初始化應用 ====================
@@ -595,23 +438,17 @@ $(document).ready(function () {
     parseUrlParams();
     bindEvents();
 
-    // iOS 專用修復：初始化按鈕狀態
-    $('.floor-option-btn, .location-option-btn').removeClass('selected active ios-selected');
+    // 初始化按鈕狀態
+    $('.floor-option-btn, .location-option-btn').removeClass('selected active');
 
-    // 如果有預選值，設置對應狀態 - iOS 專用修復
+    // 如果有預選值，設置對應狀態
     if (selectedFloor) {
         $(`.floor-option-btn[data-floor="${selectedFloor}"]`).addClass('selected');
-        if (isIOS) {
-            $(`.floor-option-btn[data-floor="${selectedFloor}"]`).addClass('ios-selected');
-        }
         ButtonStateManager.selectButton('floor-buttons', selectedFloor);
     }
 
     if (selectedLocation) {
         $(`.location-option-btn[data-location="${selectedLocation}"]`).addClass('selected');
-        if (isIOS) {
-            $(`.location-option-btn[data-location="${selectedLocation}"]`).addClass('ios-selected');
-        }
         ButtonStateManager.selectButton('location-buttons', selectedLocation);
     }
 
@@ -620,9 +457,7 @@ $(document).ready(function () {
     } else {
         initChat();
     }
-
-    // iOS 專用修復：延遲滾動
-    setTimeout(scrollToBottom, 300);
+    setTimeout(scrollToBottom, 100);
 });
 
 // ==================== 有URL參數的初始化 ====================
@@ -756,11 +591,6 @@ function selectService(serviceType) {
     problemDescription = '';
     uploadedFile = null;
     uploadedFilePreview = null;
-
-    // iOS 專用修復：重置按鈕狀態
-    if (isIOS) {
-        ButtonStateManager.resetAllButtons();
-    }
 
     // 清除所有對話，只保留歡迎訊息和服務選擇
     const $chatContainer = $('#chatContainer');
@@ -2059,16 +1889,11 @@ function showSuccessPage() {
     });
 }
 
-// ==================== 模態框相關函數 - iOS 專用修復 ====================
-
-// iOS 專用修復：防止背景滾動擴展
-let iosScrollPosition = 0;
+// ==================== 模態框相關函數 - 修復 iOS 背景閃爍問題 ====================
 
 function showFloorModal() {
-    // iOS 專用修復：防止背景滾動擴展
-    if (isIOS) {
-        preventIOSBackgroundScroll();
-    }
+    // 修復問題3：防止背景滾動擴展
+    preventBackgroundScroll();
 
     const modalTitle = currentService === 'shopping' ? '選擇購物中心樓層' : '選擇觀景台樓層';
     $('#floorModalTitle').text(modalTitle);
@@ -2096,20 +1921,11 @@ function showFloorModal() {
     });
 
     $('#floorModal').show();
-
-    // iOS 專用修復：確保模態框正確顯示
-    if (isIOS) {
-        setTimeout(() => {
-            $('#floorModal .modal-content').css('transform', 'translateY(0)');
-        }, 50);
-    }
 }
 
 function showLocationModal() {
-    // iOS 專用修復：防止背景滾動擴展
-    if (isIOS) {
-        preventIOSBackgroundScroll();
-    }
+    // 修復問題3：防止背景滾動擴展
+    preventBackgroundScroll();
 
     let locations = [];
     let modalTitle = '';
@@ -2180,48 +1996,6 @@ function showLocationModal() {
         });
 
     $('#locationModal').show();
-
-    // iOS 專用修復：確保模態框正確顯示
-    if (isIOS) {
-        setTimeout(() => {
-            $('#locationModal .modal-content').css('transform', 'translateY(0)');
-        }, 50);
-    }
-}
-
-// ==================== iOS 專用修復：防止背景滾動擴展 ====================
-function preventIOSBackgroundScroll() {
-    if (!isIOS) return;
-
-    // 保存當前滾動位置
-    iosScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-
-    // 防止背景滾動
-    $('body').css({
-        'position': 'fixed',
-        'width': '100%',
-        'top': -iosScrollPosition + 'px',
-        'overflow': 'hidden'
-    });
-
-    // 防止模態框背景滾動
-    $('.modal-content').css('overflow-y', 'auto');
-}
-
-// ==================== iOS 專用修復：恢復背景滾動 ====================
-function restoreIOSBackgroundScroll() {
-    if (!isIOS) return;
-
-    // 恢復背景滾動
-    $('body').css({
-        'position': '',
-        'width': '',
-        'top': '',
-        'overflow': ''
-    });
-
-    // 恢復滾動位置
-    window.scrollTo(0, iosScrollPosition);
 }
 
 // ==================== 選擇樓層 ====================
@@ -2236,14 +2010,11 @@ function selectFloor(floor) {
         $('.floor-select-btn-dynamic .floor-value').text(displayFloor);
     }
 
-    // 確保模態框中的按鈕狀態同步 - iOS 專用修復
-    $('.floor-option-btn').removeClass('selected ios-selected');
+    // 確保模態框中的按鈕狀態同步
+    $('.floor-option-btn').removeClass('selected');
     const $targetBtn = $(`.floor-option-btn[data-floor="${floor}"]`);
     if ($targetBtn.length) {
         $targetBtn.addClass('selected');
-        if (isIOS) {
-            $targetBtn.addClass('ios-selected');
-        }
     }
 
     // 使用按鈕狀態管理器確保狀態一致
@@ -2281,14 +2052,11 @@ function selectLocation(locationId) {
         $('.location-select-btn-dynamic .location-value').text(locationLabel);
     }
 
-    // 確保模態框中的按鈕狀態同步 - iOS 專用修復
-    $('.location-option-btn').removeClass('selected ios-selected');
+    // 確保模態框中的按鈕狀態同步
+    $('.location-option-btn').removeClass('selected');
     const $targetBtn = $(`.location-option-btn[data-location="${locationId}"]`);
     if ($targetBtn.length) {
         $targetBtn.addClass('selected');
-        if (isIOS) {
-            $targetBtn.addClass('ios-selected');
-        }
     }
 
     // 使用按鈕狀態管理器確保狀態一致
@@ -2337,13 +2105,39 @@ function closeImageModal() {
     closeModal($('#imageModal'));
 }
 
-// 新增：統一的模態框關閉函數 - iOS 專用修復
+// 新增：統一的模態框關閉函數
 function closeModal($modal) {
     $modal.hide();
+    // 修復問題3：恢復背景滾動
+    restoreBackgroundScroll();
+}
 
-    // iOS 專用修復：恢復背景滾動
-    if (isIOS) {
-        restoreIOSBackgroundScroll();
+// 新增：防止背景滾動
+function preventBackgroundScroll() {
+    // 記錄當前滾動位置 - 使用標準的 scrollY
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    // 將滾動位置設置到 body 上
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    // 添加 padding 來補償滾動條消失的空間
+    document.body.style.paddingRight = window.innerWidth - document.documentElement.clientWidth + 'px';
+}
+
+// 新增：恢復背景滾動
+function restoreBackgroundScroll() {
+    // 獲取保存的滾動位置
+    const scrollY = Math.abs(parseInt(document.body.style.top || '0'));
+    // 恢復 body 樣式
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    // 恢復滾動位置
+    if (scrollY) {
+        window.scrollTo(0, scrollY);
     }
 }
 
@@ -2351,11 +2145,6 @@ function previewUploadedImage() {
     if (uploadedFilePreview) {
         $('#modalImage').attr('src', uploadedFilePreview);
         $('#imageModal').show();
-
-        // iOS 專用修復：防止背景滾動擴展
-        if (isIOS) {
-            preventIOSBackgroundScroll();
-        }
     }
 }
 
@@ -2418,15 +2207,7 @@ function addUserMessage(content) {
 function scrollToBottom() {
     const container = $('#chatContainer')[0];
     if (container) {
-        // iOS 專用修復：使用平滑滾動
-        if (isIOS) {
-            container.scrollTop = container.scrollHeight;
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-            }, 50);
-        } else {
-            container.scrollTop = container.scrollHeight;
-        }
+        container.scrollTop = container.scrollHeight;
     }
 }
 

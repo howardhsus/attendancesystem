@@ -5,24 +5,17 @@
     box-sizing: border-box;
 }
 
-/* Body Background - iOS specific fix */
+/* Body Background */
 body {
     font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
     background: linear-gradient(to bottom, #e8dbbf 0%, #c9b893 50%, #a9926e 100%);
     min-height: 100vh;
     padding: 0;
     overflow: hidden;
-    /* iOS Safari background fix */
-    position: relative;
+    /* 防止 iOS Safari 背景滾動 */
+    position: fixed;
     width: 100%;
     height: 100%;
-    /* iOS specific: prevent elastic scrolling */
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: none;
-    /* iOS specific: prevent text size adjustment */
-    -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
-    text-size-adjust: 100%;
 }
 
 /* Main Container */
@@ -36,12 +29,6 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    /* iOS specific: prevent background expansion */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    z-index: 1;
-    /* iOS specific: create stacking context */
-    isolation: isolate;
 }
 
 /* Top Navigation */
@@ -58,11 +45,9 @@ body {
     z-index: 100;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: relative;
-    /* iOS specific fix */
+    /* 防止 iOS Safari 背景擴展 */
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
-    /* Prevent iOS rubber band effect */
-    -webkit-overflow-scrolling: auto;
 }
 
     .app-header:before {
@@ -98,9 +83,6 @@ body {
         height: 100%;
         object-fit: contain;
         display: block;
-        /* iOS specific: prevent image artifacts */
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
     }
 
 /* Smart Reporting Label */
@@ -122,10 +104,6 @@ body {
     border: none;
     box-shadow: 0 2px 4px rgba(152, 127, 84, 0.2);
     transition: all 0.3s ease;
-    /* iOS specific: remove default styling */
-    -webkit-appearance: none;
-    appearance: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
     .report-label:hover {
@@ -143,14 +121,9 @@ body {
     flex-direction: column;
     gap: 20px;
     background: linear-gradient(to bottom, #e8dbbf 0%, #c9b893 50%, #a9926e 100%);
-    /* iOS specific fix */
+    /* 防止 iOS Safari 滾動背景擴展 */
     -webkit-overflow-scrolling: touch;
     position: relative;
-    /* Optimize scrolling performance */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    /* Prevent iOS rubber band effect on sides */
-    overscroll-behavior: contain;
 }
 
 /* ==================== Message Styles ==================== */
@@ -159,9 +132,6 @@ body {
     animation-duration: 0.8s;
     animation-fill-mode: both;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    /* iOS specific: prevent flickering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
 .bot-message {
@@ -178,24 +148,24 @@ body {
 @keyframes slideInLeft {
     from {
         opacity: 0;
-        transform: translateX(-40px) translateZ(0);
+        transform: translateX(-40px);
     }
 
     to {
         opacity: 1;
-        transform: translateX(0) translateZ(0);
+        transform: translateX(0);
     }
 }
 
 @keyframes slideInRight {
     from {
         opacity: 0;
-        transform: translateX(40px) translateZ(0);
+        transform: translateX(40px);
     }
 
     to {
         opacity: 1;
-        transform: translateX(0) translateZ(0);
+        transform: translateX(0);
     }
 }
 
@@ -228,6 +198,7 @@ body {
     }
 
     .user-message {
+        /* 修正：使用標準的 max-content 替代 -moz-fit-content */
         max-width: max-content !important;
         width: max-content !important;
         margin-left: auto !important;
@@ -254,18 +225,12 @@ body {
     overflow: hidden;
     background: #f3ede0;
     border: 2px solid #ddd;
-    /* iOS specific: prevent image artifacts */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
 .bot-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* iOS specific: prevent image flickering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 .user-avatar .avatar-placeholder {
@@ -296,9 +261,6 @@ body {
     font-family: 'Microsoft JhengHei', '微軟正黑體', 'PingFang TC', sans-serif;
     font-weight: 400;
     box-sizing: border-box;
-    /* iOS specific: prevent text selection */
-    -webkit-user-select: none;
-    user-select: none;
 }
 
 .user-message .message-content {
@@ -311,9 +273,6 @@ body {
     font-family: 'Microsoft JhengHei', '微軟正黑體', 'PingFang TC', sans-serif;
     font-weight: 500;
     box-sizing: border-box;
-    /* iOS specific: prevent text selection */
-    -webkit-user-select: none;
-    user-select: none;
 }
 
 .message-time {
@@ -337,9 +296,6 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     margin-bottom: 10px;
     border: 1px solid rgba(0,0,0,0.05);
-    /* iOS specific: prevent flickering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
 .welcome-title {
@@ -366,9 +322,6 @@ body {
     box-shadow: 0 6px 25px rgba(0,0,0,0.08);
     width: 100%;
     border: 1px solid rgba(0,0,0,0.05);
-    /* iOS specific: prevent flickering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
 .horizontal-details-list {
@@ -384,9 +337,6 @@ body {
     border-radius: 10px;
     overflow: hidden;
     border: 1px solid #e9ecef;
-    /* iOS specific: prevent flickering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 .detail-label-section {
@@ -453,9 +403,6 @@ body {
     border-radius: 10px;
     overflow: hidden;
     border: 1px solid #e9ecef;
-    /* iOS specific: prevent flickering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 .description-label-section {
@@ -672,13 +619,6 @@ body {
     text-align: center;
     min-width: 120px;
     flex: 0 0 auto;
-    /* iOS specific: remove default styling */
-    -webkit-appearance: none;
-    appearance: none;
-    -webkit-tap-highlight-color: transparent;
-    /* iOS specific: ensure proper rendering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
     .quick-reply-btn:hover {
@@ -726,27 +666,19 @@ body {
         box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3) !important;
     }
 
-/* Skip Upload Button - iOS Specific Fix */
+/* Skip Upload Button */
 .skip-photo-btn-dynamic {
     background: white !important;
     color: #4a90e2 !important;
     border-color: #4a90e2 !important;
-    /* iOS specific: ensure proper state */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
     .skip-photo-btn-dynamic:hover {
         background: #4a90e2 !important;
         color: white !important;
         border-color: #4a90e2 !important;
-        transform: translateY(-2px) translateZ(0) !important;
-        box-shadow: 0 4px 8px rgba(74, 144, 226, 0.2) !important;
-    }
-
-    .skip-photo-btn-dynamic:active {
-        transform: translateY(0) translateZ(0) !important;
-        box-shadow: 0 2px 4px rgba(74, 144, 226, 0.2) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3) !important;
     }
 
 /* Confirm Submit Button */
@@ -767,10 +699,6 @@ body {
     margin: 10px auto 0 auto !important;
     width: fit-content !important;
     min-width: 140px !important;
-    /* iOS specific: remove default styling */
-    -webkit-appearance: none !important;
-    appearance: none !important;
-    -webkit-tap-highlight-color: transparent !important;
 }
 
     .confirm-form-btn-office:hover,
@@ -801,13 +729,6 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-align: left;
     width: 100%;
-    /* iOS specific: remove default styling */
-    -webkit-appearance: none;
-    appearance: none;
-    -webkit-tap-highlight-color: transparent;
-    /* iOS specific: ensure proper rendering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
     .service-button:hover {
@@ -820,8 +741,6 @@ body {
         border-color: #4a90e2;
         background: linear-gradient(135deg, rgba(74, 144, 226, 0.08) 0%, rgba(255, 255, 255, 0.1) 100%);
         transform: translateY(-1px);
-        /* iOS specific: ensure selected state is visible */
-        z-index: 2;
     }
 
 .service-button-icon {
@@ -892,10 +811,6 @@ body {
     font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
     color: #333;
     box-sizing: border-box;
-    /* iOS specific: prevent zoom on focus */
-    font-size: 16px !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
 }
 
     .form-control:focus {
@@ -926,10 +841,6 @@ body {
     transition: all 0.3s;
     margin-bottom: 5px;
     border: 2px solid #ddd;
-    /* iOS specific: remove default styling */
-    -webkit-appearance: none;
-    appearance: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
     .floor-select-btn:hover, .location-select-btn:hover {
@@ -952,8 +863,8 @@ body {
         font-size: 18px;
     }
 
-/* ==================== iOS Specific Button State Fixes ==================== */
-/* 1. Reset all button states - iOS specific fix */
+/* ==================== 跨平台按鈕狀態修復 ==================== */
+/* 1. 重置所有按鈕狀態 - 修復 iOS 預設狀態問題 */
 button,
 [role="button"],
 .floor-option-btn,
@@ -963,45 +874,36 @@ button,
 .floor-select-btn,
 .location-select-btn,
 .custom-location-confirm-btn {
-    /* Remove all platform default styles */
+    /* 移除所有平台默認樣式 */
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    /* Remove tap highlight - iOS specific */
+    /* 移除點擊高亮 */
     -webkit-tap-highlight-color: transparent;
-    /* Prevent text selection */
+    /* 防止文字選擇 */
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
-    /* Optimize touch response - iOS specific */
+    /* 優化觸摸響應 */
     touch-action: manipulation;
-    /* Remove iOS Safari blue highlight */
+    /* 移除 iOS Safari 藍色高光 */
     -webkit-touch-callout: none;
-    /* Force reset border and background */
+    /* 強制重置邊框和背景 */
     border: 2px solid #e0e0e0;
     background: white;
-    /* Ensure button content is vertically centered */
+    /* 確保按鈕內容垂直居中 */
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* Fix iOS button text scaling issue */
+    /* 修復 iOS 按鈕文字縮小問題 */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    /* iOS specific: prevent button background expansion */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    /* iOS specific: ensure button is at correct layer */
-    position: relative;
-    z-index: 1;
-    /* iOS specific: prevent flickering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
-/* 2. iOS specific button state fixes */
+/* 2. 明確的狀態定義 - 修復按鈕選擇狀態 */
 .floor-option-btn,
 .location-option-btn {
-    /* Base state */
+    /* 基礎狀態 - 原有屬性保留 */
     background: white;
     border: 2px solid #e0e0e0;
     border-radius: 10px;
@@ -1013,92 +915,38 @@ button,
     text-align: center;
     position: relative;
     overflow: hidden;
-    /* iOS specific fix */
+    /* 確保在 iOS 上正常顯示 */
     -webkit-appearance: none;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000;
 }
 
-    /* iOS specific: normal state */
-    .floor-option-btn:not(.selected):not(.ios-selected),
-    .location-option-btn:not(.selected):not(.ios-selected) {
-        background: white !important;
-        border-color: #e0e0e0 !important;
-        color: #333 !important;
+    .floor-option-btn:hover, .location-option-btn:hover {
+        border-color: #4a90e2;
+        background: rgba(74, 144, 226, 0.05);
     }
 
-    /* iOS specific: selected state */
+    /* 修復選擇狀態 - 確保在 iOS 上正確顯示 */
     .floor-option-btn.selected,
-    .location-option-btn.selected,
-    .floor-option-btn.ios-selected,
-    .location-option-btn.ios-selected {
+    .location-option-btn.selected {
         border-color: #4a90e2 !important;
         background: rgba(74, 144, 226, 0.1) !important;
         color: #4a90e2 !important;
         font-weight: 600 !important;
-        z-index: 2 !important;
-        /* iOS specific: force style */
-        -webkit-transform: translateZ(0) !important;
-        transform: translateZ(0) !important;
+        z-index: 2;
     }
 
-    /* iOS specific: remove hover state interference */
-    .floor-option-btn:hover,
-    .location-option-btn:hover {
-        /* Disable hover effects on touch devices */
-        border-color: #e0e0e0 !important;
-        background: white !important;
+    /* 移除 iOS 上的預設藍色背景 */
+    .floor-option-btn::-moz-focus-inner,
+    .location-option-btn::-moz-focus-inner {
+        border: 0;
     }
 
-    /* iOS specific: active state */
-    .floor-option-btn:active,
-    .location-option-btn:active,
-    .floor-option-btn.active,
-    .location-option-btn.active {
-        background: rgba(74, 144, 226, 0.05) !important;
-        transform: scale(0.98) translateZ(0);
-        transition: transform 0.1s, background 0.1s;
+    /* 修復 iOS 上的焦點狀態 */
+    .floor-option-btn:focus,
+    .location-option-btn:focus {
+        outline: none;
     }
 
-    /* iOS specific: prevent double state */
-    .floor-option-btn.selected:active,
-    .location-option-btn.selected:active,
-    .floor-option-btn.selected.active,
-    .location-option-btn.selected.active,
-    .floor-option-btn.ios-selected:active,
-    .location-option-btn.ios-selected:active,
-    .floor-option-btn.ios-selected.active,
-    .location-option-btn.ios-selected.active {
-        background: rgba(74, 144, 226, 0.15) !important;
-        transform: scale(0.98) translateZ(0);
-    }
-
-/* 3. Skip upload button state fix - iOS specific */
-.skip-photo-btn-dynamic {
-    background: white !important;
-    color: #4a90e2 !important;
-    border-color: #4a90e2 !important;
-    /* iOS specific fix */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-}
-
-    .skip-photo-btn-dynamic:hover {
-        background: #4a90e2 !important;
-        color: white !important;
-        border-color: #4a90e2 !important;
-        transform: translateY(-2px) translateZ(0) !important;
-        box-shadow: 0 4px 8px rgba(74, 144, 226, 0.2) !important;
-    }
-
-    .skip-photo-btn-dynamic:active {
-        transform: translateY(0) translateZ(0) !important;
-        box-shadow: 0 2px 4px rgba(74, 144, 226, 0.2) !important;
-    }
-
-/* 4. iOS specific: ensure text color is correct */
+/* 3. 確保文字顏色正確 */
 .floor-selected {
     color: #2d3436 !important;
     font-weight: 600 !important;
@@ -1114,9 +962,28 @@ input.floor-input-office:not([value=""]) {
     font-weight: 600 !important;
 }
 
-/* 5. Disable hover state interference on touch devices */
+/* 4. 活動狀態 */
+.floor-option-btn:active,
+.location-option-btn:active,
+.floor-option-btn.active,
+.location-option-btn.active {
+    background: rgba(74, 144, 226, 0.05) !important;
+    transform: scale(0.98);
+    transition: transform 0.1s, background 0.1s;
+}
+
+/* 5. 防止雙重狀態 */
+.floor-option-btn.selected:active,
+.location-option-btn.selected:active,
+.floor-option-btn.selected.active,
+.location-option-btn.selected.active {
+    background: rgba(74, 144, 226, 0.15) !important;
+    transform: scale(0.98);
+}
+
+/* 6. 禁用 hover 狀態在觸摸設備上的干擾 */
 @media (hover: hover) {
-    /* Only display hover effects on devices that support hover */
+    /* 只有支持 hover 的設備顯示 hover 效果 */
     .floor-option-btn:hover,
     .location-option-btn:hover {
         border-color: #4a90e2;
@@ -1125,7 +992,7 @@ input.floor-input-office:not([value=""]) {
 }
 
 @media (hover: none) {
-    /* Touch devices: completely disable hover effects */
+    /* 觸摸設備：完全禁用 hover 效果 */
     .floor-option-btn:hover,
     .location-option-btn:hover {
         border-color: #e0e0e0 !important;
@@ -1133,7 +1000,7 @@ input.floor-input-office:not([value=""]) {
     }
 }
 
-/* ==================== Modal Styles - iOS Specific Fixes ==================== */
+/* ==================== Modal Styles - 修復 iOS 背景閃爍問題 ==================== */
 .modal {
     display: none;
     position: fixed;
@@ -1147,17 +1014,14 @@ input.floor-input-office:not([value=""]) {
     justify-content: center;
     padding: 20px;
     animation: fadeIn 0.3s ease;
-    /* iOS specific fix */
+    /* 修復 iOS Safari 背景擴展問題 */
     -webkit-overflow-scrolling: auto;
     overflow: auto;
-    /* Prevent background scrolling */
+    /* 防止背景滾動 */
     overscroll-behavior: contain;
-    /* Create new layer context */
+    /* 創建新的層級上下文 */
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
-    /* Prevent background expansion */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
 @keyframes fadeIn {
@@ -1180,27 +1044,20 @@ input.floor-input-office:not([value=""]) {
     animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     margin: auto;
-    /* iOS specific fix */
+    /* 修復 iOS Safari 模態框問題 */
     position: relative;
     -webkit-overflow-scrolling: touch;
-    /* Prevent background penetration */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    z-index: 1001;
-    /* iOS specific: prevent flickering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
 @keyframes modalSlideIn {
     from {
         opacity: 0;
-        transform: translateY(-50px) scale(0.95) translateZ(0);
+        transform: translateY(-50px) scale(0.95);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0) scale(1) translateZ(0);
+        transform: translateY(0) scale(1);
     }
 }
 
@@ -1212,7 +1069,7 @@ input.floor-input-office:not([value=""]) {
     align-items: center;
     background: #f3ede0;
     color: #333;
-    /* iOS specific: fix title bar issues */
+    /* 修復 iOS Safari 標題欄問題 */
     position: sticky;
     top: 0;
     z-index: 10;
@@ -1238,10 +1095,9 @@ input.floor-input-office:not([value=""]) {
     justify-content: center;
     border-radius: 50%;
     transition: background 0.3s;
-    /* iOS specific: fix button issues */
+    /* 修復 iOS Safari 按鈕問題 */
     -webkit-appearance: none;
     appearance: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
     .modal-close:hover {
@@ -1253,11 +1109,8 @@ input.floor-input-office:not([value=""]) {
     overflow-y: auto;
     max-height: calc(80vh - 70px);
     background: white;
-    /* iOS specific: fix scrolling issues */
+    /* 修復 iOS Safari 滾動問題 */
     -webkit-overflow-scrolling: touch;
-    /* iOS specific: prevent flickering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 .floor-options, .location-options {
@@ -1292,9 +1145,6 @@ input.floor-input-office:not([value=""]) {
     border-radius: 12px;
     transition: all 0.3s;
     margin-bottom: 12px;
-    /* iOS specific: prevent flickering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
     .custom-location-group:focus-within {
@@ -1327,10 +1177,6 @@ input.floor-input-office:not([value=""]) {
     line-height: 1.5;
     box-sizing: border-box;
     width: 100%;
-    /* iOS specific: prevent zoom on focus */
-    font-size: 16px !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
 }
 
     .custom-location-input.placeholder-active {
@@ -1349,10 +1195,6 @@ input.floor-input-office:not([value=""]) {
     cursor: pointer;
     transition: all 0.3s;
     font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
-    /* iOS specific: remove default styling */
-    -webkit-appearance: none;
-    appearance: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
     .custom-location-confirm-btn:hover {
@@ -1381,10 +1223,6 @@ input.floor-input-office:not([value=""]) {
     justify-content: center;
     min-height: 180px;
     width: 100%;
-    /* iOS specific: remove default styling */
-    -webkit-appearance: none;
-    appearance: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
     .upload-area:hover {
@@ -1407,9 +1245,6 @@ input.floor-input-office:not([value=""]) {
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     object-fit: contain;
-    /* iOS specific: prevent image flickering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
     #previewImage[src]:not([src=""]),
@@ -1425,9 +1260,6 @@ input.floor-input-office:not([value=""]) {
     display: block;
     margin: 0 auto;
     object-fit: contain;
-    /* iOS specific: prevent image flickering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 /* ==================== Success Page ==================== */
@@ -1439,9 +1271,6 @@ input.floor-input-office:not([value=""]) {
     box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     margin: 20px 0;
     border: 1px solid rgba(0,0,0,0.05);
-    /* iOS specific: prevent flickering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
 .success-icon {
@@ -1457,23 +1286,20 @@ input.floor-input-office:not([value=""]) {
     font-size: 36px;
     font-weight: bold;
     animation: successScale 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    /* iOS specific: ensure smooth animation */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 @keyframes successScale {
     0% {
-        transform: scale(0) translateZ(0);
+        transform: scale(0);
         opacity: 0;
     }
 
     70% {
-        transform: scale(1.2) translateZ(0);
+        transform: scale(1.2);
     }
 
     100% {
-        transform: scale(1) translateZ(0);
+        transform: scale(1);
         opacity: 1;
     }
 }
@@ -1502,9 +1328,6 @@ input.floor-input-office:not([value=""]) {
     box-shadow: 0 6px 25px rgba(0,0,0,0.08);
     border: 1px solid rgba(0,0,0,0.05);
     margin-bottom: 20px;
-    /* iOS specific: prevent flickering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
 .progress-title {
@@ -1547,16 +1370,13 @@ input.floor-input-office:not([value=""]) {
         margin-bottom: 8px;
         transition: all 0.3s ease;
         border: 2px solid transparent;
-        /* iOS specific: ensure smooth transitions */
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
     }
 
     .progress-step.active .step-icon {
         background: #4a90e2;
         color: white;
         border-color: #4a90e2;
-        transform: scale(1.1) translateZ(0);
+        transform: scale(1.1);
         box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
     }
 
@@ -1581,9 +1401,6 @@ input.floor-input-office:not([value=""]) {
     margin: 20px 0 25px 0;
     overflow: hidden;
     position: relative;
-    /* iOS specific: prevent flickering */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 .progress-fill {
@@ -1594,9 +1411,6 @@ input.floor-input-office:not([value=""]) {
     transition: width 0.5s ease;
     position: relative;
     overflow: hidden;
-    /* iOS specific: ensure smooth animation */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
     .progress-fill::after {
@@ -1608,18 +1422,15 @@ input.floor-input-office:not([value=""]) {
         height: 100%;
         background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
         animation: shimmer 1.5s infinite;
-        /* iOS specific: ensure smooth animation */
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
     }
 
 @keyframes shimmer {
     0% {
-        transform: translateX(-100%) translateZ(0);
+        transform: translateX(-100%);
     }
 
     100% {
-        transform: translateX(100%) translateZ(0);
+        transform: translateX(100%);
     }
 }
 
@@ -1641,9 +1452,6 @@ input.floor-input-office:not([value=""]) {
     border-radius: 18px;
     border: 1px solid #e0dcd0;
     width: fit-content;
-    /* iOS specific: prevent flickering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
 }
 
 .typing-dot {
@@ -1652,9 +1460,6 @@ input.floor-input-office:not([value=""]) {
     background: #4a90e2;
     border-radius: 50%;
     animation: typing 1.4s infinite;
-    /* iOS specific: ensure smooth animation */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
     .typing-dot:nth-child(1) {
@@ -1671,11 +1476,11 @@ input.floor-input-office:not([value=""]) {
 
 @keyframes typing {
     0%, 60%, 100% {
-        transform: translateY(0) translateZ(0);
+        transform: translateY(0);
     }
 
     30% {
-        transform: translateY(-10px) translateZ(0);
+        transform: translateY(-10px);
     }
 }
 
@@ -1930,6 +1735,7 @@ input.floor-input-office:not([value=""]) {
     }
 
     .user-message {
+        /* 修正：使用標準的 max-content 替代 -moz-fit-content */
         max-width: max-content !important;
         width: max-content !important;
     }
@@ -1957,20 +1763,17 @@ input.floor-input-office:not([value=""]) {
     min-width: 200px;
     max-width: 90%;
     text-align: center;
-    /* iOS specific: ensure proper positioning */
-    -webkit-transform: translateX(-50%) translateY(0) translateZ(0);
-    transform: translateX(-50%) translateY(0) translateZ(0);
 }
 
 @keyframes toastSlideIn {
     from {
         opacity: 0;
-        transform: translateX(-50%) translateY(-30px) translateZ(0);
+        transform: translateX(-50%) translateY(-30px);
     }
 
     to {
         opacity: 1;
-        transform: translateX(-50%) translateY(0) translateZ(0);
+        transform: translateX(-50%) translateY(0);
     }
 }
 
@@ -1980,10 +1783,6 @@ input.floor-input-office:not([value=""]) {
 .description-input-dynamic {
     color: #333 !important;
     font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
-    /* iOS specific: prevent zoom on focus */
-    font-size: 16px !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
 }
 
     #descriptionInput.placeholder-active,
@@ -2004,7 +1803,7 @@ input.floor-input-office:not([value=""]) {
 .floor-option-btn:active,
 .location-option-btn:active,
 .custom-location-confirm-btn:active {
-    transform: translateY(1px) translateZ(0);
+    transform: translateY(1px);
 }
 
 .preview-image-dynamic {
@@ -2015,51 +1814,6 @@ input.floor-input-office:not([value=""]) {
     color: #999;
 }
 
-/* iOS specific: prevent button text shrinking */
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-    .floor-option-btn,
-    .location-option-btn,
-    .quick-reply-btn,
-    button {
-        font-size: 16px !important;
-        line-height: 1.5 !important;
-    }
-}
-
-/* iOS specific: prevent quick click flashing */
-button {
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* iOS specific: prevent input zoom */
-@media screen and (max-width: 768px) {
-    input[type="text"],
-    input[type="number"],
-    textarea {
-        font-size: 16px !important;
-        /* Prevent iOS auto-zoom */
-        transform: scale(1);
-        max-height: none;
-    }
-
-    /* Prevent iOS Safari auto font size adjustment */
-    input,
-    textarea {
-        -webkit-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-    }
-}
-
-/* iOS specific: prevent background scroll penetration */
-body.modal-open {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-/* iOS specific: optimize touch response for buttons */
 @media (max-width: 768px) {
     .service-button,
     .quick-reply-btn,
@@ -2070,39 +1824,5 @@ body.modal-open {
     .custom-location-confirm-btn,
     .upload-area {
         -webkit-tap-highlight-color: rgba(74, 144, 226, 0.1);
-    }
-}
-
-/* iOS specific: ensure smooth scrolling in modals */
-.modal-body::-webkit-scrollbar {
-    width: 6px;
-}
-
-.modal-body::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.modal-body::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 3px;
-}
-
-    .modal-body::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-
-/* iOS specific: prevent form elements from being too small */
-@media screen and (max-width: 480px) {
-    .form-control,
-    .floor-select-btn,
-    .location-select-btn {
-        min-height: 44px; /* iOS minimum touch target size */
-        padding: 12px 16px;
-    }
-
-    .quick-reply-btn {
-        min-height: 44px;
-        padding: 12px 20px;
     }
 }
