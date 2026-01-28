@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>租戶服務開通</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #f2f2f2; display: flex; justify-content: center; padding-top: 50px; margin: 0; }
+        .container { background: white; width: 85%; max-width: 400px; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #666; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: #06c755; }
+        button { width: 100%; padding: 14px; background-color: #06c755; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        button:disabled { background-color: #ccc; }
+        #status { text-align: center; margin-top: 15px; color: #e74c3c; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>租戶身分驗證</h2>
+    <div class="form-group">
+        <label>會員卡號</label>
+        <input type="text" id="cardId" placeholder="請輸入卡號">
+    </div>
+    <div class="form-group">
+        <label>身分證字號</label>
+        <input type="text" id="idNumber" placeholder="請輸入身分證字號">
+    </div>
+    <button id="submitBtn" onclick="submitData()">立即開通</button>
+    <p id="status"></p>
+</div>
+
+<script>
+    // --- 您的設定 ---
+    const LIFF_ID = '2007700262-da76ZbYE';
+    // 若您部署後網址有變，請將下面這行換成新的 GAS 網址
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbz6yIxztKNdJzZwa6UBbDzz7NyJESJpxTQ5w6z9zFK8p3WH3gvvZTEs3nOeYHATxIn_/exec';
+
+    async function initLiff() {
+        try {
+            await liff.init({ liffId: LIFF_ID });
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            }
+        } catch (error) {
+            document.getElementById('status').innerText = "LIFF 初始化失敗: " + error;
+        }
+    }
+
+    async function submitData() {
+        const btn = document.getElementById('submitBtn');
+        const status = document.getElementById('status');
+        const cardId = document.getElementById('cardId').value;
+        const idNumber = document.getElementById('idNumber').value;
+
+        if(!cardId || !idNumber) {
+            status.innerText = "請完整輸入所有欄位";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "驗證中...";
+        status.innerText = "";
+
+        try {
+            const profile = await liff.getProfile();
+            
+            // 使用 text/plain 避免 CORS 預檢失敗，GAS 端已做處理
+            const response = await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    userId: profile.userId,
+                    cardId: cardId,
+                    idNumber: idNumber
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                liff.closeWindow(); // 驗證成功，關閉視窗
+            } else {
+                status.innerText = result.message;
+                btn.disabled = false;
+                btn.innerText = "立即開通";
+            }
+
+        } catch (error) {
+            status.innerText = "連線失敗，請稍後再試";
+            console.error(error);
+            btn.disabled = false;
+            btn.innerText = "立即開通";
+        }
+    }
+
+    initLiff();
+</script>
+
+</body>
+</html>
