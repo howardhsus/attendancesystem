@@ -114,3 +114,89 @@ void loop() {
   pBLEScan->clearResults(); // 清除記憶體，避免當機
   delay(2000);              // 休息 2 秒再進行下一輪掃描
 }
+
+
+
+
+
+
+
+
+#include <ArduinoBLE.h>
+
+const String TARGET_MAC = "51:00:25:05:03:0e";
+const String TARGET_NAME = "R25050782";
+
+const int MEASURED_POWER = -59; 
+const float N = 2.0;            
+
+unsigned long lastReportTime = 0; 
+const unsigned long REPORT_INTERVAL = 1500; 
+
+unsigned long lastScanReset = 0;
+const unsigned long SCAN_RESET_INTERVAL = 5000; // 每 5 秒強制重置雷達掃描
+
+// 系統穩定機制：每 12 小時定期重啟 (符合您的需求)
+const unsigned long REBOOT_INTERVAL = 12UL * 60 * 60 * 1000; 
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial);
+
+  Serial.println("=====================================");
+  Serial.println("🛡️ 啟動防弊系統：專屬 MAC 鎖定雷達 (強制刷新版)...");
+  
+  if (!BLE.begin()) {
+    Serial.println("❌ 啟動藍牙失敗！");
+    while (1);
+  }
+  
+  BLE.scan(); 
+}
+
+void loop() {
+  unsigned long currentTime = millis();
+
+  // 1. 檢查是否達到 12 小時例行性重啟時間
+  if (currentTime > REBOOT_INTERVAL) {
+    Serial.println("🔄 系統例行性維護：執行 12 小時週期重啟，清理暫存記憶體...");
+    delay(1000); 
+    ESP.restart(); 
+  }
+
+  // 2. 每 5 秒強制重置一次掃描，避免底層快取卡死錯過封包
+  if (currentTime - lastScanReset > SCAN_RESET_INTERVAL) {
+    BLE.stopScan();
+    delay(50); // 給硬體一點喘息時間
+    BLE.scan();
+    lastScanReset = currentTime;
+  }
+
+  // 3. 持續監聽藍牙裝置
+  BLEDevice peripheral = BLE.available();
+
+  if (peripheral) {
+    String deviceMAC = peripheral.address();
+    String deviceName = peripheral.hasLocalName() ? peripheral.localName() : "";
+
+    if (deviceMAC.equalsIgnoreCase(TARGET_MAC) || deviceName == TARGET_NAME) {
+      
+      if (currentTime - lastReportTime >= REPORT_INTERVAL) {
+        lastReportTime = currentTime; 
+        
+        Serial.println("-------------------------------------");
+        Serial.println("🚨 警告：偵測到目標清運推車！");
+        
+        int rssi = peripheral.rssi();
+        Serial.print("📶 訊號強度 (RSSI): ");
+        Serial.print(rssi);
+        Serial.println(" dBm");
+
+        float distance = pow(10.0, ((float)MEASURED_POWER - rssi) / (10.0 * N));
+        Serial.print("📏 估算距離: 約 ");
+        Serial.print(distance, 2);
+        Serial.println(" 公尺");
+      }
+    }
+  }
+}
