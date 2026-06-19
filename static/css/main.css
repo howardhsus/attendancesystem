@@ -1,0 +1,1101 @@
+/* Reset Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body Background */
+body {
+    font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+    background: linear-gradient(to bottom, #e8dbbf 0%, #c9b893 50%, #a9926e 100%);
+    min-height: 100vh;
+    padding: 0;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+/* Main Container */
+.app-container {
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+/* Top Navigation */
+.app-header {
+    background: #f3ede0;
+    color: #333;
+    padding: 12px 20px;
+    min-height: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    border-bottom: 1px solid #e0dcd0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+    .app-header:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(to right, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.8) 100%);
+        z-index: 2;
+    }
+
+.logo {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    cursor: pointer;
+}
+
+.logo-icon {
+    width: 106px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 106px;
+    min-height: 36px;
+}
+
+    .logo-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+/* Smart Reporting Label */
+.report-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+    padding: 6px 16px;
+    background: #d6b38f;
+    border-radius: 20px;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    cursor: pointer;
+    user-select: none;
+    border: none;
+    box-shadow: 0 2px 4px rgba(152, 127, 84, 0.2);
+    transition: all 0.3s ease;
+}
+
+    .report-label:hover {
+        background: #c9a67c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(152, 127, 84, 0.3);
+    }
+
+/* Chat Container */
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: linear-gradient(to bottom, #e8dbbf 0%, #c9b893 50%, #a9926e 100%);
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+}
+
+/* ==================== Message Styles ==================== */
+.message {
+    display: flex;
+    animation-duration: 0.6s;
+    animation-fill-mode: both;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bot-message {
+    align-self: flex-start;
+    animation-name: slideInLeft;
+}
+
+.user-message {
+    align-self: flex-end;
+    animation-name: slideInRight;
+    flex-direction: row-reverse;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Bot Avatar */
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f3ede0;
+    border: 2px solid #ddd;
+}
+
+.bot-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-avatar .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e8e2d0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 18px;
+}
+
+/* Message Content Area */
+.message-content-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.bot-message .message-content {
+    background: #f3ede0;
+    color: #333;
+    padding: 14px 18px;
+    border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e0dcd0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-family: 'Microsoft JhengHei', '微軟正黑體', 'PingFang TC', sans-serif;
+    font-weight: 400;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.user-message .message-content {
+    background: linear-gradient(135deg, #4a90e2 0%, #357ae8 100%);
+    color: white;
+    padding: 14px 18px;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-family: 'Microsoft JhengHei', '微軟正黑體', 'PingFang TC', sans-serif;
+    font-weight: 500;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.message-time {
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.6);
+    margin-top: 4px;
+    text-align: right;
+    padding: 0 5px;
+}
+
+.user-message .message-time {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* ==================== Welcome Message Styles ==================== */
+.welcome-message {
+    text-align: center;
+    padding: 20px 15px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.welcome-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.welcome-subtitle {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+/* ==================== Confirmation Table Styles ==================== */
+.horizontal-case-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 15px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+    width: 100%;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.horizontal-details-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.horizontal-detail-row {
+    display: flex;
+    align-items: stretch;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+}
+
+.detail-label-section {
+    flex: 0 0 100px;
+    background: #f8f9fa;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-right: 1px solid #e9ecef;
+}
+
+.detail-value-section {
+    flex: 1;
+    background: #ffffff;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #2d3436;
+}
+
+    .detail-value-section.photo-value {
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .detail-value-section.has-photo {
+        color: #28a745;
+        font-weight: 700;
+        background: rgba(40, 167, 69, 0.05);
+    }
+
+.detail-label-text {
+    font-size: 15px !important;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.detail-value-text {
+    font-size: 16px !important;
+    font-weight: 600;
+}
+
+.description-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+}
+
+.description-label-section {
+    background: #f8f9fa;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.description-label-text {
+    font-size: 15px !important;
+    font-weight: 600;
+    color: #495057;
+}
+
+.description-content-section {
+    background: #ffffff;
+    padding: 18px 16px;
+    min-height: 80px;
+}
+
+.description-content-text {
+    font-size: 15px !important;
+    color: #2d3436;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* Hover Effects */
+.horizontal-detail-row:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+.description-row:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+/* ==================== Quick Reply Button Group ==================== */
+.quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.quick-reply-btn {
+    background: white;
+    border: 2px solid #4a90e2;
+    color: #4a90e2;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center;
+    min-width: 120px;
+    flex: 0 0 auto;
+}
+
+    .quick-reply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .quick-reply-btn:active {
+        transform: translateY(1px);
+    }
+
+.confirm-photo-btn-dynamic,
+.submit-report-btn,
+.new-report-btn-dynamic,
+.confirm-form-btn-office,
+.confirm-form-btn-dynamic {
+    background: #4a90e2 !important;
+    color: white !important;
+    border-color: #4a90e2 !important;
+}
+
+.edit-info-btn, .skip-photo-btn-dynamic {
+    background: white !important;
+    color: #4a90e2 !important;
+    border-color: #4a90e2 !important;
+}
+
+.confirm-form-btn-office,
+.confirm-form-btn-dynamic {
+    padding: 12px 28px !important;
+    border-radius: 25px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    display: block !important;
+    margin: 10px auto 0 auto !important;
+    width: fit-content !important;
+    min-width: 140px !important;
+}
+
+/* ==================== Service Buttons ==================== */
+.service-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.service-button {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
+    width: 100%;
+}
+
+    .service-button:hover {
+        border-color: #e9ecef;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .service-button.selected {
+        border-color: #4a90e2;
+        transform: translateY(-1px);
+    }
+
+.service-button-icon {
+    font-size: 28px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(255, 255, 255, 0.2) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.service-button-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: #2d3436;
+    letter-spacing: 0.3px;
+    margin-bottom: 3px;
+}
+
+.service-button-desc {
+    font-size: 13px;
+    color: #636e72;
+    line-height: 1.4;
+}
+
+/* ==================== Form Styles ==================== */
+.form-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e9ecef;
+    letter-spacing: 0.5px;
+    text-align: center; /* 修復標題置中 */
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333333;
+    font-size: 15px;
+}
+
+    .form-label span {
+        color: #ff6b6b;
+    }
+
+.form-control {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.3s;
+    background: white;
+    font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+    color: #333;
+    box-sizing: border-box;
+}
+
+    .form-control:focus {
+        border-color: #4a90e2;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+
+    .form-control.placeholder-active {
+        color: #999;
+    }
+
+.floor-select-btn, .location-select-btn {
+    width: 100% !important;
+    padding: 14px 18px !important;
+    border: 2px solid #ddd !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    background: white !important;
+    font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif !important;
+    color: #333 !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    display: block !important;
+    margin-bottom: 5px;
+}
+
+.floor-display, .location-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.floor-value, .location-value {
+    font-weight: 500;
+}
+
+.floor-arrow, .location-arrow {
+    color: #999;
+    font-size: 18px;
+}
+
+/* ==================== Modal Styles ==================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+    animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    margin: auto;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    padding: 22px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f3ede0;
+    color: #333;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 0.5px;
+}
+
+.modal-close {
+    background: rgba(0,0,0,0.05);
+    border: none;
+    color: #333;
+    font-size: 24px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.modal-body {
+    padding: 25px;
+    overflow-y: auto;
+    max-height: calc(80vh - 70px);
+    background: white;
+    -webkit-overflow-scrolling: touch;
+}
+
+.floor-options, .location-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.floor-option-btn, .location-option-btn {
+    padding: 15px 5px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: center;
+}
+
+    .floor-option-btn.selected, .location-option-btn.selected {
+        border-color: #4a90e2 !important;
+        color: #4a90e2 !important;
+        background: rgba(74, 144, 226, 0.05) !important;
+    }
+
+.custom-location-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #e9ecef;
+    grid-column: 1 / -1;
+}
+
+.custom-location-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3436;
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+}
+
+.custom-location-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.custom-location-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    outline: none;
+    width: 100%;
+}
+
+.custom-location-confirm-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #4a90e2 0%, #357ae8 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ==================== Photo Upload (加入專屬類別) ==================== */
+.upload-area {
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    width: 100%;
+}
+
+.upload-icon {
+    font-size: 48px;
+    color: #b2bec3;
+    margin-bottom: 15px;
+}
+
+.photo-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.photo-split-btn {
+    flex: 1;
+    margin: 0;
+    padding: 20px 5px;
+    min-height: 140px;
+}
+
+    .photo-split-btn .upload-icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+
+.photo-split-btn-text {
+    font-weight: 600;
+    font-size: 14px;
+    color: #2d3436;
+}
+
+.upload-preview {
+    display: none;
+    max-width: 100%;
+    max-height: 200px;
+    margin: 20px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    object-fit: contain;
+}
+
+.preview-image-dynamic[src]:not([src=""]) {
+    display: block;
+    cursor: pointer;
+}
+
+/* ==================== Success Page (加入專屬類別) ==================== */
+.success-container {
+    text-align: center;
+    padding: 40px 25px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    margin: 20px 0;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 25px;
+    background: linear-gradient(135deg, #4a90e2 0%, #357ae8 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.success-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 15px;
+}
+
+.success-message {
+    font-size: 16px;
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.success-divider {
+    height: 1px;
+    background: #e9ecef;
+    margin: 25px 0;
+}
+
+/* ==================== Progress Indicator ==================== */
+.progress-indicator {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+.progress-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+    .progress-step .step-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .progress-step.active .step-icon {
+        background: #4a90e2;
+        color: white;
+    }
+
+    .progress-step .step-label {
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .progress-step.active .step-label {
+        color: #4a90e2;
+        font-weight: 600;
+    }
+
+.progress-bar {
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    margin: 20px 0 25px 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a90e2 0%, #357ae8 100%);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-message {
+    text-align: center;
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* ==================== Toast Messages ==================== */
+.toast-message {
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2d3436;
+    color: white;
+    padding: 14px 24px;
+    border-radius: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    z-index: 9999;
+    font-size: 14px;
+    font-weight: 500;
+    animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* ==================== 載入動畫樣式 ==================== */
+#loadingOverlay {
+    display: flex;
+    position: fixed; /* 改用 fixed 確保覆蓋整個螢幕視窗 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65); /* 暗色半透明背景 */
+    backdrop-filter: blur(3px); /* 高質感毛玻璃效果 (原生支援) */
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+.loading-spinner {
+    width: 45px;
+    height: 45px;
+    /* 配合暗色背景，改為白色半透明軌道與全白轉動條 */
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top: 4px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff; /* 文字改為全白 */
+    letter-spacing: 1.5px;
+}
+
+/* ==================== Bottom Padding ==================== */
+.input-area-padding {
+    height: 80px;
+    background: transparent;
+    flex-shrink: 0;
+}
+
+/* ==================== RWD Settings ==================== */
+@media (max-width: 768px) {
+    .floor-options, .location-options {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .bot-message {
+        max-width: 95% !important;
+        width: 95% !important;
+    }
+
+    .user-message {
+        max-width: fit-content !important;
+        width: fit-content !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .bot-message {
+        max-width: 23% !important;
+        width: 23% !important;
+        margin-right: auto !important;
+    }
+
+    .user-message {
+        max-width: 15% !important;
+        width: 15% !important;
+        margin-left: auto !important;
+    }
+
+    .avatar {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .bot-message {
+        max-width: 18% !important;
+        width: 18% !important;
+    }
+
+    .user-message {
+        max-width: 10% !important;
+        width: 10% !important;
+    }
+}
+/* ==================== 預覽照片縮圖設定 ==================== */
+#imageModal .modal-body {
+    text-align: center;
+    padding: 20px;
+}
+
+#modalImage {
+    max-width: 100%;
+    max-height: 65vh; /* 限制最高只能佔螢幕高度的 65% */
+    object-fit: contain; /* 確保照片按比例完整縮放到框框內 */
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: block;
+    margin: 0 auto; /* 讓縮圖置中 */
+}
