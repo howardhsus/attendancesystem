@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; form-action 'none'; base-uri 'none'; frame-src 'none'; object-src 'none';">
+    <title>Taipei 101 Smart Service Reporting System</title>
+    <link rel="stylesheet" href="static/css/main.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <button type="button" class="logo" id="reloadLogo" aria-label="Restart report">
+                <div class="logo-icon">
+                    <img src="static/pic/logo.png" alt="Taipei 101 Logo">
+                </div>
+            </button>
+            <button type="button" class="report-label" id="langSwitchBtn">
+                繁體中文
+            </button>
+        </header>
+
+        <main class="chat-container" id="chatContainer" aria-live="polite"></main>
+
+        <footer class="input-area-padding"></footer>
+    </div>
+
+    <!-- Static File Picker for reliable iOS Safari / Android / In-App Browser support -->
+    <input type="file" id="photoFileInput" class="hidden-file-input" accept="image/*">
+
+    <!-- Photo Preview Modal -->
+    <div class="modal" id="imageModal" role="dialog" aria-modal="true" aria-labelledby="imageModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="imageModalTitle">📷 Photo Preview</div>
+                <button type="button" class="modal-close" id="closeImageModalBtn" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body modal-body-center">
+                <img id="modalImage" src="" alt="Preview">
+            </div>
+        </div>
+    </div>
+
+    <!-- Floor Selection Modal -->
+    <div class="modal" id="floorModal" role="dialog" aria-modal="true" aria-labelledby="floorModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="floorModalTitle">Select Floor</div>
+                <button type="button" class="modal-close" id="closeFloorModalBtn" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="floor-options" id="floorOptions"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Selection Modal -->
+    <div class="modal" id="locationModal" role="dialog" aria-modal="true" aria-labelledby="locationModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="locationModalTitle">Select Location</div>
+                <button type="button" class="modal-close" id="closeLocationModalBtn" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="location-options" id="locationOptions"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/mainEN.js" defer></script>
+</body>
+</html>
